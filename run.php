@@ -75,7 +75,8 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 	$ip = (isset($path[5]) ? (string) strtolower($path[5]) : false); if($ip) echo '[ip] ' . $ip . ' ';
 	echo PHP_EOL;
 	
-	$lorhondelBattleTesting = $discord->getChannel(887118621065768970);
+	$lorhondelBattleground = $discord->getChannel(887118621065768970);
+	$lorhondelBotSpam = $discord->getChannel(887118679697940481);
 	
 	if ($ip) echo '[REQUESTING IP] ' . $ip . PHP_EOL ;
 	//if (substr($request->getServerParams()['REMOTE_ADDR'], 0, 6) != '10.0.0')
@@ -235,12 +236,12 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 			});
 			break;
 		case 'ping':
-			$lorhondelBattleTesting->sendMessage('Pong!');
+			$lorhondelBotSpam->sendMessage('Pong!');
 			$return = 'Pong!';
 			break;
 		case 'stats':
 			if($embed = $stats->handle()) {
-				$lorhondelBattleTesting->sendEmbed($embed);
+				$lorhondelBotSpam->sendEmbed($embed);
 				$return = $embed;
 			} else return webapiFail('stats', $stats);
 			break;
@@ -255,6 +256,11 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 				'user' => $user,
 			]);
 			$return = $player;
+			echo 'save:' . get_class($lorhondel->players->save($player)) . PHP_EOL;
+			ob_start();
+			var_dump($lorhondel->players);
+			$msg = ob_get_clean();
+			$lorhondelBotSpam->sendMessage($msg);
 			break;
 		case 'dumpplayers':
 			if ($lorhondel->players) {
