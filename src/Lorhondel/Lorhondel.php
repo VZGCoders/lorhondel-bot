@@ -151,6 +151,8 @@ class Lorhondel
                 'retrieveBans',
                 'intents',
                 'socket_options',
+				'browser',
+				'discord'
             ])
             ->setDefaults([
                 'loop' => LoopFactory::create(),
