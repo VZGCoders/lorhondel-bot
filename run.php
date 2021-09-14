@@ -246,8 +246,6 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 			break;
 		case 'player':
 			$user = $discord->users->offsetGet(116927250145869826);
-			$player = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class);
-			/*
 			$player  = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
 				'health' => 0,
 				'attack' => 1,
@@ -256,7 +254,6 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 				'skillpoints' => 4,
 				'user' => $user,
 			]);
-			*/
 			$return = $player;
 			break;
 		default:
