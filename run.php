@@ -267,21 +267,42 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 			} else return webapiFail('stats', $stats);
 			break;
 		case 'player':
-			$user = $discord->users->offsetGet(116927250145869826);
-			$player  = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
+			$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
+				'id' => 116927250145869826,
+				'species' => 'Elarian', //Elarian, Manthean, Noldarus, Veias, Jedoa
 				'health' => 0,
 				'attack' => 1,
 				'defense' => 2,
 				'speed' => 3,
 				'skillpoints' => 4,
-				'user' => $user,
+				'user_id' => 116927250145869826,
 			]);
-			$return = $player;
-			echo 'save:' . get_class($lorhondel->players->save($player)) . PHP_EOL;
-			ob_start();
-			var_dump($lorhondel->players);
-			$msg = ob_get_clean();
-			$lorhondelBotSpam->sendMessage($msg);
+			if ($player = $lorhondel->players->offsetGet(116927250145869826)) {
+				$exist = true;
+				$result = 'Editing existing Part with ID ' . $part->id;
+			} else {
+				$exist = false;
+				$result = 'Creating new Part with ID ' . $part->id;
+			}
+			echo '[SAVE] ' . $lorhondel->players->save($part)->done(
+				function ($part) use ($lorhondel, $lorhondelBotSpam, $exist) {
+					if ($exist) {
+						$lorhondelBotSpam->sendMessage('Updated existing Part with ID: ' . $part->id);
+					} else {
+						$lorhondelBotSpam->sendMessage('Added new Part with ID: ' . $part->id);
+					}
+				},
+				function ($error) {
+					echo '[ERROR] ';
+					var_dump($error->getMessage());
+				}
+			);
+			$lorhondelBotSpam->sendMessage(json_encode($result));
+			break;
+		case 'players':
+			if ($id) {
+				
+			}
 			break;
 		case 'dumpplayers':
 			if ($lorhondel->players) {
