@@ -275,9 +275,6 @@ try{
 		echo "[READY]" . PHP_EOL;
 		include 'ready-include.php'; //All modular event handlers
 	 });
-	$discord->on('disconnect', function ($erMsg, $code) use ($discord, $loop, $token) { //Automatically reconnect if the bot disconnects due to inactivity (Not tested)
-		include 'disconnect-include.php';
-	});
 	$discord->run();
 }catch (Throwable $e) { //Restart the bot
 	include 'rescue-catch-include.php';
