@@ -119,7 +119,7 @@ class Client extends Part
      */
     public function save(): ExtendedPromiseInterface
     {
-        return $this->http->patch(Endpoint::USER_CURRENT, $this->getUpdatableAttributes());
+        return $this->http->patch(Endpoint::PLAYER_CURRENT, $this->getUpdatableAttributes());
     }
 
     /**

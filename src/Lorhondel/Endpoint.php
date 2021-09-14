@@ -168,6 +168,15 @@ class Endpoint
     public const USER_CURRENT_CONNECTIONS = self::USER_CURRENT.'/connections';
     // GET
     public const APPLICATION_CURRENT = 'oauth2/applications/@me';
+	
+	// GET, PATCH
+    public const PLAYER_CURRENT = 'players/@me';
+    // GET
+    public const PLAYER = 'players/:user_id';
+    // GET
+    public const PLAYER_CURRENT_CONNECTIONS = self::PLAYER_CURRENT.'/connections';
+	
+	
 
     // GET, PATCH, DELETE
     public const WEBHOOK = 'webhooks/:webhook_id';
