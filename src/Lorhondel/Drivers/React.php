@@ -8,8 +8,8 @@
 
 namespace Lorhondel\Drivers;
 
-use Lorhondel\Http\DriverInterface;
-use Lorhondel\Http\Request;
+use Lorhondel\DriverInterface;
+use Lorhondel\Request;
 use React\EventLoop\LoopInterface;
 use React\Http\Browser;
 use React\Promise\ExtendedPromiseInterface;

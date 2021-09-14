@@ -8,11 +8,16 @@
 
 namespace Lorhondel;
 
-use Lorhondel\Http\Http;
+use Lorhondel\Exceptions\IntentException;
+use Lorhondel\Factory\Factory;
+use Lorhondel\Http;
 use Lorhondel\WebSockets\Event;
 use Lorhondel\WebSockets\Handlers;
 use Lorhondel\WebSockets\Intents;
 use Lorhondel\WebSockets\Op;
+use Lorhondel\Helpers\Deferred;
+use Lorhondel\Drivers\React;
+use Lorhondel\Endpoint;
 
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger as Monolog;
@@ -28,7 +33,6 @@ use React\Promise\ExtendedPromiseInterface;
 use React\Promise\PromiseInterface;
 use React\Socket\Connector as SocketConnector;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-
 
 class Lorhondel
 {

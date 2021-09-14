@@ -8,11 +8,11 @@
 
 namespace Lorhondel;
 
-use Lorhondel\Http\Exceptions\ContentTooLongException;
-use Lorhondel\Http\Exceptions\InvalidTokenException;
-use Lorhondel\Http\Exceptions\NoPermissionsException;
-use Lorhondel\Http\Exceptions\NotFoundException;
-use Lorhondel\Http\Exceptions\RequestFailedException;
+use Lorhondel\Exceptions\ContentTooLongException;
+use Lorhondel\Exceptions\InvalidTokenException;
+use Lorhondel\Exceptions\NoPermissionsException;
+use Lorhondel\Exceptions\NotFoundException;
+use Lorhondel\Exceptions\RequestFailedException;
 use Exception;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;

@@ -13,7 +13,7 @@ namespace Lorhondel\WebSockets;
 
 use Lorhondel\Lorhondel;
 use Lorhondel\Factory\Factory;
-use Lorhondel\Http\Http;
+use Lorhondel\Http;
 use Lorhondel\Helpers\Deferred;
 use Evenement\EventEmitterTrait;
 use React\Promise\PromiseInterface;

@@ -20,7 +20,7 @@ use Lorhondel\Parts\User\User;
 use Lorhondel\Parts\WebSockets\VoiceStateUpdate as VoiceStateUpdatePart;
 use Lorhondel\WebSockets\Event;
 use Lorhondel\Helpers\Deferred;
-use Lorhondel\Http\Endpoint;
+use Lorhondel\Endpoint;
 use Lorhondel\Parts\Thread\Member as ThreadMember;
 use Lorhondel\Parts\Thread\Thread;
 

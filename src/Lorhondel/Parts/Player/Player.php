@@ -9,7 +9,7 @@
 namespace Lorhondel\Parts\Player;
 
 use Lorhondel\Builders\MessageBuilder;
-use Lorhondel\Http\Endpoint;
+use Lorhondel\Endpoint;
 use Lorhondel\Parts\Channel\Channel;
 use Lorhondel\Parts\Part;
 use Lorhondel\Parts\Channel\Message;
