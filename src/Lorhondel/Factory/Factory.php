@@ -8,6 +8,8 @@
 
 namespace Lorhondel\Factory;
 
+use Lorhondel\Lorhondel;
+use Lorhondel\Http;
 use Lorhondel\Parts\Part;
 use Lorhondel\Repository\AbstractRepository;
 
