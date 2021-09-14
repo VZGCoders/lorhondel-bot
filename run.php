@@ -244,7 +244,7 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 	}
 	/*if ($return)*/ return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'text/json'], json_encode($return));
 });
-$socket = new \React\Socket\Server(sprintf('%s:%s', '0.0.0.0', '27759'), $discord->getLoop());
+$socket = new \React\Socket\Server(sprintf('%s:%s', '0.0.0.0', '27759'), $loop);
 $webapi->listen($socket);
 $webapi->on('error', function ($e) {
 	/*
