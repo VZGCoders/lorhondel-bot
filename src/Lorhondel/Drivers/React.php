@@ -6,7 +6,7 @@
  * Copyright (c) 2021-present Valithor Obsidion <valzargaming@gmail.com>
  */
 
-namespace Lorhondel\Http\Drivers;
+namespace Lorhondel\Drivers;
 
 use Lorhondel\Http\DriverInterface;
 use Lorhondel\Http\Request;

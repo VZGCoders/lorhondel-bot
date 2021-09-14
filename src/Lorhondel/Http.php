@@ -6,7 +6,7 @@
  * Copyright (c) 2021-present Valithor Obsidion <valzargaming@gmail.com>
  */
 
-namespace Lorhondel\Http;
+namespace Lorhondel;
 
 use Lorhondel\Http\Exceptions\ContentTooLongException;
 use Lorhondel\Http\Exceptions\InvalidTokenException;

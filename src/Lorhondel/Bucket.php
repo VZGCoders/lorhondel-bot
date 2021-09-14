@@ -6,7 +6,7 @@
  * Copyright (c) 2021-present Valithor Obsidion <valzargaming@gmail.com>
  */
 
-namespace Lorhondel\Http;
+namespace Lorhondel;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;

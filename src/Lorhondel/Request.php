@@ -6,7 +6,7 @@
  * Copyright (c) 2021-present Valithor Obsidion <valzargaming@gmail.com>
  */
 
-namespace Lorhondel\Http;
+namespace Lorhondel;
 
 use React\Promise\Deferred;
 
