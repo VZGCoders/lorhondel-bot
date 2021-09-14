@@ -7,15 +7,10 @@
  */
 
 ini_set('max_execution_time', 0);
-//This file was written by Valithor#5947 <@116927250145869826>
-//Special thanks to keira#7829 <@297969955356540929> for helping me get this behemoth working after converting from DiscordPHP
-
-//This bot is based off of a much older version of Palace Bot#9203 <@662093882795753482>
-//Updates are made on an "as needed" basis and therefore may contain bugs
-//It is private and only accessible from the official ValZarGaming discord server
-//It provides SQL access to ValZarGaming's servers, so we need to log and regulate who has access to it
 
 include 'vendor/autoload.php';
+include 'autoload.php'; //Needed for testing
+
 include 'src/Lorhondel/Lorhondel.php';
 ini_set('memory_limit', '-1'); 	//Unlimited memory usage
 
@@ -49,9 +44,11 @@ $stats = new Stats();
 $stats->init($discord);
 
 $options = array(
+	'token' => "$token",
 	'loop' => $loop,
 	'browser' => $browser,
 	'discord' => $discord,
+	'logger' => $logger,
 );
 $lorhondel = new Lorhondel\Lorhondel($options);
 
