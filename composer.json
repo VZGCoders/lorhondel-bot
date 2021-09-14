@@ -1,0 +1,7 @@
+{
+    "require": {
+        "team-reflex/discord-php": "dev-master",
+        "discord-php/slash": "dev-master",
+        "vzgcoders/twitchphp": "^1.0"
+    }
+}
