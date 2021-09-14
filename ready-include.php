@@ -16,5 +16,3 @@ $discord->on('message', function ($message) use ($discord, $loop, $token, $restc
 $discord->on("error", function(\Throwable $e) {
 	echo '[ERROR]' . $e->getMessage() . " in file " . $e->getFile() . " on line " . $e->getLine() . PHP_EOL;
 });
-
-?>
