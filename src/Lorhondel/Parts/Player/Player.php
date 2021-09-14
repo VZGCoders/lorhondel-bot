@@ -19,7 +19,8 @@ use React\Promise\ExtendedPromiseInterface;
  * A player is a general player that is not attached to a group.
  *
 
- * @property int    $id            The unique identifier of the user.
+ * @property int    $id            The unique identifier of the player.
+ * @property string $species       The species of the player.
  * @property int    $health        Health, obviously.
  * @property int    $attack        How much damage you output.
  * @property int    $defense       How much damage you block.
@@ -34,7 +35,7 @@ class Player extends Part
     /**
      * @inheritdoc
      */
-    protected $fillable = ['health', 'attack', 'defense', 'speed', 'skillpoints', 'user'];
+    protected $fillable = ['id', 'species', 'health', 'attack', 'defense', 'speed', 'skillpoints', 'user_id'];
 
     /**
      * Returns a timestamp for when a player's account was created.
