@@ -83,7 +83,7 @@ function mentioned($part, Message $message): bool
     if ($part instanceof User || $part instanceof Member) {
         return $message->mentions->has($part->id);
     } elseif ($part instanceof Player) {
-		$message->mentions->has($part->user->id);
+		return ($message->mentions->has($part->user->id) || strpos($message->content, "<@${$part->id}>") !== false);
 	} elseif ($part instanceof Role) {
         return $message->mention_roles->has($part->id);
     } elseif ($part instanceof Channel) {
