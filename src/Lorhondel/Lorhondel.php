@@ -81,8 +81,162 @@ class Lorhondel
      */
     public $loop;
 	
+	/**
+     * The WebSocket client factory.
+     *
+     * @var Connector Factory.
+     */
+    protected $wsFactory;
+
+    /**
+     * The WebSocket instance.
+     *
+     * @var WebSocket Instance.
+     */
+    protected $ws;
+
+    /**
+     * The event handlers.
+     *
+     * @var Handlers Handlers.
+     */
+    protected $handlers;
+
+    /**
+     * The packet sequence that the client is up to.
+     *
+     * @var int Sequence.
+     */
+    protected $seq;
+
+    /**
+     * Whether the client is currently reconnecting.
+     *
+     * @var bool Reconnecting.
+     */
+    protected $reconnecting = false;
+
+    /**
+     * Whether the client is connected to the gateway.
+     *
+     * @var bool Connected.
+     */
+    protected $connected = false;
+
+    /**
+     * Whether the client is closing.
+     *
+     * @var bool Closing.
+     */
+    protected $closing = false;
+
+    /**
+     * The session ID of the current session.
+     *
+     * @var string Session ID.
+     */
+    protected $sessionId;
 	
-	public $browser;
+	/**
+     * An array of large guilds that need to be requested for
+     * members.
+     *
+     * @var array Large guilds.
+     */
+    protected $largeGuilds = [];
+
+    /**
+     * An array of large guilds that have been requested for members.
+     *
+     * @var array Large guilds.
+     */
+    protected $largeSent = [];
+
+    /**
+     * An array of unparsed packets.
+     *
+     * @var array Unparsed packets.
+     */
+    protected $unparsedPackets = [];
+
+    /**
+     * How many times the client has reconnected.
+     *
+     * @var int Reconnect count.
+     */
+    protected $reconnectCount = 0;
+
+    /**
+     * The heartbeat interval.
+     *
+     * @var int Heartbeat interval.
+     */
+    protected $heartbeatInterval;
+
+    /**
+     * The timer that sends the heartbeat packet.
+     *
+     * @var TimerInterface Timer.
+     */
+    protected $heartbeatTimer;
+
+    /**
+     * The timer that resends the heartbeat packet if
+     * a HEARTBEAT_ACK packet is not received in 5 seconds.
+     *
+     * @var TimerInterface Timer.
+     */
+    protected $heartbeatAckTimer;
+
+    /**
+     * The time that the last heartbeat packet was sent.
+     *
+     * @var int Epoch time.
+     */
+    protected $heartbeatTime;
+
+    /**
+     * Whether `ready` has been emitted.
+     *
+     * @var bool Emitted.
+     */
+    protected $emittedReady = false;
+
+    /**
+     * The gateway URL that the WebSocket client will connect to.
+     *
+     * @var string Gateway URL.
+     */
+    protected $gateway;
+
+    /**
+     * What encoding the client will use, either `json` or `etf`.
+     *
+     * @var string Encoding.
+     */
+    protected $encoding = 'json';
+
+    /**
+     * Tracks the number of payloads the client
+     * has sent in the past 60 seconds.
+     *
+     * @var int
+     */
+    protected $payloadCount = 0;
+
+    /**
+     * Payload count reset timer.
+     *
+     * @var TimerInterface
+     */
+    protected $payloadTimer;
+
+    /**
+     * The HTTP client.
+     *
+     * @var Http Client.
+     */
+    protected $http;
 	
 	/**
      * The part/repository factory.
@@ -99,6 +253,7 @@ class Lorhondel
     protected $client;
 	
 	public $discord;
+	public $browser;
 	
 	protected $verbose = true;
 	
@@ -150,7 +305,7 @@ class Lorhondel
         $this->factory = new Factory($this, $this->http);
 		$this->client = $this->factory->create(Client::class, [], true);
 
-        //$this->connectWs();
+        $this->connectWs();
 	}
 	
 	/**
