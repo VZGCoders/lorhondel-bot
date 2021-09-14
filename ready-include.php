@@ -6,8 +6,7 @@
  * Copyright (c) 2021-present Valithor Obsidion <valzargaming@gmail.com>
  */
 
-echo "[READY]";
-echo " Logged in as {$discord->user->tag} ({$discord->user->id})".PHP_EOL;
+echo "[READY] Logged in as {$discord->user->username}#{$discord->user->discriminator} ({$discord->user->id})".PHP_EOL;
 
 include_once "custom_functions.php";
 
