@@ -15,10 +15,9 @@ ini_set('max_execution_time', 0);
 //It is private and only accessible from the official ValZarGaming discord server
 //It provides SQL access to ValZarGaming's servers, so we need to log and regulate who has access to it
 
-include __DIR__.'/vendor/autoload.php';
-define('MAIN_INCLUDED', 1); 	//Token and SQL credential files are protected, this must be defined to access
+include 'vendor/autoload.php';
+include 'src/Lorhondel/Lorhondel.php';
 ini_set('memory_limit', '-1'); 	//Unlimited memory usage
-use Discord\Slash\Client;
 
 function execInBackground($cmd) { 
     if (substr(php_uname(), 0, 7) == "Windows") {
@@ -30,38 +29,49 @@ require getcwd() . '\token.php';
 $logger = new Monolog\Logger('New logger');
 $logger->pushHandler(new Monolog\Handler\StreamHandler('php://stdout'));
 $loop = React\EventLoop\Factory::create();
-use Discord\WebSockets\Intents;
-$discord = new \Discord\Discord([
-'token' => "$token",
+$discord_options = array(
+	'loop' => $loop,
 	'socket_options' => [
         'dns' => '8.8.8.8', // can change dns
 	],
+	'token' => "$token",
 	'loadAllMembers' => true,
 	'storeMessages' => true,
 	'logger' => $logger,
-	'loop' => $loop,
-	'intents' => Intents::getDefaultIntents() | Intents::GUILD_MEMBERS, // default intents as well as guild members
-]);
+	'intents' => \Discord\WebSockets\Intents::getDefaultIntents() | \Discord\WebSockets\Intents::GUILD_MEMBERS, // default intents as well as guild members
+);
+$discord = new Discord\Discord($discord_options);
 $browser = new \React\Http\Browser($discord->getLoop()/*, $connector*/);
 //include 'slash.php'; //$slash
 $loop = $discord->getLoop();
-$restcord = null;//new DiscordClient(['token' => "{$token}"]); // Token is required
 
 include 'stats_object.php';
 $stats = new Stats();
 $stats->init($discord);
 
+$options = array(
+	'loop' => $loop,
+	'browser' => $browser,
+	'discord' => $discord,
+);
+
+$lorhondel = new Lorhondel\Lorhondel($options);
+
 function webapiFail($part, $id)
 {
 	//logInfo('[webapi] Failed', ['part' => $part, 'id' => $id]);
-	return new \GuzzleHttp\Psr7\Response(($id ? 404 : 400), ['Content-Type' => 'text/plain'], ($id ? 'Invalid' : 'Missing').' '.$part.PHP_EOL);
+	//return new \GuzzleHttp\Psr7\Response(($id ? 404 : 400), ['Content-Type' => 'text/plain'], ($id ? 'Invalid' : 'Missing').' '.$part.PHP_EOL);
+	$results = array();
+	$results['message'] = '404: Not Found';
+	$results['code'] = 0;
+	return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($results));
 }
 function webapiSnow($string)
 {
 	return preg_match('/^[0-9]{16,18}$/', $string);
 }
 
-$webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerRequestInterface $request) use ($discord, $restcord) {
+$webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerRequestInterface $request) use ($discord) {
 	$path = explode('/', $request->getUri()->getPath());
 	$sub = (isset($path[1]) ? (string) $path[1] : false);
 	$id = (isset($path[2]) ? (string) $path[2] : false);
@@ -71,6 +81,11 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 	if ($ip) echo '[REQUESTING IP] ' . $ip . PHP_EOL ;
 	//if (substr($request->getServerParams()['REMOTE_ADDR'], 0, 6) != '10.0.0')
 	echo "[REMOTE_ADDR]" . $request->getServerParams()['REMOTE_ADDR'].PHP_EOL;
+
+	$array = array();
+	$array['message'] = '404: Not Found';
+	$array['code'] = 0;
+	$return = json_encode($array);
 	
 	//logInfo('[webapi] Request', ['path' => $path]);
 
@@ -156,7 +171,7 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 				echo '[REJECT]' . $request->getServerParams()['REMOTE_ADDR'] . PHP_EOL;
 				return new \GuzzleHttp\Psr7\Response(501, ['Content-Type' => 'text/plain'], 'Reject'.PHP_EOL);
 			}
-			if (!$id || !webapiSnow($id) || !$return = $restcord->user->getUser(['user.id' => intval($id)]))
+			if (!$id || !webapiSnow($id) || !$return = $discord->user->fetch($id))
 				return webapiFail('user_id', $id);
 			break;
 
@@ -222,7 +237,10 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 			break;
 
 		default:
-			return new \GuzzleHttp\Psr7\Response(501, ['Content-Type' => 'text/plain'], 'Not implemented'.PHP_EOL);
+			$results = array();
+			$results['message'] = '404: Not Found';
+			$results['code'] = 0;
+			return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($results));
 	}
 	/*if ($return)*/ return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'text/json'], json_encode($return));
 });
