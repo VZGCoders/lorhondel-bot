@@ -1,7 +1,15 @@
 {
+	"name": "vzgcoders/lorhondel",
     "require": {
         "team-reflex/discord-php": "dev-master",
-        "discord-php/slash": "dev-master",
-        "vzgcoders/twitchphp": "^1.0"
+        "discord-php/slash": "dev-master"
     }
+	"autoload": {
+        "files": [
+            "src/Lorhondel/functions.php"
+        ],
+        "psr-4": {
+            "Lorhondel\\": "src/Lorhondel"
+        }
+    },
 }
