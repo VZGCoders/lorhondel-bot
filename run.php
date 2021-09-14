@@ -53,7 +53,6 @@ $options = array(
 	'browser' => $browser,
 	'discord' => $discord,
 );
-
 $lorhondel = new Lorhondel\Lorhondel($options);
 
 function webapiFail($part, $id)
@@ -279,10 +278,7 @@ try{
 	$discord->on('disconnect', function ($erMsg, $code) use ($discord, $loop, $token) { //Automatically reconnect if the bot disconnects due to inactivity (Not tested)
 		include 'disconnect-include.php';
 	});
-	//include_once 'slash.php';
 	$discord->run();
-	//$client->linkDiscord($discord, false); // false signifies that we still want to use the HTTP server - default is true, which will use gateway
-	//$client->run();
 }catch (Throwable $e) { //Restart the bot
 	include 'rescue-catch-include.php';
 }
