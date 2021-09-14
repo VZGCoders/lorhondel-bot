@@ -256,6 +256,13 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 			]);
 			$return = $player;
 			break;
+		case 'dumpplayers':
+			if ($lorhondel->players) {
+				ob_start();
+				var_dump($lorhondel->players);
+				$return = ob_get_clean();
+				break;
+			}
 		default:
 			$results = array();
 			$results['message'] = '404: Not Found';
