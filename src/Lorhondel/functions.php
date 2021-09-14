@@ -244,7 +244,7 @@ function generateSnowflake(int $time = 0, int $workerID = 0, int $processID = 0,
 	if (!$time) $timeSinceEpoch = (time() . '000') - EPOCH;
 	else $timeSinceEpoch = ($time . '000') - EPOCH;
 	$snowflake = ($timeSinceEpoch << 22) | (($workerID & 0x1F) << 17) | (($processID & 0x1F) << 12) | ($increment & 0xFFF);
-	return (string) $snowflake;
+	return (int) $snowflake;
 }
 
 /**

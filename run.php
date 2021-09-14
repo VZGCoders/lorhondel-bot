@@ -267,8 +267,10 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 			} else return webapiFail('stats', $stats);
 			break;
 		case 'player':
+			$snowflake = \Lorhondel\generateSnowflake(time(), 0, 0, count($lorhondel->players));
+			echo '[SNOWFLAKE] ' . $snowflake . PHP_EOL;
 			$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
-				'id' => 116927250145869826,
+				'id' => $snowflake,
 				'species' => 'Elarian', //Elarian, Manthean, Noldarus, Veias, Jedoa
 				'health' => 0,
 				'attack' => 1,
