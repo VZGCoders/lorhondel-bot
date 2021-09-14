@@ -5,5 +5,9 @@
  *
  * Copyright (c) 2021-present Valithor Obsidion <valzargaming@gmail.com>
  */
- 
- namespace Lorhondel;
+
+namespace Lorhondel\Exceptions;
+
+class InvalidOverwriteException extends \Exception
+{
+}
