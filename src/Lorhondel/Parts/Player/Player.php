@@ -23,6 +23,7 @@ use React\Promise\ExtendedPromiseInterface;
  * @property int    $attack        Attack.
  * @property int    $defense       Defense.
  * @property int    $speed         Speed.
+ * @property int    $skillpoints   Skill Points.
  *
  * @property \Discord\Parts\User    $user        Discord user
  */
@@ -32,17 +33,7 @@ class Player extends Part
     /**
      * @inheritdoc
      */
-    protected $fillable = ['health', 'attack', 'defense', 'speed', 'user'];
-
-    /**
-     * Returns the avatar hash for the client.
-     *
-     * @return string The client avatar's hash.
-     */
-    protected function getAvatarHashAttribute(): string
-    {
-        return $this->attributes['avatar'];
-    }
+    protected $fillable = ['health', 'attack', 'defense', 'speed', 'skillpoints', 'user'];
 
     /**
      * Returns a timestamp for when a player's account was created.
