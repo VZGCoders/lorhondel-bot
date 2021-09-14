@@ -1,5 +1,12 @@
 {
 	"name": "vzgcoders/lorhondel",
+	"license": "MIT",
+	"authors": [
+        {
+            "name": "Valithor Obsidion",
+            "email": "valzargaming@gmail.com"
+        }
+    ],
     "require": {
         "team-reflex/discord-php": "dev-master",
         "discord-php/slash": "dev-master"
@@ -12,4 +19,6 @@
             "Lorhondel\\": "src/Lorhondel"
         }
     },
+	"minimum-stability": "dev",
+	"prefer-stable": true
 }
