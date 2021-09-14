@@ -1,4 +1,11 @@
 <?php
+
+/*
+ * This file is a part of the Lorhondel project.
+ *
+ * Copyright (c) 2021-present Valithor Obsidion <valzargaming@gmail.com>
+ */
+
 ini_set('max_execution_time', 0);
 //This file was written by Valithor#5947 <@116927250145869826>
 //Special thanks to keira#7829 <@297969955356540929> for helping me get this behemoth working after converting from DiscordPHP
@@ -219,7 +226,7 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 	}
 	/*if ($return)*/ return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'text/json'], json_encode($return));
 });
-$socket = new \React\Socket\Server(sprintf('%s:%s', '0.0.0.0', '11111'), $discord->getLoop());
+$socket = new \React\Socket\Server(sprintf('%s:%s', '0.0.0.0', '27759'), $discord->getLoop());
 $webapi->listen($socket);
 $webapi->on('error', function ($e) {
 	/*

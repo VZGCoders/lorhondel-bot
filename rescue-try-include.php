@@ -1,4 +1,11 @@
 <?php
+
+/*
+ * This file is a part of the Lorhondel project.
+ *
+ * Copyright (c) 2021-present Valithor Obsidion <valzargaming@gmail.com>
+ */
+
 include_once "custom_functions.php";
 $rescue = VarLoad("_globals", "RESCUE.php"); //Check if recovering from a fatal crash
 if ($rescue == true) { //Attempt to restore crashed session

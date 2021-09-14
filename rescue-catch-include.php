@@ -1,4 +1,11 @@
 <?php
+
+/*
+ * This file is a part of the Lorhondel project.
+ *
+ * Copyright (c) 2021-present Valithor Obsidion <valzargaming@gmail.com>
+ */
+
 echo '[ERROR]' . $e->getMessage() . " in file " . $e->getFile() . " on line " . $e->getLine() . PHP_EOL;
 
 //Rescue global variables

@@ -1,4 +1,11 @@
 <?php
+
+/*
+ * This file is a part of the Lorhondel project.
+ *
+ * Copyright (c) 2021-present Valithor Obsidion <valzargaming@gmail.com>
+ */
+
 echo "[READY]";
 echo " Logged in as {$discord->user->tag} ({$discord->user->id})".PHP_EOL;
 
