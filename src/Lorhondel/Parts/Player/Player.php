@@ -19,10 +19,10 @@ use React\Promise\ExtendedPromiseInterface;
  * A player is a general player that is not attached to a group.
  *
 
- * @property int    $health        Health.
- * @property int    $attack        Attack.
- * @property int    $defense       Defense.
- * @property int    $speed         Speed.
+ * @property int    $health        Health, obviously.
+ * @property int    $attack        How much damage you output.
+ * @property int    $defense       How much damage you block.
+ * @property int    $speed         Evasiveness; Higher speed means a higher chance to evade an attack.
  * @property int    $skillpoints   Skill Points.
  *
  * @property \Discord\Parts\User    $user        Discord user

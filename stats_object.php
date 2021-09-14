@@ -77,14 +77,14 @@ class Stats
         return @round($size / pow(1024, ($i = floor(log($size, 1024)))), 2).' '.$unit[$i];
     }
 
-    public function handle($message): void
+    public function handle($part = null): Discord\Parts\Embed\Embed
     {
         $embed = new Discord\Parts\Embed\Embed($this->discord);
         $embed
             ->setTitle('DiscordPHP')
             ->setDescription('This bot runs with DiscordPHP.')
             ->addFieldValues('PHP Version', phpversion())
-            //->addFieldValues('DiscordPHP Version', $this->getDiscordPHPVersion())
+            //->addFieldValues('DiscordPHP Version', $this->discord->getDiscordPHPVersion())
             ->addFieldValues('Start time', $this->startTime->longRelativeToNowDiffForHumans(3))
             ->addFieldValues('Last reconnected', $this->lastReconnect->longRelativeToNowDiffForHumans(3))
             ->addFieldValues('Guild count', $this->discord->guilds->count())
@@ -92,7 +92,12 @@ class Stats
             ->addFieldValues('User count', $this->discord->users->count())
             ->addFieldValues('Memory usage', $this->getMemoryUsageFriendly());
 
-        $message->channel->sendEmbed($embed);
+        if ($part instanceof Discord\Parts\Channel\Message) {
+			$message->channel->sendEmbed($embed);
+		} elseif ($part instanceof Discord\Parts\Channel\Channel) {
+			$channel->sendEmbed($embed);
+		}
+		return $embed;
     }
 
     public function getHelp(): string

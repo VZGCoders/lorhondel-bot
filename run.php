@@ -69,22 +69,25 @@ function webapiSnow($string)
 	return preg_match('/^[0-9]{16,18}$/', $string);
 }
 
-$webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerRequestInterface $request) use ($discord) {
+$webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerRequestInterface $request) use ($discord, $stats) {
 	$path = explode('/', $request->getUri()->getPath());
-	$ver = (isset($path[1]) ? (string) $path[1] : false);
-	$sub = (isset($path[2]) ? (string) $path[2] : false);
-	$id = (isset($path[3]) ? (string) $path[3] : false);
-	$id2 = (isset($path[4]) ? (string) $path[4] : false);
-	$ip = (isset($path[5]) ? (string) $path[5] : false);
+	$ver = (isset($path[1]) ? (string) strtolower($path[1]) : false); if($ver) echo '[ver]' . $ver . ' ';
+	$sub = (isset($path[2]) ? (string) strtolower($path[2]) : false); if($sub) echo '[sub]' . $sub . ' ';
+	$id = (isset($path[3]) ? (string) strtolower($path[3]) : false); if($id) echo '[id]' . $id . ' ';
+	$id2 = (isset($path[4]) ? (string) strtolower($path[4]) : false); if($id2) echo '[id2] ' . $id2 . ' ';
+	$ip = (isset($path[5]) ? (string) strtolower($path[5]) : false); if($ip) echo '[ip] ' . $ip . ' ';
+	echo PHP_EOL;
+	
+	$lorhondelBattleTesting = $discord->getChannel(887118621065768970);
 	
 	if ($ip) echo '[REQUESTING IP] ' . $ip . PHP_EOL ;
 	//if (substr($request->getServerParams()['REMOTE_ADDR'], 0, 6) != '10.0.0')
 	echo "[REMOTE_ADDR]" . $request->getServerParams()['REMOTE_ADDR'].PHP_EOL;
 
-	$array = array();
-	$array['message'] = '404: Not Found';
-	$array['code'] = 0;
-	$return = json_encode($array);
+	//$array = array();
+	//$array['message'] = '404: Not Found';
+	//$array['code'] = 0;
+	//$return = $array;
 	
 	//logInfo('[webapi] Request', ['path' => $path]);
 
@@ -234,6 +237,16 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 			  return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($results));
 			});
 			break;
+		case 'ping':
+			$lorhondelBattleTesting->sendMessage('Pong!');
+			$return = 'Pong!';
+			break;
+		case 'stats':
+			if($embed = $stats->handle()) {
+				$lorhondelBattleTesting->sendEmbed($embed);
+				$return = $embed;
+			} else return webapiFail('stats', $stats);
+			break;
 
 		default:
 			$results = array();
@@ -241,7 +254,7 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 			$results['code'] = 0;
 			return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($results));
 	}
-	/*if ($return)*/ return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'text/json'], json_encode($return));
+	/*if ($return)*/ return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
 });
 $socket = new \React\Socket\Server(sprintf('%s:%s', '0.0.0.0', '27759'), $loop);
 $webapi->listen($socket);
@@ -265,7 +278,7 @@ try{
 			echo '[ERROR EVENT]' . $e->getMessage() . " in file " . $e->getFile() . " on line " . $e->getLine() . PHP_EOL;
 		}
 	});
-	$discord->once('ready', function ($discord) use ($loop, $token, $restcord, $stats, /*$connector,*/ $browser) {
+	$discord->once('ready', function ($discord) use ($loop, $token, $stats, /*$connector,*/ $browser) {
 		$act  = $discord->factory(\Discord\Parts\User\Activity::class, [
 		'name' => 'superiority',
 		'type' => \Discord\Parts\User\Activity::TYPE_COMPETING
