@@ -18,6 +18,7 @@ use Lorhondel\WebSockets\Op;
 use Lorhondel\Helpers\Deferred;
 use Lorhondel\Drivers\React;
 use Lorhondel\Endpoint;
+use Lorhondel\Parts\Player\Client;
 
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger as Monolog;
@@ -90,10 +91,23 @@ class Lorhondel
      */
     protected $factory;
 	
+    /**
+     * The Client class.
+     *
+     * @var Client Discord client.
+     */
+    protected $client;
+	
 	public $discord;
 	
 	protected $verbose = true;
 	
+    /**
+     * Creates a Lorhondel client instance.
+     *
+     * @param  array           $options Array of options.
+     * @throws IntentException
+     */
 	public function __construct(array $options = [])
     {
 		if (php_sapi_name() !== 'cli') {
@@ -134,7 +148,7 @@ class Lorhondel
         );
 
         $this->factory = new Factory($this, $this->http);
-		//$this->client = $this->factory->create(Client::class, [], true);
+		$this->client = $this->factory->create(Client::class, [], true);
 
         //$this->connectWs();
 	}

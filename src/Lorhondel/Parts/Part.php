@@ -24,6 +24,13 @@ use Serializable;
 abstract class Part implements ArrayAccess, JsonSerializable
 {
     /**
+     * The HTTP client.
+     *
+     * @var Http Client.
+     */
+    protected $http;
+	
+    /**
      * The factory.
      *
      * @var Factory Factory.
@@ -119,6 +126,7 @@ abstract class Part implements ArrayAccess, JsonSerializable
     {
         $this->lorhondel = $lorhondel;
         $this->factory = $lorhondel->getFactory();
+		$this->http = $lorhondel->getHttpClient();
 
         $this->created = $created;
         $this->fill($attributes);

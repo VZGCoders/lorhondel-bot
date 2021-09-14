@@ -13,8 +13,7 @@ $GLOBALS["RESCUE"] = true;
 $blacklist_globals = array (
 	"GLOBALS",
 	"loop",
-	"discord",
-	"restcord"
+	"discord"
 );
 echo "Skipped: ";
 foreach($GLOBALS as $key => $value) {
@@ -31,19 +30,6 @@ foreach($GLOBALS as $key => $value) {
 }
 echo PHP_EOL;
 
-//Use Restcord to send a message
-if ($restcord) {
-	$guild = $restcord->guild->getGuild(['guild.id' => 116927365652807686]);
-	try {
-		$restcord->channel->createMessage([
-			'channel.id' => 315259546308444160,
-			'content'    => '<@116927250145869826> I just tried to restart due to an error!',
-		]);
-	} catch (GuzzleHttp\Command\Exception\CommandClientException $e) {
-		var_dump($e->getResponse()->getBody()->getContents());
-	}
-}
-//sleep(300);
 
 echo "RESTARTING BOT" . PHP_EOL;
 $discord = null;

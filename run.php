@@ -246,15 +246,19 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 			break;
 		case 'player':
 			$user = $discord->users->offsetGet(116927250145869826);
-			$player  = $lorhondel->factory(Lorhondel\Parts\Player\Player::class, [
+			$player = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class);
+			/*
+			$player  = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
 				'health' => 0,
 				'attack' => 1,
 				'defense' => 2,
 				'speed' => 3,
 				'skillpoints' => 4,
-				'user' => $user ?? null,
+				'user' => $user,
 			]);
-			//$return = $player;
+			*/
+			$return = $player;
+			break;
 		default:
 			$results = array();
 			$results['message'] = '404: Not Found';
@@ -286,7 +290,7 @@ try{
 			echo '[ERROR EVENT]' . $e->getMessage() . " in file " . $e->getFile() . " on line " . $e->getLine() . PHP_EOL;
 		}
 	});
-	$discord->once('ready', function ($discord) use ($loop, $token, $stats, /*$connector,*/ $browser) {
+	$discord->once('ready', function ($discord) use ($lorhondel, $loop, $token, $stats, /*$connector,*/ $browser) {
 		$act  = $discord->factory(\Discord\Parts\User\Activity::class, [
 		'name' => 'superiority',
 		'type' => \Discord\Parts\User\Activity::TYPE_COMPETING

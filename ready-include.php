@@ -15,7 +15,7 @@ echo "[timestampSetup]: ";
 $dt = new DateTime("now");  // convert UNIX timestamp to PHP DateTime
 echo $dt->format('d-m-Y H:i:s') . PHP_EOL; // output = 2017-01-01 00:00:00
 
-$discord->on('message', function ($message) use ($discord, $loop, $token, $stats, /*$connector,*/ $browser) { //Handling of a message
+$discord->on('message', function ($message) use ($lorhondel, $discord, $loop, $token, $stats, /*$connector,*/ $browser) { //Handling of a message
 	include 'message-include.php';
 }); //end small function with content
 
