@@ -8,15 +8,18 @@
 
 namespace Lorhondel;
 
+use Evenement\EventEmitterTrait;
 use Lorhondel\Http\Http;
 use Lorhondel\WebSockets\Event;
 use Lorhondel\WebSockets\Handlers;
 use Lorhondel\WebSockets\Intents;
 use Lorhondel\WebSockets\Op;
+use Psr\Log\LoggerInterface;
+use React\EventLoop\LoopInterface;
 use React\EventLoop\Factory as LoopFactory;
-use Evenement\EventEmitterTrait;
 use React\Socket\Connector as SocketConnector;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+
 
 class Lorhondel
 {
