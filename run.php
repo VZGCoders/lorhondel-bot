@@ -67,6 +67,7 @@ function webapiSnow($string)
 }
 
 $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerRequestInterface $request) use ($lorhondel, $discord, $stats) {
+	echo '[API] ';
 	$path = explode('/', $request->getUri()->getPath());
 	$ver = (isset($path[1]) ? (string) strtolower($path[1]) : false); if($ver) echo '[ver]' . $ver . ' ';
 	$sub = (isset($path[2]) ? (string) strtolower($path[2]) : false); if($sub) echo '[sub]' . $sub . ' ';
@@ -234,6 +235,26 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 			  // return with error ?
 			  return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($results));
 			});
+			break;
+		
+		case 'oauth2':
+			if (!$id == 'bot') break;
+			if (!$id2 == '@me') break;
+			$results = array();
+			return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($results));		
+		case 'gateway':
+			if ($id == 'bot') {
+				$results = array();
+				$results['url'] = 'https://lorhondel.valzargaming.com/gateway/';
+				$results['shards'] = 1;
+				$results['session_start_limit'] = [
+					"total" => 1000,
+					"remaining" => 999,
+					"reset_after" => 14400000,
+					"max_concurrency" => 1
+					];
+				return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($results));
+			}
 			break;
 		case 'ping':
 			$lorhondelBotSpam->sendMessage('Pong!');

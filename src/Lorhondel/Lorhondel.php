@@ -1063,7 +1063,7 @@ class Lorhondel
             }, function ($e) use ($buildParams) {
                 // Can't access the API server so we will use the default gateway.
                 $this->logger->warning('could not retrieve gateway, using default');
-                $buildParams('wss://gateway.valzargaming.com');
+                $buildParams('wss://lorhondel.valzargaming.com');
             });
         } else {
             $buildParams($gateway);

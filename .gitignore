@@ -4,3 +4,5 @@ token.php
 \vendor
 \_globals
 composer.lock
+private.key
+certificate.crt

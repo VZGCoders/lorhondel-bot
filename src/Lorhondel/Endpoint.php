@@ -201,7 +201,7 @@ class Endpoint
     /**
      * A list of parameters considered 'major' by Lorhondel.
      *
-     * @see https://lorhondel.com/developers/docs/topics/rate-limits
+     * @see https://lorhondel.valzargaming.comcom/developers/docs/topics/rate-limits
      * @var string[]
      */
     public const MAJOR_PARAMETERS = ['channel_id', 'guild_id', 'webhook_id', 'thread_id'];
