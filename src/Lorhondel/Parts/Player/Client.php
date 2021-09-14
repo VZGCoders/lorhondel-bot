@@ -9,7 +9,7 @@
 namespace Lorhondel\Parts\Player;
 
 use Lorhondel\Exceptions\FileNotFoundException;
-use Lorhondel\Http\Endpoint;
+use Lorhondel\Endpoint;
 use Lorhondel\Parts\OAuth\Application;
 use Lorhondel\Parts\Part;
 use Lorhondel\Repository\GuildRepository;
