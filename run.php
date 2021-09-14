@@ -41,9 +41,8 @@ $discord_options = array(
 	'intents' => \Discord\WebSockets\Intents::getDefaultIntents() | \Discord\WebSockets\Intents::GUILD_MEMBERS, // default intents as well as guild members
 );
 $discord = new Discord\Discord($discord_options);
-$browser = new \React\Http\Browser($discord->getLoop()/*, $connector*/);
-//include 'slash.php'; //$slash
-$loop = $discord->getLoop();
+
+$browser = new \React\Http\Browser($loop/*, $connector*/);
 
 include 'stats_object.php';
 $stats = new Stats();
@@ -73,10 +72,11 @@ function webapiSnow($string)
 
 $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerRequestInterface $request) use ($discord) {
 	$path = explode('/', $request->getUri()->getPath());
-	$sub = (isset($path[1]) ? (string) $path[1] : false);
-	$id = (isset($path[2]) ? (string) $path[2] : false);
-	$id2 = (isset($path[3]) ? (string) $path[3] : false);
-	$ip = (isset($path[4]) ? (string) $path[4] : false);
+	$ver = (isset($path[1]) ? (string) $path[1] : false);
+	$sub = (isset($path[2]) ? (string) $path[2] : false);
+	$id = (isset($path[3]) ? (string) $path[3] : false);
+	$id2 = (isset($path[4]) ? (string) $path[4] : false);
+	$ip = (isset($path[5]) ? (string) $path[5] : false);
 	
 	if ($ip) echo '[REQUESTING IP] ' . $ip . PHP_EOL ;
 	//if (substr($request->getServerParams()['REMOTE_ADDR'], 0, 6) != '10.0.0')
