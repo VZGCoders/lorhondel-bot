@@ -3,7 +3,7 @@
     "require": {
         "team-reflex/discord-php": "dev-master",
         "discord-php/slash": "dev-master"
-    }
+    },
 	"autoload": {
         "files": [
             "src/Lorhondel/functions.php"

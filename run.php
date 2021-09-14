@@ -69,7 +69,7 @@ function webapiSnow($string)
 	return preg_match('/^[0-9]{16,18}$/', $string);
 }
 
-$webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerRequestInterface $request) use ($discord, $stats) {
+$webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerRequestInterface $request) use ($lorhondel, $discord, $stats) {
 	$path = explode('/', $request->getUri()->getPath());
 	$ver = (isset($path[1]) ? (string) strtolower($path[1]) : false); if($ver) echo '[ver]' . $ver . ' ';
 	$sub = (isset($path[2]) ? (string) strtolower($path[2]) : false); if($sub) echo '[sub]' . $sub . ' ';
@@ -247,7 +247,17 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 				$return = $embed;
 			} else return webapiFail('stats', $stats);
 			break;
-
+		case 'player':
+			$user = $discord->users->offsetGet(116927250145869826);
+			$player  = $lorhondel->factory(Lorhondel\Parts\Player\Player::class, [
+				'health' => 0,
+				'attack' => 1,
+				'defense' => 2,
+				'speed' => 3,
+				'skillpoints' => 4,
+				'user' => $user ?? null,
+			]);
+			//$return = $player;
 		default:
 			$results = array();
 			$results['message'] = '404: Not Found';
@@ -265,7 +275,8 @@ $webapi->on('error', function ($e) {
 		'prv' => ($e->getPrevious() ? $e->getPrevious()->getMessage() : null)
 	]);
 	*/
-	echo $e->getMessage() . PHP_EOL;
+	echo '[ERORR] ' . $e->getMessage() . PHP_EOL;
+	//var_dump($e);
 });
 
 try{

@@ -8,10 +8,71 @@
 
 namespace Lorhondel;
 
+use Lorhondel\Http\Http;
+use Lorhondel\WebSockets\Event;
+use Lorhondel\WebSockets\Handlers;
+use Lorhondel\WebSockets\Intents;
+use Lorhondel\WebSockets\Op;
+use React\EventLoop\Factory as LoopFactory;
+use Evenement\EventEmitterTrait;
+use React\Socket\Connector as SocketConnector;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+
 class Lorhondel
 {
-	public $loop;
+	use EventEmitterTrait;
+
+    /**
+     * The gateway version the client uses.
+     *
+     * @var int Gateway version.
+     */
+    public const GATEWAY_VERSION = 1;
+
+    /**
+     * The client version.
+     *
+     * @var string Version.
+     */
+    public const VERSION = 'v1.0.0';
+	
+	/**
+     * The logger.
+     *
+     * @var LoggerInterface Logger.
+     */
+    protected $logger;
+	
+	/**
+     * An array of options passed to the client.
+     *
+     * @var array Options.
+     */
+    protected $options;
+	
+	/**
+     * The authentication token.
+     *
+     * @var string Token.
+     */
+    protected $token;
+	
+	/**
+     * The ReactPHP event loop.
+     *
+     * @var LoopInterface Event loop.
+     */
+    public $loop;
+	
+	
 	public $browser;
+	
+	/**
+     * The part/repository factory.
+     *
+     * @var Factory Part factory.
+     */
+    protected $factory;
 	
 	public $discord;
 	
@@ -19,15 +80,47 @@ class Lorhondel
 	
 	public function __construct(array $options = [])
     {
+		if (php_sapi_name() !== 'cli') {
+            trigger_error('Lorhondel will not run on a webserver. Please use PHP CLI to run a Lorhondel bot.', E_USER_ERROR);
+        }
+		
 		$options = $this->resolveOptions($options);
 		
+		$this->options = $options;
+		$this->token = $options['token'];
 		$this->loop = $options['loop'];
 		$this->browser = $options['browser'];
-		
 		if ($options['discord'] || $options['discord_options']) {
 			if($options['discord']) $this->discord = $options['discord'];
 			elseif($options['discord_options']) $this->discord = new \Discord\Discord($options['discord_options']);
 		}
+		
+		$connector = new SocketConnector($this->loop, $options['socket_options']);
+        $this->wsFactory = new Connector($this->loop, $connector);
+		$this->handlers = new Handlers();
+		
+		 foreach ($options['disabledEvents'] as $event) {
+            $this->handlers->removeHandler($event);
+        }
+		
+		$function = function () use (&$function) {
+            $this->emittedReady = true;
+            $this->removeListener('ready', $function);
+        };
+
+        $this->on('ready', $function);
+
+        $this->http = new Http(
+            'Bot '.$this->token,
+            $this->loop,
+            $this->options['logger'],
+            new React($this->loop, $options['socket_options'])
+        );
+
+        $this->factory = new Factory($this, $this->http);
+		//$this->client = $this->factory->create(Client::class, [], true);
+
+        //$this->connectWs();
 	}
 	
 	/*
@@ -40,6 +133,49 @@ class Lorhondel
 		$options['browser'] = $options['browser'] ?? new \React\Http\Browser($options['loop']);
 		//Discord must be Discord or null
 		//Twitch must be Twitch or null
+		
+		$resolver = new OptionsResolver();
+		 $resolver
+            ->setRequired('token')
+            ->setAllowedTypes('token', 'string')
+            ->setDefined([
+                'token',
+                'shardId',
+                'shardCount',
+                'loop',
+                'logger',
+                'loadAllMembers',
+                'disabledEvents',
+                'pmChannels',
+                'storeMessages',
+                'retrieveBans',
+                'intents',
+                'socket_options',
+            ])
+            ->setDefaults([
+                'loop' => LoopFactory::create(),
+                'logger' => null,
+                'loadAllMembers' => false,
+                'disabledEvents' => [],
+                'pmChannels' => false,
+                'storeMessages' => false,
+                'retrieveBans' => false,
+                'intents' => Intents::getDefaultIntents(),
+                'socket_options' => [],
+            ])
+            ->setAllowedTypes('token', 'string')
+            ->setAllowedTypes('logger', ['null', LoggerInterface::class])
+            ->setAllowedTypes('loop', LoopInterface::class)
+            ->setAllowedTypes('loadAllMembers', ['bool', 'array'])
+            ->setAllowedTypes('disabledEvents', 'array')
+            ->setAllowedTypes('pmChannels', 'bool')
+            ->setAllowedTypes('storeMessages', 'bool')
+            ->setAllowedTypes('retrieveBans', 'bool')
+            ->setAllowedTypes('intents', ['array', 'int'])
+            ->setAllowedTypes('socket_options', 'array');
+
+        $options = $resolver->resolve($options);
+		
 		return $options;
 	}
 	
