@@ -8,7 +8,7 @@
 
 namespace Lorhondel\Repository;
 
-use Lorhondel\Http\Endpoint;
+use Lorhondel\Endpoint;
 use Lorhondel\Parts\Player\Player;
 
 /**

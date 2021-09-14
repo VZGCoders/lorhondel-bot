@@ -105,6 +105,10 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 				$player = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class);
 				$message->reply($player);
 				break;
+			case 'save':
+				$player = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class);
+				$lorhondel->players->save($player);
+				break;
 		}
 	}
 }

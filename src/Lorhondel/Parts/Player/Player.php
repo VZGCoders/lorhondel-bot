@@ -19,13 +19,14 @@ use React\Promise\ExtendedPromiseInterface;
  * A player is a general player that is not attached to a group.
  *
 
+ * @property int    $id            The unique identifier of the user.
  * @property int    $health        Health, obviously.
  * @property int    $attack        How much damage you output.
  * @property int    $defense       How much damage you block.
  * @property int    $speed         Evasiveness; Higher speed means a higher chance to evade an attack.
  * @property int    $skillpoints   Skill Points.
  *
- * @property \Discord\Parts\User    $user        Discord user
+ * @property int    $user_id       Discord user id.
  */
 class Player extends Part
 {

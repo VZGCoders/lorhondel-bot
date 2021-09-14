@@ -12,42 +12,30 @@ use Lorhondel\Exceptions\FileNotFoundException;
 use Lorhondel\Endpoint;
 use Lorhondel\Parts\OAuth\Application;
 use Lorhondel\Parts\Part;
-use Lorhondel\Repository\GuildRepository;
-use Lorhondel\Repository\PrivateChannelRepository;
-use Lorhondel\Repository\UserRepository;
+use Lorhondel\Repository\PlayerRepository;
 use React\Promise\ExtendedPromiseInterface;
 
 /**
  * The client is the main interface for the client. Most calls on the main class are forwarded here.
  *
  * @property string                   $id               The unique identifier of the client.
- * @property string                   $username         The username of the client.
- * @property string                   $email            The email of the client.
- * @property bool                     $verified         Whether the client has verified their email.
- * @property string                   $avatar           The avatar URL of the client.
- * @property string                   $avatar_hash      The avatar hash of the client.
- * @property string                   $discriminator    The unique discriminator of the client.
- * @property bool                     $bot              Whether the client is a bot.
- * @property User                     $user             The user instance of the client.
- * @property Application              $application      The OAuth2 application of the bot.
- * @property GuildRepository          $guilds
- * @property PrivateChannelRepository $private_channels
- * @property UserRepository           $users
+ * @property Player                   $player           The player instance of the client.
+ * @property int|null                 $user_id          The unique identifier of the user.
+ * @property User|null                $user             The Discord user instance of the player.
+ * @property PlayerRepository         $players
  */
 class Client extends Part
 {
     /**
      * @inheritdoc
      */
-    protected $fillable = ['id', 'username', 'email', 'verified', 'avatar', 'discriminator', 'bot', 'user', 'application'];
+    protected $fillable = ['id', 'player', 'user_id', 'user'];
 
     /**
      * @inheritdoc
      */
     protected $repositories = [
-        'guilds' => GuildRepository::class,
-        'private_channels' => PrivateChannelRepository::class,
-        'users' => UserRepository::class,
+        'players' => PlayerRepository::class,
     ];
 
     /**
@@ -63,55 +51,15 @@ class Client extends Part
     }
 
     /**
-     * Gets the user attribute.
+     * Gets the player attribute.
      *
-     * @return User
+     * @return Player
      */
-    protected function getUserAttribute()
+    protected function getPlayerAttribute()
     {
         return $this->factory->create(Player::class, $this->attributes, true);
     }
-
-    /**
-     * Sets the users avatar.
-     *
-     * @param string $filepath The path to the file.
-     *
-     * @throws FileNotFoundException Thrown when the file does not exist.
-     *
-     * @return bool Whether the setting succeeded or failed.
-     */
-    public function setAvatar(string $filepath): bool
-    {
-        if (! file_exists($filepath)) {
-            throw new FileNotFoundException("File does not exist at path {$filepath}.");
-        }
-
-        $extension = pathinfo($filepath, PATHINFO_EXTENSION);
-        $file = file_get_contents($filepath);
-        $base64 = base64_encode($file);
-
-        $this->attributes['avatarhash'] = "data:image/{$extension};base64,{$base64}";
-
-        return true;
-    }
-
-    /**
-     * @return string The URL to the clients avatar.
-     */
-    protected function getAvatarAttribute(): string
-    {
-        return call_user_func_array([$this->user, 'getAvatarAttribute'], func_get_args());
-    }
-
-    /**
-     * @return string The avatar hash for the client.
-     */
-    protected function getAvatarHashAttribute(): string
-    {
-        return $this->attributes['avatar'];
-    }
-
+	
     /**
      * Saves the client instance.
      *
@@ -125,15 +73,11 @@ class Client extends Part
     /**
      * @inheritdoc
      */
-    public function getUpdatableAttributes(): array
+    public function getUpdatableAttributes($discord = null): array
     {
-        $attributes = [
-            'username' => $this->attributes['username'],
-        ];
-
-        if (isset($this->attributes['avatarhash'])) {
-            $attributes['avatar'] = $this->attributes['avatarhash'];
-        }
+		if (isset($this->attributes['user_id'])) {
+			$attributes['user'] = $this->discord->users->offsetGet($attributes['user_id']);
+		}
 
         return $attributes;
     }

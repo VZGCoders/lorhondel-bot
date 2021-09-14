@@ -24,15 +24,24 @@ class Factory
      * @var lorhondel Client.
      */
     protected $lorhondel;
+	
+    /**
+     * The HTTP client.
+     *
+     * @var Http Client.
+     */
+    protected $http;
 
     /**
      * Constructs a factory.
      *
      * @param Lorhondel $lorhondel The Lorhondel client.
+	 * @param Http    $http    The HTTP client.
      */
-    public function __construct(Lorhondel $lorhondel)
+    public function __construct(Lorhondel $lorhondel, Http $http)
     {
         $this->lorhondel = $lorhondel;
+		$this->http = $http;
     }
 
     /**

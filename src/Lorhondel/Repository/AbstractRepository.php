@@ -10,6 +10,8 @@ namespace Lorhondel\Repository;
 
 use Lorhondel\Factory\Factory;
 use Lorhondel\Helpers\Collection;
+use Lorhondel\Endpoint;
+use Lorhondel\Http;
 use Lorhondel\Parts\Part;
 use React\Promise\ExtendedPromiseInterface;
 
