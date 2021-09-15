@@ -17,7 +17,7 @@ ini_set('memory_limit', '-1'); 	//Unlimited memory usage
 function execInBackground($cmd) { 
     if (substr(php_uname(), 0, 7) == "Windows") {
 		pclose(popen("start ". $cmd, "r")); //pclose(popen("start /B ". $cmd, "r"));
-    }else exec($cmd . " > /dev/null &");
+    } else exec($cmd . " > /dev/null &");
 }
 
 require getcwd() . '\token.php';
@@ -56,10 +56,10 @@ function webapiFail($part, $id)
 {
 	//logInfo('[webapi] Failed', ['part' => $part, 'id' => $id]);
 	//return new \GuzzleHttp\Psr7\Response(($id ? 404 : 400), ['Content-Type' => 'text/plain'], ($id ? 'Invalid' : 'Missing').' '.$part.PHP_EOL);
-	$results = array();
-	$results['message'] = '404: Not Found';
-	$results['code'] = 0;
-	return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($results));
+	$return = array();
+	$return['message'] = '404: Not Found';
+	$return['code'] = 0;
+	return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($return));
 }
 function webapiSnow($string)
 {
@@ -80,13 +80,13 @@ function sqlDelete()
 }
 function sqlGet(array $columns = [], string $table = 'lorhondel', string $wherecolumn = '', array $values = [], string $order = '', int|string $limit = ''): array
 {
-	if(empty($columns)) return [];
+	if (empty($columns)) return [];
 	include 'connect.php'; //$con
 	$array = array();
 	
 	$sql = "SELECT ";
 	for($x=0;$x<count($columns);$x++)
-		if($x<count($columns)-1) $sql .= $columns[$x] . ', ';
+		if ($x<count($columns)-1) $sql .= $columns[$x] . ', ';
 		else $sql .= $columns[$x] . ' ';
 	$sql .= "FROM $table";
 	if ($wherecolumn && !empty($values)) $sql .= " WHERE $wherecolumn = ?";
@@ -97,7 +97,7 @@ function sqlGet(array $columns = [], string $table = 'lorhondel', string $wherec
 	if (!$wherecolumn) {
 		$stmt = mysqli_prepare($con, $sql); //Select all values in the column
 		$stmt->execute();
-		if($result = $stmt->get_result()) {
+		if ($result = $stmt->get_result()) {
 			while ($row = $result->fetch_array(MYSQLI_ASSOC)) {
 				foreach ($row as $r => $v) {
 					$array[$r] = $v;
@@ -126,17 +126,65 @@ function sqlGet(array $columns = [], string $table = 'lorhondel', string $wherec
 $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerRequestInterface $request) use ($lorhondel, $discord, $stats) {
 	echo '[API] ';
 	$path = explode('/', $request->getUri()->getPath());
-	$ver = (isset($path[1]) ? (string) strtolower($path[1]) : false); if($ver) echo '[ver] ' . $ver . ' ';
-	$sub = (isset($path[2]) ? (string) strtolower($path[2]) : false); if($sub) echo '[sub] ' . $sub . ' ';
-	$method = $id = (isset($path[3]) ? (string) strtolower($path[3]) : false); if($id) echo '[method/id] ' . $id . ' ';
-	$id2 = (isset($path[4]) ? (string) strtolower($path[4]) : false); if($id2) echo '[id2] ' . $id2 . ' ';
-	$partial = $id3 = (isset($path[5]) ? (string) strtolower($path[5]) : false); if($id3) echo '[partial/id3] ' . $id3 . ' ';
-	$id4 = (isset($path[6]) ? (string) strtolower($path[6]) : false); if($id4) echo '[id4] ' . $id4 . ' ';
-	$id5 = (isset($path[7]) ? (string) strtolower($path[7]) : false); if($id5) echo '[id5] ' . $id5 . ' ';
+	$ver = (isset($path[1]) ? (string) strtolower($path[1]) : false); if ($ver) echo '[ver] ' . $ver . ' ';
+	$repository = $sub = (isset($path[2]) ? (string) strtolower($path[2]) : false); if ($sub) echo '[sub] ' . $sub . ' ';
+	$method = $id = (isset($path[3]) ? (string) strtolower($path[3]) : false); if ($id) echo '[method/id] ' . $id . ' ';
+	$id2 = (isset($path[4]) ? (string) strtolower($path[4]) : false); if ($id2) echo '[id2] ' . $id2 . ' ';
+	$partial = $id3 = (isset($path[5]) ? (string) strtolower($path[5]) : false); if ($id3) echo '[partial/id3] ' . $id3 . ' ';
+	$id4 = (isset($path[6]) ? (string) strtolower($path[6]) : false); if ($id4) echo '[id4] ' . $id4 . ' ';
+	$id5 = (isset($path[7]) ? (string) strtolower($path[7]) : false); if ($id5) echo '[id5] ' . $id5 . ' ';
 	echo PHP_EOL;
 	
 	$lorhondelBattleground = $discord->getChannel(887118621065768970);
 	$lorhondelBotSpam = $discord->getChannel(887118679697940481);
+	
+	$_5xx = array();
+	$_5xx['message'] = '5xx: Server Error'; //Something went wrong (Code is broken)
+	$_5xx['code'] = 0;
+	
+	$_502 = array();
+	$_502['message'] = '502: Gateway Unavailable'; //??? This is the gateway
+	$_502['code'] = 0;
+	
+	$_429 = array();
+	$_429['message'] = '429: Too Many Requests'; //Ratelimit
+	$_429['code'] = 0;
+	
+	$_405 = array();
+	$_405['message'] = '405: Method Not Allowed'; //Not valid for endpoint
+	$_405['code'] = 0;
+	
+	$_404 = array();
+	$_404['message'] = '404: Not Found'; //Resource not found
+	$_404['code'] = 0;
+	
+	$_403 = array();
+	$_403['message'] = '403: Forbidden. You lack permissions to perform that action'; //Missing permissions
+	$_403['code'] = 50013;
+	
+	$_401 = array();
+	$_401['message'] = '401: Unauthorized. Invalid authentication token provided'; //Invalid token
+	$_401['code'] = 50014;
+	
+	$_400 = array();
+	$_400['message'] = '400: Bad Request'; //Improper format or bad data
+	$_400['code'] = 0;
+	
+	$_304 = array();
+	$_304['message'] = '304: Not Modified'; //Patch but no change
+	$_304['code'] = 0;
+	
+	$_204 = array();
+	$_204['message'] = '204: No Content'; //Resource 'exists' but is empty
+	$_204['code'] = 0;
+	
+	$_201 = array();
+	$_201['message'] = '201: Created';
+	$_201['code'] = 0;
+	
+	$_200 = array();
+	$_200['message'] = '200: OK';
+	$_200['code'] = 0;
 	
 	$whitelisted = false;
 	if (
@@ -153,7 +201,8 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 	//$return = $array;
 	
 	//logInfo('[webapi] Request', ['path' => $path]);
-
+	if ($ver == 'v1') {
+	try{
 	switch ($sub) {
 		case 'channel':
 			if (!$id || !webapiSnow($id) || !$return = $discord->getChannel($id))
@@ -280,44 +329,45 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 			
 		case 'avatars':
 			$idarray = $data ?? array(); // $data contains POST data
-			$results = [];
-			$promise = $discord->users->fetch($idarray[0])->then(function ($user) use (&$results) {
-			  $results[$user->id] = $user->avatar;
+			$return = [];
+			$promise = $discord->users->fetch($idarray[0])->then(function ($user) use (&$return) {
+			  $return[$user->id] = $user->avatar;
 			});
 			
 			for ($i = 1; $i < count($idarray); $i++) {
-			  $promise->then(function () use (&$results, $idarray, $i, $discord) {
-				return $discord->users->fetch($idarray[$i])->then(function ($user) use (&$results) {
-				  $results[$user->id] = $user->avatar;
+			  $promise->then(function () use (&$return, $idarray, $i, $discord) {
+				return $discord->users->fetch($idarray[$i])->then(function ($user) use (&$return) {
+				  $return[$user->id] = $user->avatar;
 				});
 			  });
 			}
 
-			$promise->done(function () use ($results) {
-			  return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($results));
-			}, function () use ($results) {
+			$promise->done(function () use ($return) {
+			  return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
+			}, function () use ($return) {
 			  // return with error ?
-			  return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($results));
+			  return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
 			});
 			break;
-		
+	}
+	switch ($method) {
 		case 'oauth2':
 			if (!$id == 'bot') break;
 			if (!$id2 == '@me') break;
-			$results = array();
-			return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($results));		
+			$return = array();
+			return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
 		case 'gateway':
 			if ($id == 'bot') {
-				$results = array();
-				$results['url'] = 'https://lorhondel.valzargaming.com/gateway/';
-				$results['shards'] = 1;
-				$results['session_start_limit'] = [
+				$return = array();
+				$return['url'] = 'https://lorhondel.valzargaming.com/gateway/';
+				$return['shards'] = 1;
+				$return['session_start_limit'] = [
 					"total" => 1000, //	The total number of session starts the current user is allowed
 					"remaining" => 999, //	The remaining number of session starts the current user is allowed
 					"reset_after" => 14400000, // The number of milliseconds after which the limit resets
 					"max_concurrency" => 1 // The number of identify requests allowed per 5 seconds
 					];
-				return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($results));
+				return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
 			}
 			break;
 		case 'ping':
@@ -325,7 +375,7 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 			$return = 'Pong!';
 			break;
 		case 'stats':
-			if($embed = $stats->handle()) {
+			if ($embed = $stats->handle()) {
 				$lorhondelBotSpam->sendEmbed($embed);
 				$return = $embed;
 			} else return webapiFail('stats', $stats);
@@ -369,50 +419,80 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 			break;
 		case 'players':
 			$allowed = ['*', 'id', 'userid', 'species', 'health', 'attack', 'defense', 'speed', 'skillpoints'];
-			if ($method == 'get' || !$method) {
-				if ($id2 == 'all') {
+			if ($method == 'get') {
+				if ($id2 == 'all' || $id2 == 'freshen') {
 					echo '[ALL]';
 					$return = sqlGet(['*'], 'players');
 				}
 				elseif (is_int((int)$id2)) {
 					if (in_array($partial, $allowed)) {
-						$return = sqlGet([$partial], 'players', 'id', [$id2], '', 1);
+						if (empty($return = sqlGet([$partial], 'players', 'id', [$id2], '', 1)))
+							$return = $_404;
 					}
-					else if (!$partial) {
-						$return = sqlGet(['*'], 'players', 'id', [$id2], '', 1);
+					elseif (!$partial) {
+						if (empty($return = sqlGet(['*'], 'players', 'id', [$id2], '', 1)))
+							$return = $_404;
 					}
 					else {
-						echo '[INVALID]';
-						$return = array('Invalid request.');
+						$return = array($_400);
 					}
 				}
 				else {
-					echo '[INVALID]';
-					$return = array('Invalid request.');
+					$return = array($_400);
+					return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($return));
 				}
 			}
-			elseif ($method == 'patch' && $whitelisted) {
-				//
+			elseif ($method == 'patch') {
+				if ($whitelisted) {
+					//check if already exists
+					//404 if does not exist
+				} else {
+					$return = $_403;
+					return new \GuzzleHttp\Psr7\Response(403, ['Content-Type' => 'application/json'], json_encode($return));
+				}
 			}
-			elseif ($method == 'post' && $whitelisted) {
-				//
+			elseif ($method == 'post') {
+				if ($whitelisted) {
+					//SQL check if part exists
+					//update if exists
+					//create if does not exist
+				} else {
+					$return = $_403;
+					return new \GuzzleHttp\Psr7\Response(403, ['Content-Type' => 'application/json'], json_encode($return));
+				}
 			}
-			elseif ($method == 'delete' && $whitelisted) {
-				//
+			elseif ($method == 'delete') {
+				if ($whitelisted) {
+					//check if exists
+					//delete if exists
+					//404 if does not exist
+				} else {
+					$return = $_403;
+					return new \GuzzleHttp\Psr7\Response(403, ['Content-Type' => 'application/json'], json_encode($return));
+				}
+			} else {
+				$return = $_400;
+				return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($return));
 			}
 			break;
 		case 'dumpplayers':
-			if ($lorhondel->players) {
-				ob_start();
-				var_dump($lorhondel->players);
-				$return = ob_get_clean();
-				break;
-			}
+			if ($lorhondel->players)
+				$return = $lorhondel->players;
+			break;
 		default:
-			$results = array();
-			$results['message'] = '404: Not Found';
-			$results['code'] = 0;
-			return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($results));
+			$return = $_404;
+			return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($return));
+	}
+	} catch (Exception $e) {
+		$return = $_5xx;
+		return new \GuzzleHttp\Psr7\Response(500, ['Content-Type' => 'application/json'], json_encode($return));
+	}
+	} else {
+		//50041
+		$_400 = array();
+		$_400['message'] = '400: Bad Request. Invalid API version provided'; //Improper format or bad data
+		$_400['code'] = 50001;
+		return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($return));
 	}
 	/*if ($return)*/ return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
 });
