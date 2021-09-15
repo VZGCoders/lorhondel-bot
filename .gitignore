@@ -6,3 +6,4 @@ token.php
 composer.lock
 private.key
 certificate.crt
+connect.php

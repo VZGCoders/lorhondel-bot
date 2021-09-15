@@ -20,14 +20,15 @@ use React\Promise\ExtendedPromiseInterface;
  *
 
  * @property int    $id            The unique identifier of the player.
+ * @property int    $user_id       Discord user id.
+ *
  * @property string $species       The species of the player.
  * @property int    $health        Health, obviously.
  * @property int    $attack        How much damage you output.
  * @property int    $defense       How much damage you block.
  * @property int    $speed         Evasiveness; Higher speed means a higher chance to evade an attack.
  * @property int    $skillpoints   Skill Points.
- *
- * @property int    $user_id       Discord user id.
+
  */
 class Player extends Part
 {

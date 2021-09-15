@@ -66,20 +66,78 @@ function webapiSnow($string)
 	return preg_match('/^[0-9]{16,18}$/', $string);
 }
 
+function sqlCreate()
+{
+	include 'connect.php';
+}
+function sqlUpdate()
+{
+	include 'connect.php';
+}
+function sqlDelete()
+{
+	include 'connect.php';
+}
+function sqlGet(array $columns = [], string $table = 'lorhondel', string $wherecolumn = '', array $values = [], string $order = '', int|string $limit = ''): array
+{
+	if(empty($columns)) return [];
+	include 'connect.php'; //$con
+	$array = array();
+	
+	$sql = "SELECT ";
+	for($x=0;$x<count($columns);$x++)
+		if($x<count($columns)-1) $sql .= $columns[$x] . ', ';
+		else $sql .= $columns[$x] . ' ';
+	$sql .= "FROM $table";
+	if ($wherecolumn && !empty($values)) $sql .= " WHERE $wherecolumn = ?";
+	if ($order) $sql .= " ORDER BY $order";
+	if ($limit) $sql .= " LIMIT $limit";
+	echo '[SQL] ' . $sql . PHP_EOL;
+	
+	if (!$wherecolumn) {
+		$stmt = mysqli_prepare($con, $sql); //Select all values in the column
+		$stmt->execute();
+		if($result = $stmt->get_result()) {
+			while ($row = $result->fetch_array(MYSQLI_ASSOC)) {
+				foreach ($row as $r => $v) {
+					$array[$r] = $v;
+				}
+			}
+			
+		} else return [mysqli_stmt_error($stmt)];
+	} else if ($wherecolumn && !empty($values)) {
+		if ($stmt = mysqli_prepare($con, $sql)) {
+			$stmt->bind_param("s", $value);
+			foreach ($values as $value) {
+				$stmt->execute();
+				if ($result = $stmt->get_result()) {
+					while ($row = $result->fetch_array(MYSQLI_ASSOC)) {
+						foreach ($row as $r => $v) {
+							$array[$r] = $v;
+						}
+					}
+				} else return [mysqli_stmt_error($stmt)];
+			}
+		} 
+	}
+	return $array;
+}
+
 $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerRequestInterface $request) use ($lorhondel, $discord, $stats) {
 	echo '[API] ';
 	$path = explode('/', $request->getUri()->getPath());
 	$ver = (isset($path[1]) ? (string) strtolower($path[1]) : false); if($ver) echo '[ver]' . $ver . ' ';
 	$sub = (isset($path[2]) ? (string) strtolower($path[2]) : false); if($sub) echo '[sub]' . $sub . ' ';
-	$id = (isset($path[3]) ? (string) strtolower($path[3]) : false); if($id) echo '[id]' . $id . ' ';
-	$id2 = (isset($path[4]) ? (string) strtolower($path[4]) : false); if($id2) echo '[id2] ' . $id2 . ' ';
-	$ip = (isset($path[5]) ? (string) strtolower($path[5]) : false); if($ip) echo '[ip] ' . $ip . ' ';
+	$method = $id = (isset($path[3]) ? (string) strtolower($path[3]) : false); if($id) echo '[id]' . $id . ' ';
+	$id2 = (isset($path[4]) ? (string) strtolower($path[4]) : false); if($id2) echo '[method/id2] ' . $id2 . ' ';
+	$partial = $id3 = (isset($path[5]) ? (string) strtolower($path[5]) : false); if($id3) echo '[partial/id3] ' . $id3 . ' ';
+	$id4 = (isset($path[6]) ? (string) strtolower($path[6]) : false); if($id4) echo '[id4] ' . $id4 . ' ';
+	$id5 = (isset($path[7]) ? (string) strtolower($path[7]) : false); if($id5) echo '[id5] ' . $id5 . ' ';
 	echo PHP_EOL;
 	
 	$lorhondelBattleground = $discord->getChannel(887118621065768970);
 	$lorhondelBotSpam = $discord->getChannel(887118679697940481);
 	
-	if ($ip) echo '[REQUESTING IP] ' . $ip . PHP_EOL ;
 	//if (substr($request->getServerParams()['REMOTE_ADDR'], 0, 6) != '10.0.0')
 	echo "[REMOTE_ADDR]" . $request->getServerParams()['REMOTE_ADDR'].PHP_EOL;
 
@@ -248,10 +306,10 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 				$results['url'] = 'https://lorhondel.valzargaming.com/gateway/';
 				$results['shards'] = 1;
 				$results['session_start_limit'] = [
-					"total" => 1000,
-					"remaining" => 999,
-					"reset_after" => 14400000,
-					"max_concurrency" => 1
+					"total" => 1000, //	The total number of session starts the current user is allowed
+					"remaining" => 999, //	The remaining number of session starts the current user is allowed
+					"reset_after" => 14400000, // The number of milliseconds after which the limit resets
+					"max_concurrency" => 1 // The number of identify requests allowed per 5 seconds
 					];
 				return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($results));
 			}
@@ -271,13 +329,13 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 			echo '[SNOWFLAKE] ' . $snowflake . PHP_EOL;
 			$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
 				'id' => $snowflake,
+				'user_id' => 116927250145869826,
 				'species' => 'Elarian', //Elarian, Manthean, Noldarus, Veias, Jedoa
 				'health' => 0,
 				'attack' => 1,
 				'defense' => 2,
 				'speed' => 3,
 				'skillpoints' => 4,
-				'user_id' => 116927250145869826,
 			]);
 			if ($player = $lorhondel->players->offsetGet(116927250145869826)) {
 				$exist = true;
@@ -286,24 +344,45 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 				$exist = false;
 				$result = 'Creating new Part with ID ' . $part->id;
 			}
-			echo '[SAVE] ' . $lorhondel->players->save($part)->done(
+			echo '[SAVE] ' . $lorhondel->players->save($part)->done( //Update repository
 				function ($part) use ($lorhondel, $lorhondelBotSpam, $exist) {
 					if ($exist) {
 						$lorhondelBotSpam->sendMessage('Updated existing Part with ID: ' . $part->id);
+						//Try to update in SQL
 					} else {
 						$lorhondelBotSpam->sendMessage('Added new Part with ID: ' . $part->id);
+						//Try to create in SQL
 					}
 				},
 				function ($error) {
 					echo '[ERROR] ';
-					var_dump($error->getMessage());
+					//var_dump($error->getMessage());
 				}
 			);
 			$lorhondelBotSpam->sendMessage(json_encode($result));
 			break;
 		case 'players':
-			if ($id) {
-				
+			$allowed = ['id', 'userid', 'species', 'health', 'attack', 'defense', 'speed', 'skillpoints'];
+			if (!$method) {
+				//
+			} elseif ($method == 'get') {
+				if ($id2 == 'all') {
+					echo '[ALL]';
+					$return = sqlGet(['*'], 'players');
+				}
+				elseif (is_int((int)$id2)) {
+					if (!$partial) {
+						echo '[IS_INT]';
+						$return = sqlGet(['*'], 'players', 'id', [$id2], '', 1);
+					}
+					elseif (in_array($partial, $allowed)) {
+						$return = sqlGet([$partial], 'players', 'id', [$id2], '', 1);
+					}
+				}
+				else {
+					echo '[INVALID]';
+					$return = array('Invalid request.');
+				}
 			}
 			break;
 		case 'dumpplayers':
@@ -330,8 +409,8 @@ $webapi->on('error', function ($e) {
 		'prv' => ($e->getPrevious() ? $e->getPrevious()->getMessage() : null)
 	]);
 	*/
-	echo '[ERORR] ' . $e->getMessage() . PHP_EOL;
-	//var_dump($e);
+	echo '[ERROR] ' . $e->getMessage() . PHP_EOL;
+	var_dump($e);
 });
 
 try{
