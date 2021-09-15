@@ -128,8 +128,8 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 	$path = explode('/', $request->getUri()->getPath());
 	$ver = (isset($path[1]) ? (string) strtolower($path[1]) : false); if($ver) echo '[ver] ' . $ver . ' ';
 	$sub = (isset($path[2]) ? (string) strtolower($path[2]) : false); if($sub) echo '[sub] ' . $sub . ' ';
-	$method = $id = (isset($path[3]) ? (string) strtolower($path[3]) : false); if($id) echo '[id] ' . $id . ' ';
-	$id2 = (isset($path[4]) ? (string) strtolower($path[4]) : false); if($id2) echo '[method/id2] ' . $id2 . ' ';
+	$method = $id = (isset($path[3]) ? (string) strtolower($path[3]) : false); if($id) echo '[method/id] ' . $id . ' ';
+	$id2 = (isset($path[4]) ? (string) strtolower($path[4]) : false); if($id2) echo '[id2] ' . $id2 . ' ';
 	$partial = $id3 = (isset($path[5]) ? (string) strtolower($path[5]) : false); if($id3) echo '[partial/id3] ' . $id3 . ' ';
 	$id4 = (isset($path[6]) ? (string) strtolower($path[6]) : false); if($id4) echo '[id4] ' . $id4 . ' ';
 	$id5 = (isset($path[7]) ? (string) strtolower($path[7]) : false); if($id5) echo '[id5] ' . $id5 . ' ';
@@ -139,9 +139,13 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 	$lorhondelBotSpam = $discord->getChannel(887118679697940481);
 	
 	$whitelisted = false;
-	if (substr($request->getServerParams()['REMOTE_ADDR'], 0, 6) != '10.0.0')
-		$whitelisted = true;
-	//echo "[REMOTE_ADDR]" . $request->getServerParams()['REMOTE_ADDR'].PHP_EOL;
+	if (
+		substr($request->getServerParams()['REMOTE_ADDR'], 0, 6) == '10.0.0' ||
+		substr($request->getServerParams()['REMOTE_ADDR'], 0, 7) == '127.0.0'
+	) $whitelisted = true;
+	else {
+		echo "[REMOTE_ADDR]" . $request->getServerParams()['REMOTE_ADDR'].PHP_EOL;
+	}
 
 	//$array = array();
 	//$array['message'] = '404: Not Found';
@@ -364,27 +368,37 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 			$lorhondelBotSpam->sendMessage(json_encode($result));
 			break;
 		case 'players':
-			$allowed = ['id', 'userid', 'species', 'health', 'attack', 'defense', 'speed', 'skillpoints'];
-			if (!$method) {
-				//
-			} elseif ($method == 'get') {
+			$allowed = ['*', 'id', 'userid', 'species', 'health', 'attack', 'defense', 'speed', 'skillpoints'];
+			if ($method == 'get' || !$method) {
 				if ($id2 == 'all') {
 					echo '[ALL]';
 					$return = sqlGet(['*'], 'players');
 				}
 				elseif (is_int((int)$id2)) {
-					if (!$partial) {
-						echo '[IS_INT]';
+					if (in_array($partial, $allowed)) {
+						$return = sqlGet([$partial], 'players', 'id', [$id2], '', 1);
+					}
+					else if (!$partial) {
 						$return = sqlGet(['*'], 'players', 'id', [$id2], '', 1);
 					}
-					elseif (in_array($partial, $allowed)) {
-						$return = sqlGet([$partial], 'players', 'id', [$id2], '', 1);
+					else {
+						echo '[INVALID]';
+						$return = array('Invalid request.');
 					}
 				}
 				else {
 					echo '[INVALID]';
 					$return = array('Invalid request.');
 				}
+			}
+			elseif ($method == 'patch' && $whitelisted) {
+				//
+			}
+			elseif ($method == 'post' && $whitelisted) {
+				//
+			}
+			elseif ($method == 'delete' && $whitelisted) {
+				//
 			}
 			break;
 		case 'dumpplayers':
