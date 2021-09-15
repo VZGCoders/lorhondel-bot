@@ -126,9 +126,9 @@ function sqlGet(array $columns = [], string $table = 'lorhondel', string $wherec
 $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerRequestInterface $request) use ($lorhondel, $discord, $stats) {
 	echo '[API] ';
 	$path = explode('/', $request->getUri()->getPath());
-	$ver = (isset($path[1]) ? (string) strtolower($path[1]) : false); if($ver) echo '[ver]' . $ver . ' ';
-	$sub = (isset($path[2]) ? (string) strtolower($path[2]) : false); if($sub) echo '[sub]' . $sub . ' ';
-	$method = $id = (isset($path[3]) ? (string) strtolower($path[3]) : false); if($id) echo '[id]' . $id . ' ';
+	$ver = (isset($path[1]) ? (string) strtolower($path[1]) : false); if($ver) echo '[ver] ' . $ver . ' ';
+	$sub = (isset($path[2]) ? (string) strtolower($path[2]) : false); if($sub) echo '[sub] ' . $sub . ' ';
+	$method = $id = (isset($path[3]) ? (string) strtolower($path[3]) : false); if($id) echo '[id] ' . $id . ' ';
 	$id2 = (isset($path[4]) ? (string) strtolower($path[4]) : false); if($id2) echo '[method/id2] ' . $id2 . ' ';
 	$partial = $id3 = (isset($path[5]) ? (string) strtolower($path[5]) : false); if($id3) echo '[partial/id3] ' . $id3 . ' ';
 	$id4 = (isset($path[6]) ? (string) strtolower($path[6]) : false); if($id4) echo '[id4] ' . $id4 . ' ';
@@ -138,8 +138,10 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 	$lorhondelBattleground = $discord->getChannel(887118621065768970);
 	$lorhondelBotSpam = $discord->getChannel(887118679697940481);
 	
-	//if (substr($request->getServerParams()['REMOTE_ADDR'], 0, 6) != '10.0.0')
-	echo "[REMOTE_ADDR]" . $request->getServerParams()['REMOTE_ADDR'].PHP_EOL;
+	$whitelisted = false;
+	if (substr($request->getServerParams()['REMOTE_ADDR'], 0, 6) != '10.0.0')
+		$whitelisted = true;
+	//echo "[REMOTE_ADDR]" . $request->getServerParams()['REMOTE_ADDR'].PHP_EOL;
 
 	//$array = array();
 	//$array['message'] = '404: Not Found';
