@@ -66,20 +66,23 @@ function webapiSnow($string)
 	return preg_match('/^[0-9]{16,18}$/', $string);
 }
 
-function sqlCreate(array $columns = [], string $table)
+function sqlCreate(string $table, $data)
 {
-	if (empty($columns)) return [];
-	if (count($columns) != count($values)) return [];
 	include 'connect.php';
 	
-	$sql = "INSERT INTO $table (";
-	for($x=0;$x<count($columns);$x++)
-		if ($x<count($columns)-1) $sql .= $columns[$x] . ', ';
-		else $sql .= $columns[$x] . ') VALUES (';
-	for($x=0;$x<count($columns);$x++)
-		if ($x<count($columns)-1) $sql .= $columns[$x] . ', ';
-		else $sql .= $columns[$x] . ') ';
-	echo '[SQL] ' . $sql . PHP_EOL;
+	$columns = array();
+	$values = array();
+	
+	if (!empty($columns) && !empty($values)) {	
+		$sql = "INSERT INTO $table (";
+		for($x=0;$x<count($columns);$x++)
+			if ($x<count($columns)-1) $sql .= $columns[$x] . ', ';
+			else $sql .= $columns[$x] . ') VALUES (';
+		for($x=0;$x<count($columns);$x++)
+			if ($x<count($columns)-1) $sql .= $columns[$x] . ', ';
+			else $sql .= $columns[$x] . ') ';
+		echo '[SQL] ' . $sql . PHP_EOL;
+	} else return ['FAILED'];
 	
 	//Check if already exists
 }
@@ -92,7 +95,7 @@ function sqlUpdate(array $columns = [], string $table, string $wherecolumn = '',
 	$sql = "UPDATE $table";
 	$sql .= 'SET ';
 	for($x=0;$x<count($columns);$x++)
-		if ($x<count($columns)-1) $sql .= $columns[$x] .  . ' = ' . $values[$x] . ', ';
+		if ($x<count($columns)-1) $sql .= $columns[$x] .  ' = ' . $values[$x] . ', ';
 		else $sql .= $columns[$x] . ' = ' . $values[$x] . ' ';
 	if ($wherecolumn && !empty($values)) $sql .= " WHERE $wherecolumn = ?";
 	echo '[SQL] ' . $sql . PHP_EOL;
@@ -159,7 +162,7 @@ function sqlGet(array $columns = [], string $table, string $wherecolumn = '', ar
 	return $array;
 }
 
-$webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerRequestInterface $request) use ($lorhondel, $discord, $stats) {
+$webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRequestInterface $request) use ($lorhondel, $discord, $stats) {
 	echo '[API] ';
 	$path = explode('/', $request->getUri()->getPath());
 	$ver = (isset($path[1]) ? (string) strtolower($path[1]) : false); if ($ver) echo '[ver] ' . $ver . ' ';
@@ -170,6 +173,11 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 	$id4 = (isset($path[6]) ? (string) strtolower($path[6]) : false); if ($id4) echo '[id4] ' . $id4 . ' ';
 	$id5 = (isset($path[7]) ? (string) strtolower($path[7]) : false); if ($id5) echo '[id5] ' . $id5 . ' ';
 	echo PHP_EOL;
+	if($data = json_decode((string)$request->getBody())) {
+		echo '[-----DATA START-----]' . PHP_EOL;
+		var_dump($data);
+		echo '[-----DATA END-----]' . PHP_EOL;
+	}
 	
 	$lorhondelBattleground = $discord->getChannel(887118621065768970);
 	$lorhondelBotSpam = $discord->getChannel(887118679697940481);
@@ -385,28 +393,31 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 			  return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
 			});
 			break;
+		default:
+			break;
 	}
-	switch ($method) {
+	switch ($repository) {
 		case 'oauth2':
-			if (!$id == 'bot') break;
+			if (!$method == 'bot') break;
 			if (!$id2 == '@me') break;
 			$return = array();
 			return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
 		case 'gateway':
-			if ($id == 'bot') {
+			if ($method == 'bot') {
 				$return = array();
 				$return['url'] = 'https://lorhondel.valzargaming.com/gateway/';
 				$return['shards'] = 1;
 				$return['session_start_limit'] = [
-					"total" => 1000, //	The total number of session starts the current user is allowed
-					"remaining" => 999, //	The remaining number of session starts the current user is allowed
-					"reset_after" => 14400000, // The number of milliseconds after which the limit resets
-					"max_concurrency" => 1 // The number of identify requests allowed per 5 seconds
-					];
+				"total" => 1000, //	The total number of session starts the current user is allowed
+				"remaining" => 999, //	The remaining number of session starts the current user is allowed
+				"reset_after" => 14400000, // The number of milliseconds after which the limit resets
+				"max_concurrency" => 1 // The number of identify requests allowed per 5 seconds
+				];
 				return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
 			}
-			break;
+			return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
 		case 'ping':
+			echo '[PING]' . PHP_EOL;
 			$lorhondelBotSpam->sendMessage('Pong!');
 			$return = 'Pong!';
 			break;
@@ -454,20 +465,32 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 			$lorhondelBotSpam->sendMessage(json_encode($result));
 			break;
 		case 'players':
+			echo '[PLAYERS] ';
 			$allowed = ['*', 'id', 'userid', 'species', 'health', 'attack', 'defense', 'speed', 'skillpoints'];
 			if ($method == 'get') {
 				if ($id2 == 'all' || $id2 == 'freshen') {
-					echo '[ALL]';
-					$return = sqlGet(['*'], 'players');
+					if ($whitelisted) {
+						echo '[GET ALL]' . PHP_EOL;
+						$return = sqlGet(['*'], 'players');
+						return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
+						break;
+					} else {
+						$return = $_403;
+						return new \GuzzleHttp\Psr7\Response(403, ['Content-Type' => 'application/json'], json_encode($return));
+					}
 				}
 				elseif (is_int((int)$id2)) {
 					if (in_array($partial, $allowed)) {
-						if (empty($return = sqlGet([$partial], 'players', 'id', [$id2], '', 1)))
+						if (empty($return = sqlGet([$partial], 'players', 'id', [$id2], '', 1))) {
 							$return = $_404;
+							return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($return));
+						}
 					}
 					elseif (!$partial) {
-						if (empty($return = sqlGet(['*'], 'players', 'id', [$id2], '', 1)))
+						if (empty($return = sqlGet(['*'], 'players', 'id', [$id2], '', 1))) {
 							$return = $_404;
+							return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($return));
+						}
 					}
 					else {
 						$return = array($_400);
@@ -489,9 +512,26 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 			}
 			elseif ($method == 'post') {
 				if ($whitelisted) {
-					//SQL check if part exists
-					//update if exists
+					if (is_int((int)$id2)) {
+						if (!empty($return = sqlGet(['*'], 'players', 'id', [$id2], '', 1))) {
+							echo '[EXISTS]' . PHP_EOL;
+							$return = $_304;
+							return new \GuzzleHttp\Psr7\Response(304, ['Content-Type' => 'application/json'], json_encode($return));
+						}
+						else {
+							//get POST data
+							//Create in SQL
+							$return = $_201;
+							return new \GuzzleHttp\Psr7\Response(201, ['Content-Type' => 'application/json'], json_encode($return));
+						}
+					}
+					else {
+						$return = array($_400);
+						return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($return));
+					}
+					//do not post if $id2 exists
 					//create if does not exist
+					$return = sqlGet(['*'], 'players');
 				} else {
 					$return = $_403;
 					return new \GuzzleHttp\Psr7\Response(403, ['Content-Type' => 'application/json'], json_encode($return));
@@ -519,7 +559,8 @@ $webapi = new \React\Http\Server($loop, function (\Psr\Http\Message\ServerReques
 			$return = $_404;
 			return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($return));
 	}
-	} catch (Exception $e) {
+	}
+	catch (Exception $e) {
 		$return = $_5xx;
 		return new \GuzzleHttp\Psr7\Response(500, ['Content-Type' => 'application/json'], json_encode($return));
 	}
@@ -561,7 +602,6 @@ try{
 		'type' => \Discord\Parts\User\Activity::TYPE_COMPETING
 		]);
 		$discord->updatePresence($act, false, 'online', false);
-		echo "[SETUP]" . PHP_EOL;
 		echo "[READY]" . PHP_EOL;
 		include 'ready-include.php'; //All modular event handlers
 	 });

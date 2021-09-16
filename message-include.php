@@ -109,6 +109,30 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 				$player = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class);
 				$lorhondel->players->save($player);
 				break;
+			case 'post':
+				$snowflake = \Lorhondel\generateSnowflake(time(), 0, 0, count($lorhondel->players));
+				$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
+					'id' => $snowflake,
+					'user_id' => 116927250145869826,
+					'species' => 'Elarian', //Elarian, Manthean, Noldarus, Veias, Jedoa
+					'health' => 0,
+					'attack' => 1,
+					'defense' => 2,
+					'speed' => 3,
+					'skillpoints' => 4,
+				]);
+				//$result = sqlCreate('players', json_encode($part));
+				$url = "http://lorhondel.valzargaming.com/api/v1/players/post/{$part->id}/";
+				$browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then(
+					function (Psr\Http\Message\ResponseInterface $response) use ($message, $part) {
+						//var_dump(json_decode((string)$response->getBody()));
+						$message->reply(PHP_EOL . json_encode($part));
+					},
+					function ($error) {
+						//
+					}
+				);
+				break;
 		}
 	}
 }
