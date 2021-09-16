@@ -233,11 +233,11 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 	$_400['code'] = 0;
 	
 	$_304 = array();
-	$_304['message'] = '304: Not Modified'; //Patch but no change
+	$_304['message'] = '304: Not Modified'; //is only a valid response for GET and HEAD requests. 304s are only used for the purposes of caching
 	$_304['code'] = 0;
 	
 	$_204 = array();
-	$_204['message'] = '204: No Content'; //Resource 'exists' but is empty
+	$_204['message'] = '204: No Content'; //Request has 'succeeded' but no action taken
 	$_204['code'] = 0;
 	
 	$_201 = array();
@@ -533,8 +533,8 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 					if (is_int((int)$id2)) {
 						if (!empty($return = sqlGet(['*'], 'players', 'id', [$id2], '', 1))) {
 							var_dump($return);
-							$return = $_304;
-							return new \GuzzleHttp\Psr7\Response(304, ['Content-Type' => 'application/json'], json_encode($return));
+							$return = $_204;
+							return new \GuzzleHttp\Psr7\Response(204, ['Content-Type' => 'application/json'], json_encode($return));
 						}
 						else {
 							//Check if part exists in repository
