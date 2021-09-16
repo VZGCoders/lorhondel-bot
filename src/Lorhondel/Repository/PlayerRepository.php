@@ -29,7 +29,8 @@ class PlayerRepository extends AbstractRepository
     protected $endpoints = [
         'get' => Endpoint::PLAYER,
         'update' => Endpoint::PLAYER,
-		'create' => Endpoint::PLAYER,
+		'post' => Endpoint::PLAYER_POST,
+		'create' => Endpoint::PLAYER_POST,
         'delete' => Endpoint::PLAYER,
     ];
 

@@ -36,7 +36,7 @@ class Player extends Part
     /**
      * @inheritdoc
      */
-    protected $fillable = ['id', 'species', 'health', 'attack', 'defense', 'speed', 'skillpoints', 'user_id'];
+    protected $fillable = ['id', 'user_id', 'species', 'health', 'attack', 'defense', 'speed', 'skillpoints'];
 
     /**
      * Returns a timestamp for when a player's account was created.
@@ -54,7 +54,7 @@ class Player extends Part
     public function getRepositoryAttributes(): array
     {
         return [
-            'player_id' => $this->id,
+            'id' => $this->id,
         ];
     }
 

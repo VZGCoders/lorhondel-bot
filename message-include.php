@@ -102,14 +102,29 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 	if ($creator) { //Debug commands
 		switch($message_content_lower) {
 			case 'factory':
-				$player = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class);
-				$message->reply($player);
+				$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class);
+				$message->reply($part);
+				break;
+			case 'ping':
+				$message->reply('Pong!');
 				break;
 			case 'save':
-				$player = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class);
-				$lorhondel->players->save($player);
+				echo '[SAVE]' . PHP_EOL;
+				$snowflake = \Lorhondel\generateSnowflake(time(), 0, 0, count($lorhondel->players));
+				$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
+					'id' => $snowflake,
+					'user_id' => 116927250145869826,
+					'species' => 'Elarian', //Elarian, Manthean, Noldarus, Veias, Jedoa
+					'health' => 0,
+					'attack' => 1,
+					'defense' => 2,
+					'speed' => 3,
+					'skillpoints' => 4,
+				]);
+				$lorhondel->players->save($part);
 				break;
 			case 'post':
+				echo '[POST]' . PHP_EOL;
 				$snowflake = \Lorhondel\generateSnowflake(time(), 0, 0, count($lorhondel->players));
 				$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
 					'id' => $snowflake,
@@ -125,8 +140,8 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 				$url = "http://lorhondel.valzargaming.com/api/v1/players/post/{$part->id}/";
 				$browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then(
 					function (Psr\Http\Message\ResponseInterface $response) use ($message, $part) {
+						$message->reply(PHP_EOL . json_encode($part) . PHP_EOL . (string)$response->getBody());
 						//var_dump(json_decode((string)$response->getBody()));
-						$message->reply(PHP_EOL . json_encode($part));
 					},
 					function ($error) {
 						//

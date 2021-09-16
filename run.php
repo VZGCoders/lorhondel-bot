@@ -69,22 +69,28 @@ function webapiSnow($string)
 function sqlCreate(string $table, $data)
 {
 	include 'connect.php';
-	
-	$columns = array();
+	$array = json_decode(json_encode($data), true); //var_dump($array);
+	$types = '';
 	$values = array();
-	
-	if (!empty($columns) && !empty($values)) {	
+	if(!empty($array)) {
 		$sql = "INSERT INTO $table (";
-		for($x=0;$x<count($columns);$x++)
-			if ($x<count($columns)-1) $sql .= $columns[$x] . ', ';
-			else $sql .= $columns[$x] . ') VALUES (';
-		for($x=0;$x<count($columns);$x++)
-			if ($x<count($columns)-1) $sql .= $columns[$x] . ', ';
-			else $sql .= $columns[$x] . ') ';
-		echo '[SQL] ' . $sql . PHP_EOL;
-	} else return ['FAILED'];
+		foreach ($array as $key => $value) {
+			$sql .= str_replace('_', '', $key) . ', ';
+		}
+		$sql = substr($sql, 0, strlen($sql)-2) . ') VALUES (';
+		foreach ($array as $key => $value) {
+			$sql .= '?, ';
+			$types .= 's';
+			$values[] = str_replace('_', '', $value); //Remove any _ from variable names
+		}
+		$sql = substr($sql, 0, strlen($sql)-2) . ')';
+	} else return null;
+	echo '[SQL] ' . $sql . PHP_EOL;
 	
-	//Check if already exists
+	$stmt = mysqli_prepare($con, $sql);
+	$stmt->bind_param($types, ...$values);
+	return $stmt->execute();
+	//printf("%d row inserted.\n", $stmt->affected_rows);
 }
 function sqlUpdate(array $columns = [], string $table, string $wherecolumn = '', array $values = [])
 {
@@ -148,6 +154,7 @@ function sqlGet(array $columns = [], string $table, string $wherecolumn = '', ar
 		if ($stmt = mysqli_prepare($con, $sql)) {
 			$stmt->bind_param("s", $value);
 			foreach ($values as $value) {
+				echo 'value: ' . $value . PHP_EOL;
 				$stmt->execute();
 				if ($result = $stmt->get_result()) {
 					while ($row = $result->fetch_array(MYSQLI_ASSOC)) {
@@ -178,6 +185,17 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 		var_dump($data);
 		echo '[-----DATA END-----]' . PHP_EOL;
 	}
+	if ($attributes = $request->getAttributes()) {
+		echo '[-----ATTRIBUTES START-----]' . PHP_EOL;
+		var_dump($attributes);
+		echo '[-----ATTRIBUTES END-----]' . PHP_EOL;
+	}
+	if ($headers = $request->getHeaders()) {
+		echo '[-----HEADERS START-----]' . PHP_EOL;
+		var_dump($headers);
+		echo '[-----HEADERS END-----]' . PHP_EOL;
+	}
+	
 	
 	$lorhondelBattleground = $discord->getChannel(887118621065768970);
 	$lorhondelBotSpam = $discord->getChannel(887118679697940481);
@@ -466,12 +484,12 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 			break;
 		case 'players':
 			echo '[PLAYERS] ';
-			$allowed = ['*', 'id', 'userid', 'species', 'health', 'attack', 'defense', 'speed', 'skillpoints'];
+			$allowed = ['*', 'id', 'userid', 'user_id', 'species', 'health', 'attack', 'defense', 'speed', 'skillpoints'];
 			if ($method == 'get') {
 				if ($id2 == 'all' || $id2 == 'freshen') {
 					if ($whitelisted) {
 						echo '[GET ALL]' . PHP_EOL;
-						$return = sqlGet(['*'], 'players');
+						$return = sqlGet(['*'], 'players', '', [], '', 500);
 						return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
 						break;
 					} else {
@@ -514,15 +532,59 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 				if ($whitelisted) {
 					if (is_int((int)$id2)) {
 						if (!empty($return = sqlGet(['*'], 'players', 'id', [$id2], '', 1))) {
-							echo '[EXISTS]' . PHP_EOL;
+							var_dump($return);
 							$return = $_304;
 							return new \GuzzleHttp\Psr7\Response(304, ['Content-Type' => 'application/json'], json_encode($return));
 						}
 						else {
-							//get POST data
-							//Create in SQL
-							$return = $_201;
-							return new \GuzzleHttp\Psr7\Response(201, ['Content-Type' => 'application/json'], json_encode($return));
+							//Check if part exists in repository
+							if (is_array($data)) {
+								$part_id = $data['id'];
+								$part_user_id = $data['user_id'];
+								$part_species = $data['species'];
+								$part_health = $data['health'];
+								$part_attack = $data['attack'];
+								$part_defense = $data['defense'];
+								$part_speed = $data['speed'];
+								$part_skillpoints = $data['skillpoints'];
+							} elseif (is_object($data)) {
+								$part_id = $data->id;
+								$part_user_id = $data->user_id;
+								$part_species = $data->species;
+								$part_health = $data->health;
+								$part_attack = $data->attack;
+								$part_defense = $data->defense;
+								$part_speed = $data->speed;
+								$part_skillpoints = $data->skillpoints;
+							}
+							if($part = $lorhondel->players->offsetGet($partid) && $part->id) {
+								echo '[EXISTS] ' . $partid . PHP_EOL;
+								var_dump($return);
+								var_dump($part);
+								$return = $_204;
+								return new \GuzzleHttp\Psr7\Response(204, ['Content-Type' => 'application/json'], json_encode($return));
+							}
+							//Recreate the part using factory and save it
+							$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
+								'id' => $part_id,
+								'user_id' => $part_user_id,
+								'species' => $part_species,
+								'health' => $part_health,
+								'attack' => $part_attack,
+								'defense' => $part_defense,
+								'speed' => $part_speed,
+								'skillpoints' => $part_skillpoints,
+							]);
+							$lorhondel->players->push($part);
+							$lorhondelBotSpam->sendMessage('Added part to repository');
+							if (sqlCreate($repository, $data)) {
+								$return = $_201;
+								return new \GuzzleHttp\Psr7\Response(201, ['Content-Type' => 'application/json'], json_encode($return));
+							} else { //The data provided is either missing or didn't get passed to the SQL method
+								echo '[POST CREATE ERROR]' . PHP_EOL;
+								$return = $_204;
+								return new \GuzzleHttp\Psr7\Response(204, ['Content-Type' => 'application/json'], json_encode($return));
+							}
 						}
 					}
 					else {
