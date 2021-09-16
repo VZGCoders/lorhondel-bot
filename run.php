@@ -66,19 +66,55 @@ function webapiSnow($string)
 	return preg_match('/^[0-9]{16,18}$/', $string);
 }
 
-function sqlCreate()
+function sqlCreate(array $columns = [], string $table)
 {
+	if (empty($columns)) return [];
+	if (count($columns) != count($values)) return [];
 	include 'connect.php';
+	
+	$sql = "INSERT INTO $table (";
+	for($x=0;$x<count($columns);$x++)
+		if ($x<count($columns)-1) $sql .= $columns[$x] . ', ';
+		else $sql .= $columns[$x] . ') VALUES (';
+	for($x=0;$x<count($columns);$x++)
+		if ($x<count($columns)-1) $sql .= $columns[$x] . ', ';
+		else $sql .= $columns[$x] . ') ';
+	echo '[SQL] ' . $sql . PHP_EOL;
+	
+	//Check if already exists
 }
-function sqlUpdate()
+function sqlUpdate(array $columns = [], string $table, string $wherecolumn = '', array $values = [])
 {
+	if (empty($columns)) return [];
+	if (count($columns) != count($values)) return [];
 	include 'connect.php';
+	
+	$sql = "UPDATE $table";
+	$sql .= 'SET ';
+	for($x=0;$x<count($columns);$x++)
+		if ($x<count($columns)-1) $sql .= $columns[$x] .  . ' = ' . $values[$x] . ', ';
+		else $sql .= $columns[$x] . ' = ' . $values[$x] . ' ';
+	if ($wherecolumn && !empty($values)) $sql .= " WHERE $wherecolumn = ?";
+	echo '[SQL] ' . $sql . PHP_EOL;
+	
+	//Check if already exists
 }
-function sqlDelete()
+function sqlDelete(array $columns = [], string $table, string $wherecolumn = '', array $values = [])
 {
+	if (empty($columns)) return [];
 	include 'connect.php';
+	
+	$sql = "DELETE ";
+	for($x=0;$x<count($columns);$x++)
+		if ($x<count($columns)-1) $sql .= $columns[$x] . ', ';
+		else $sql .= $columns[$x] . ' ';
+	$sql .= "FROM $table";
+	if ($wherecolumn && !empty($values)) $sql .= " WHERE $wherecolumn = ?";
+	echo '[SQL] ' . $sql . PHP_EOL;
+	
+	
 }
-function sqlGet(array $columns = [], string $table = 'lorhondel', string $wherecolumn = '', array $values = [], string $order = '', int|string $limit = ''): array
+function sqlGet(array $columns = [], string $table, string $wherecolumn = '', array $values = [], string $order = '', int|string $limit = ''): array
 {
 	if (empty($columns)) return [];
 	include 'connect.php'; //$con
