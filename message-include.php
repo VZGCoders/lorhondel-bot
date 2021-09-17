@@ -151,6 +151,7 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 				$url = "http://lorhondel.valzargaming.com/api/v1/players/post/{$part->id}/";
 				$browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then(
 					function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
+						/*
 						if ((string)$response->getBody() == json_encode($part)) {
 							if ($response->getStatusCode() == 200) {
 								echo '[PUSH] '; var_dump($lorhondel->players->push($part));
@@ -159,6 +160,7 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 									echo '[PUSH] '; var_dump($lorhondel->players->push($part));
 							}
 						}
+						*/
 					},
 					function ($error) {
 						var_dump($error);
@@ -182,6 +184,7 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 				$url = "http://lorhondel.valzargaming.com/api/v1/players/post/{$part->id}/";
 				$browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
 					function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
+						/*
 						$message->reply((string)$response->getBody() . json_encode($part));
 						if ((string)$response->getBody() == json_encode($part)) {
 							if ($response->getStatusCode() == 200) { //Newly created in SQL
@@ -192,6 +195,7 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 									echo '[PUSH] '; var_dump($lorhondel->players->push($part));
 							}
 						}
+						*/
 					},
 					function ($error) {
 						var_dump($error);

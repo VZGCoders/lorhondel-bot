@@ -79,7 +79,7 @@ class PlayerRepository extends AbstractRepository
     {
 		echo '[FRESHEN()]' . PHP_EOL;
 		$url = Http::BASE_URL . "/players/get/all/"; echo '[URL] ' . $url . PHP_EOL;
-		$promise = $this->factory->lorhondel->browser->get($url)->done( //Make this a function
+		$this->factory->lorhondel->browser->get($url)->done( //Make this a function
 			function (Psr\Http\Message\ResponseInterface $response) {
 				echo '[RESPONSE] ' . PHP_EOL;
 				if (is_object(json_decode((string)$response->getBody()->getContents()))) echo '[VALID JSON]' . PHP_EOL;
@@ -105,6 +105,5 @@ class PlayerRepository extends AbstractRepository
 				var_dump($error);
 			}
 		);
-		return $promise;
     }
 }
