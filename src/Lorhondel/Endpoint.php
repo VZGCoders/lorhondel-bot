@@ -172,9 +172,13 @@ class Endpoint
 	// GET, PATCH
     public const PLAYER_CURRENT = 'players/@me';
     // GET
-    public const PLAYER = 'players/:id';
-	// POST, CREATE
+    public const PLAYER = 'players/get/:id';
+	// POST
     public const PLAYER_POST = 'players/post/:id';
+	// PUT
+	public const PLAYER_PUT = 'players/put/:id';
+	// PUT
+	public const PLAYER_PATCH = 'players/patch/:id';
     // GET
     public const PLAYER_CURRENT_CONNECTIONS = self::PLAYER_CURRENT.'/connections';
 	

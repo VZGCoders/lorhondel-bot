@@ -23,7 +23,7 @@ class Factory
      *
      * @var lorhondel Client.
      */
-    protected $lorhondel;
+    public $lorhondel;
 	
     /**
      * The HTTP client.
@@ -63,7 +63,7 @@ class Factory
         if (strpos($class, 'Lorhondel\\Parts') !== false) {
             $object = $this->part($class, $data, $created);
         } elseif (strpos($class, 'Lorhondel\\Repository') !== false) {
-            $object = $this->repository($class, $data);
+            $object = $this->repository($class, $data/*, $this->lorhondel->browser*/);
         } else {
             throw new \Exception('The class '.$class.' is not a Part or a Repository.');
         }
@@ -93,8 +93,10 @@ class Factory
      *
      * @return AbstractRepository The repository.
      */
-    public function repository(string $class, array $data = []): AbstractRepository
+    public function repository(string $class, array $data = [], $browser = null): AbstractRepository
     {
+		if($class == 'Player')
+			return new $class($this->http, $this, $data, $browser);
         return new $class($this->http, $this, $data);
     }
 }

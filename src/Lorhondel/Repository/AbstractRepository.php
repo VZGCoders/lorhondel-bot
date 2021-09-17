@@ -13,6 +13,7 @@ use Lorhondel\Helpers\Collection;
 use Lorhondel\Endpoint;
 use Lorhondel\Http;
 use Lorhondel\Parts\Part;
+use React\Http\Browser;
 use React\Promise\ExtendedPromiseInterface;
 
 /**
@@ -37,6 +38,13 @@ use React\Promise\ExtendedPromiseInterface;
      * @var Http Client.
      */
     protected $http;
+	
+	/**
+     * The Browser client.
+     *
+     * @var Browser Client.
+     */
+    protected $browser;
 
     /**
      * The parts factory.
@@ -71,6 +79,7 @@ use React\Promise\ExtendedPromiseInterface;
         $this->http = $http;
         $this->factory = $factory;
         $this->vars = $vars;
+		$this->browser = $factory->lorhondel->browser;
 
         parent::__construct([], $this->discrim, $this->class);
     }
@@ -81,7 +90,7 @@ use React\Promise\ExtendedPromiseInterface;
      * @return ExtendedPromiseInterface
      * @throws \Exception
      */
-    public function freshen(): ExtendedPromiseInterface
+    public function freshen()
     {
         if (! isset($this->endpoints['all'])) {
             return \React\Promise\reject(new \Exception('You cannot freshen this repository.'));

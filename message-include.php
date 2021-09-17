@@ -101,15 +101,10 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 	$message_content_lower = substr($message_content_lower, 1);
 	if ($creator) { //Debug commands
 		switch($message_content_lower) {
-			case 'factory':
-				$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class);
-				$message->reply($part);
-				break;
 			case 'ping':
 				$message->reply('Pong!');
 				break;
-			case 'save':
-				echo '[SAVE]' . PHP_EOL;
+			case 'factory':
 				$snowflake = \Lorhondel\generateSnowflake(time(), 0, 0, count($lorhondel->players));
 				$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
 					'id' => $snowflake,
@@ -121,7 +116,22 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 					'speed' => 3,
 					'skillpoints' => 4,
 				]);
-				$lorhondel->players->save($part);
+				$message->reply($part);
+				break;
+			case 'players':
+				$message->reply(json_encode($lorhondel->players));
+				break;
+			case 'get':
+				$url = "http://lorhondel.valzargaming.com/api/v1/players/get/116927250145869826/";
+				$browser->post($url, ['Content-Type' => 'application/json'], json_encode('116927250145869826'))->then(
+					function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel) {
+						echo '[RESPONSE]' . PHP_EOL;
+						print_r($response->getBody());
+					},
+					function ($error) {
+						var_dump($error);
+					}
+				);
 				break;
 			case 'post':
 				echo '[POST]' . PHP_EOL;
@@ -137,14 +147,78 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 					'skillpoints' => 4,
 				]);
 				//$result = sqlCreate('players', json_encode($part));
+				//$lorhondel->players->save($part); //Use $Browser instead, this is currently broken
 				$url = "http://lorhondel.valzargaming.com/api/v1/players/post/{$part->id}/";
 				$browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then(
-					function (Psr\Http\Message\ResponseInterface $response) use ($message, $part) {
-						$message->reply(PHP_EOL . json_encode($part) . PHP_EOL . (string)$response->getBody());
-						//var_dump(json_decode((string)$response->getBody()));
+					function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
+						if ((string)$response->getBody() == json_encode($part)) {
+							if ($response->getStatusCode() == 200) {
+								echo '[PUSH] '; var_dump($lorhondel->players->push($part));
+							} elseif ($response->getStatusCode() == 204) {
+								if (!$old_part = $lorhondel->players->offsetGet($part->id))
+									echo '[PUSH] '; var_dump($lorhondel->players->push($part));
+							}
+						}
 					},
 					function ($error) {
-						//
+						var_dump($error);
+					}
+				);
+				break;
+			case 'save':
+				echo '[save]' . PHP_EOL;
+				$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
+					'id' => 116927250145869826,
+					'user_id' => 116927250145869826,
+					'species' => 'Elarian', //Elarian, Manthean, Noldarus, Veias, Jedoa
+					'health' => 0,
+					'attack' => 1,
+					'defense' => 2,
+					'speed' => 3,
+					'skillpoints' => 4,
+				]);
+				//$result = sqlCreate('players', json_encode($part));
+				//$lorhondel->players->save($part); //Use $Browser instead, this is currently broken
+				$url = "http://lorhondel.valzargaming.com/api/v1/players/post/{$part->id}/";
+				$browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
+					function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
+						$message->reply((string)$response->getBody() . json_encode($part));
+						if ((string)$response->getBody() == json_encode($part)) {
+							if ($response->getStatusCode() == 200) { //Newly created in SQL
+								echo '[PUSH] '; var_dump($lorhondel->players->push($part));
+							} elseif ($response->getStatusCode() == 204) { //id already exists in SQL
+								if (!$old_part = $lorhondel->players->offsetGet($part->id))
+									echo '[CREATED] '; $part->created = true;
+									echo '[PUSH] '; var_dump($lorhondel->players->push($part));
+							}
+						}
+					},
+					function ($error) {
+						var_dump($error);
+					}
+				);
+				break;
+			case 'delete':
+				echo '[delete]' . PHP_EOL;
+				$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
+					'id' => 116927250145869826,
+					'user_id' => 116927250145869826,
+					'species' => 'Elarian', //Elarian, Manthean, Noldarus, Veias, Jedoa
+					'health' => 0,
+					'attack' => 1,
+					'defense' => 2,
+					'speed' => 3,
+					'skillpoints' => 4,
+				]);
+				$url = "http://lorhondel.valzargaming.com/api/v1/players/delete/{$part->id}/";
+				$browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->done( //Make this a function
+					function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
+						echo '[DELETE] '; var_dump($lorhondel->players->offsetUnset($part->id)); 
+						var_dump($lorhondel->players);
+						
+					},
+					function ($error) {
+						var_dump($error);
 					}
 				);
 				break;
