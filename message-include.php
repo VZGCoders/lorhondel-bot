@@ -256,6 +256,10 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 					}
 				);
 				break;
+			case 'stats':
+				if ($embed = $stats->handle())
+					$message->channel->sendEmbed($embed);
+				break;
 		}
 	}
 }
