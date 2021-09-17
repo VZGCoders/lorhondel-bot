@@ -137,7 +137,7 @@ use React\Promise\ExtendedPromiseInterface;
      * @return ExtendedPromiseInterface
      * @throws \Exception
      */
-    public function save(Part $part): ExtendedPromiseInterface
+    public function save(Part $part)
     {
         if ($part->created) {
             if (! isset($this->endpoints['update'])) {

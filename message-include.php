@@ -122,11 +122,41 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 				$message->reply(json_encode($lorhondel->players));
 				break;
 			case 'get':
-				$url = Lorhondel\Http::BASE_URL . '/players/get/116927250145869826/";
+				$url = Lorhondel\Http::BASE_URL . '/players/get/116927250145869826/';
 				$browser->post($url, ['Content-Type' => 'application/json'], json_encode('116927250145869826'))->then(
 					function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel) {
 						echo '[RESPONSE]' . PHP_EOL;
 						print_r($response->getBody());
+					},
+					function ($error) {
+						var_dump($error);
+					}
+				);
+				break;
+			case 'patch':
+				$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
+					'id' => 116927250145869826,
+					'user_id' => 116927250145869826,
+					'species' => 'Elarian', //Elarian, Manthean, Noldarus, Veias, Jedoa
+					'health' => 999,
+					'attack' => 999,
+					'defense' => 999,
+					'speed' => 999,
+					'skillpoints' => 999,
+				]);
+				$url = Lorhondel\Http::BASE_URL . "/players/patch/{$part->id}/";
+				$browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then(
+					function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
+						/*
+						if ((string)$response->getBody() == json_encode($part)) {
+							if ($response->getStatusCode() == 200) {
+								echo '[PUSH] '; var_dump($lorhondel->players->push($part));
+							} elseif ($response->getStatusCode() == 204) {
+								if (!$old_part = $lorhondel->players->offsetGet($part->id))
+									echo '[PUSH] '; var_dump($lorhondel->players->push($part));
+							}
+						}
+						*/
 					},
 					function ($error) {
 						var_dump($error);

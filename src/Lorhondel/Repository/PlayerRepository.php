@@ -47,14 +47,35 @@ class PlayerRepository extends AbstractRepository
 	 */
     protected $class = Player::class;
 	
+	/**
+     * Attempts to save a part to the Lorhondel servers.
+     *
+     * @param Part $part The part to save.
+     *
+     * @return ExtendedPromiseInterface
+     * @throws \Exception
+     */
+    public function save(Part $part)
+    {
+		if ($this->factory->lorhondel->players->offsetGet($part->id)) $method = 'patch';
+		else $method = 'post';
+		$url = Http::BASE_URL . "/players/$method/{$part->id}/";
+		return $browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
+			function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
+				echo '[DELETE] '; var_dump($lorhondel->players->offsetUnset($part->id)); 
+				//var_dump($lorhondel->players);
+			},
+			function ($error) {
+				echo '[DELETE ERROR]' . PHP_EOL;
+				var_dump($error);
+			}
+		);
+    }
+	
 	public function delete($part): ExtendedPromiseInterface
 	{
 		if (! ($part instanceof Part)) {
             $part = $this->factory->part($this->class, [$this->discrim => $part], true);
-        }
-
-        if (! $part->created) {
-            return \React\Promise\reject(new \Exception('You cannot delete a non-existant part.'));
         }
 		
 		$url = Http::BASE_URL . "/players/delete/{$part->id}/";
@@ -78,7 +99,6 @@ class PlayerRepository extends AbstractRepository
      */
     public function freshen()
     {
-		echo '[FRESHEN()]' . PHP_EOL;
 		$url = Http::BASE_URL . "/players/get/all/"; echo '[URL] ' . $url . PHP_EOL;
 		$this->factory->lorhondel->browser->get($url)->done( //Make this a function
 			function (Psr\Http\Message\ResponseInterface $response) { //TODO: Not receiving response

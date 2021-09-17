@@ -67,7 +67,8 @@ function webapiSnow($string)
 	return preg_match('/^[0-9]{16,18}$/', $string);
 }
 
-function json_validate($data) {
+function json_validate($data)
+{
 	if (is_array($data) || is_object($data))
 		$data = json_encode($data);
     // decode the JSON data
@@ -119,6 +120,64 @@ function json_validate($data) {
     return $result;
 }
 
+function sqlGet(array $columns = [], string $table = '', string $wherecolumn = '', array $values = [], string $order = '', $limit = ''): array
+{
+	//sqlGet(['*'], $repository, '', [], '', 500); //get all
+	if (empty($columns)) return [];
+	if(!$table) return [];
+	include 'connect.php'; //$mysqli and $pdo
+	$array = array();
+	
+	$sql = "SELECT ";
+	for($x=0;$x<count($columns);$x++)
+		if ($x<count($columns)-1) $sql .= $columns[$x] . ', ';
+		else $sql .= $columns[$x] . ' ';
+	$sql .= "FROM $table";
+	if ($wherecolumn && !empty($values)) $sql .= " WHERE $wherecolumn = ?";
+	if ($order) $sql .= " ORDER BY $order";
+	if ($limit) $sql .= " LIMIT $limit";
+	echo '[SQL] ' . $sql . PHP_EOL;
+	
+	if (!$wherecolumn) {
+		$stmt = mysqli_prepare($mysqli, $sql); //Select all values in the column
+		$stmt->execute();
+		if ($result = $stmt->get_result()) {
+			while ($rows = $result->fetch_all(MYSQLI_ASSOC)) {
+				foreach ($rows as $row) {
+					foreach ($row as $r => $v) {
+						$array[$row['id']][$r] = $v;
+					}
+				}
+			}
+			
+		} else{
+			var_dump (mysqli_stmt_error($stmt));
+			return [];
+		}
+	}
+	elseif ($wherecolumn && !empty($values)) {
+		if ($stmt = mysqli_prepare($mysqli, $sql)) {
+			$stmt->bind_param("s", $value);
+			foreach ($values as $value) {
+				echo 'value: ' . $value . PHP_EOL;
+				$stmt->execute();
+				if ($result = $stmt->get_result()) {
+					while ($rows = $result->fetch_all(MYSQLI_ASSOC)) {
+						foreach ($rows as $row) {
+							foreach ($row as $r => $v) {
+								$array[$row['id']][$r] = $v;
+							}
+						}
+					}
+				} else {
+					var_dump(mysqli_stmt_error($stmt));
+					return [];
+				}
+			}
+		} 
+	}
+	return $array;
+}
 function sqlCreate(string $table, $data)
 {
 	include 'connect.php';
@@ -141,29 +200,39 @@ function sqlCreate(string $table, $data)
 			$values[] = str_replace('_', '', $value); //Remove any _ from variable names
 		}
 		$sql = substr($sql, 0, strlen($sql)-2) . ')';
-	} else return null;
+	} else return false;
 	echo '[SQL] ' . $sql . PHP_EOL;
 	
-	$stmt = mysqli_prepare($con, $sql);
+	$stmt = mysqli_prepare($mysqli, $sql);
 	$stmt->bind_param($types, ...$values);
 	return $stmt->execute();
 	//printf("%d row inserted.\n", $stmt->affected_rows);
 }
-function sqlUpdate(array $columns = [], string $table, string $wherecolumn = '', array $values = [])
+function sqlUpdate(array $columns = [], array $values = [], string $table, string $wherecolumn = '', $target = '')
 {
-	if (empty($columns)) return [];
-	if (count($columns) != count($values)) return [];
+	if (empty($columns)) return false;
+	if (!$table) return false;
+	if (count($columns) != count($values)) return false;
 	include 'connect.php';
 	
-	$sql = "UPDATE $table";
-	$sql .= 'SET ';
+	$sql = "UPDATE $table SET ";
 	for($x=0;$x<count($columns);$x++)
-		if ($x<count($columns)-1) $sql .= $columns[$x] .  ' = ' . $values[$x] . ', ';
-		else $sql .= $columns[$x] . ' = ' . $values[$x] . ' ';
-	if ($wherecolumn && !empty($values)) $sql .= " WHERE $wherecolumn = ?";
+	{
+		if ($x<count($columns)-1) $sql .= "{$columns[$x]} = ?, "; //$values[$x]
+		else $sql .= "{$columns[$x]} = ?"; //$values[$x]
+	}
+	if ($wherecolumn && $target) $sql .= " WHERE $wherecolumn = '$target'";
+	$sql = str_replace('_', '', $sql);
 	echo '[SQL] ' . $sql . PHP_EOL;
 	
-	//Check if already exists
+	//return true;
+	if ($wherecolumn && !empty($values)) {
+		if ($stmt = $PDO->prepare($sql)) {
+			if($stmt->execute($values)) return true;
+			else echo mysqli_stmt_error($stmt);
+		} else echo mysqli_stmt_error($stmt);
+	}
+	return false;
 }
 function sqlDelete(string $table, string $wherecolumn = '', array $values = [], string $order = '', int|string $limit = '')
 {
@@ -178,7 +247,7 @@ function sqlDelete(string $table, string $wherecolumn = '', array $values = [], 
 	echo '[SQL] ' . $sql . PHP_EOL;
 	
 	if (!$wherecolumn) {
-		$stmt = mysqli_prepare($con, $sql); //Delete all values in the column
+		$stmt = mysqli_prepare($mysqli, $sql); //Delete all values in the column
 		$stmt->execute();
 		if ($result = $stmt->get_result()) {
 			while ($row = $result->fetch_array(MYSQLI_ASSOC)) {
@@ -187,9 +256,12 @@ function sqlDelete(string $table, string $wherecolumn = '', array $values = [], 
 				}
 			}
 			
-		} else return [mysqli_stmt_error($stmt)];
+		} else {
+			var_dump(mysqli_stmt_error($stmt));
+			return false;
+		}
 	} else if ($wherecolumn && !empty($values)) {
-		if ($stmt = mysqli_prepare($con, $sql)) {
+		if ($stmt = mysqli_prepare($mysqli, $sql)) {
 			$stmt->bind_param("s", $value);
 			foreach ($values as $value) {
 				echo 'value: ' . $value . PHP_EOL;
@@ -200,62 +272,14 @@ function sqlDelete(string $table, string $wherecolumn = '', array $values = [], 
 							$array[$r] = $v;
 						}
 					}
-				} else return [mysqli_stmt_error($stmt)];
-			}
-		} 
-	}
-	return $array;
-}
-function sqlGet(array $columns = [], string $table, string $wherecolumn = '', array $values = [], string $order = '', int|string $limit = ''): array
-{
-	//sqlGet(['*'], $repository, '', [], '', 500); //get all
-	if (empty($columns)) return [];
-	include 'connect.php'; //$con
-	$array = array();
-	
-	$sql = "SELECT ";
-	for($x=0;$x<count($columns);$x++)
-		if ($x<count($columns)-1) $sql .= $columns[$x] . ', ';
-		else $sql .= $columns[$x] . ' ';
-	$sql .= "FROM $table";
-	if ($wherecolumn && !empty($values)) $sql .= " WHERE $wherecolumn = ?";
-	if ($order) $sql .= " ORDER BY $order";
-	if ($limit) $sql .= " LIMIT $limit";
-	echo '[SQL] ' . $sql . PHP_EOL;
-	
-	if (!$wherecolumn) {
-		$stmt = mysqli_prepare($con, $sql); //Select all values in the column
-		$stmt->execute();
-		if ($result = $stmt->get_result()) {
-			while ($rows = $result->fetch_all(MYSQLI_ASSOC)) {
-				foreach ($rows as $row) {
-					foreach ($row as $r => $v) {
-						$array[$row['id']][$r] = $v;
-					}
+				} else {
+					var_dump(mysqli_stmt_error($stmt));
+					return false;
 				}
 			}
-			
-		} else return [mysqli_stmt_error($stmt)];
-	}
-	elseif ($wherecolumn && !empty($values)) {
-		if ($stmt = mysqli_prepare($con, $sql)) {
-			$stmt->bind_param("s", $value);
-			foreach ($values as $value) {
-				echo 'value: ' . $value . PHP_EOL;
-				$stmt->execute();
-				if ($result = $stmt->get_result()) {
-					while ($row = $result->fetch_all(MYSQLI_ASSOC)) {
-						foreach ($rows as $row) {
-							foreach ($row as $r => $v) {
-								$array[$row['id']][$r] = $v;
-							}
-						}
-					}
-				} else return [mysqli_stmt_error($stmt)];
-			}
 		} 
 	}
-	return $array;
+	return true;
 }
 
 $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRequestInterface $request) use ($lorhondel, $discord, $stats) {
@@ -632,15 +656,6 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 					return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($return));
 				}
 			}
-			elseif ($method == 'patch') { //Update part of an existing record
-				if ($whitelisted) {
-					//check if already exists
-					//404 if does not exist
-				} else {
-					$return = $_403;
-					return new \GuzzleHttp\Psr7\Response(403, ['Content-Type' => 'application/json'], json_encode($return));
-				}
-			}
 			elseif ($method == 'put') { //Replace existing record
 				if ($whitelisted) {
 					if (is_int((int)$id2)) {
@@ -679,6 +694,49 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 					}
 				}
 				else {
+					$return = $_403;
+					return new \GuzzleHttp\Psr7\Response(403, ['Content-Type' => 'application/json'], json_encode($return));
+				}
+			}
+			elseif ($method == 'patch') { //Update an existing record
+				if ($whitelisted) {
+					//check if already exists
+					//404 if does not exist
+					if (is_int((int)$id2)) {
+						$data = json_validate($data);
+						$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
+							'id' => $data->id,
+							'user_id' => $data->user_id ?? $data->userid,
+							'species' => $data->species,
+							'health' => $data->health,
+							'attack' => $data->attack,
+							'defense' => $data->defense,
+							'speed' => $data->speed,
+							'skillpoints' => $data->skillpoints,
+						]);
+						if (empty($return = sqlGet(['*'], $repository, 'id', [$id2], '', 1))) {
+							var_dump($return); //array
+							return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($part));
+						}
+						else {
+							//$part is being populated with HTTP, why?
+							if (sqlUpdate(['id', 'user_id', 'species', 'health', 'attack', 'defense', 'speed', 'skillpoints'], [$part->id, $part->user_id, $part->species, $part->health, $part->attack, $part->defense, $part->speed, $part->skillpoints], $repository, 'id', $part->id)) {
+								if ($lorhondel->players->offsetGet($part->id))
+									$lorhondel->players->pull($part->id);
+								$lorhondel->players->push($part);
+								return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($part));
+							}
+							else { //The data provided is either missing or didn't get passed to the SQL method
+								$return = $_400;
+								return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($return));
+							}
+						}
+					}
+					else{
+						$return = $_400;
+						return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($return));
+					}
+				} else {
 					$return = $_403;
 					return new \GuzzleHttp\Psr7\Response(403, ['Content-Type' => 'application/json'], json_encode($return));
 				}
