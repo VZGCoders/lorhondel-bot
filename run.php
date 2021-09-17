@@ -49,6 +49,7 @@ $options = array(
 	'browser' => $browser,
 	'discord' => $discord,
 	'logger' => $logger,
+	'loadAllMembers' => false,
 );
 $lorhondel = new Lorhondel\Lorhondel($options);
 
@@ -580,7 +581,7 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 				if (!$id2 || $id2 == 'all' || $id2 == 'freshen') {
 					if ($whitelisted) {
 						echo '[GET ALL]' . PHP_EOL;
-						$array = sqlGet(['*'], $repository, '', [], '', 500); //array
+						$array = sqlGet(['*'], $repository, '', [], '', ''); //array
 						$array = json_validate($array);
 						//Create all into parts and push
 						echo '[ARRAY]' . PHP_EOL;
@@ -813,7 +814,8 @@ try{
 		$discord->updatePresence($act, false, 'online', false);
 		echo "[READY]" . PHP_EOL;
 		include 'ready-include.php'; //All modular event handlers
-		include 'setup-include.php'; //Import existing parts from SQL
+		include 'connect.php';
+		$lorhondel->players->freshen();	//Import existing parts from SQL
 	 });
 	$discord->run();
 }catch (Throwable $e) { //Restart the bot

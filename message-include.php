@@ -122,7 +122,7 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 				$message->reply(json_encode($lorhondel->players));
 				break;
 			case 'get':
-				$url = "http://lorhondel.valzargaming.com/api/v1/players/get/116927250145869826/";
+				$url = Lorhondel\Http::BASE_URL . '/players/get/116927250145869826/";
 				$browser->post($url, ['Content-Type' => 'application/json'], json_encode('116927250145869826'))->then(
 					function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel) {
 						echo '[RESPONSE]' . PHP_EOL;
@@ -148,7 +148,7 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 				]);
 				//$result = sqlCreate('players', json_encode($part));
 				//$lorhondel->players->save($part); //Use $Browser instead, this is currently broken
-				$url = "http://lorhondel.valzargaming.com/api/v1/players/post/{$part->id}/";
+				$url = Lorhondel\Http::BASE_URL . "/players/post/{$part->id}/";
 				$browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then(
 					function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
 						/*
@@ -181,7 +181,7 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 				]);
 				//$result = sqlCreate('players', json_encode($part));
 				//$lorhondel->players->save($part); //Use $Browser instead, this is currently broken
-				$url = "http://lorhondel.valzargaming.com/api/v1/players/post/{$part->id}/";
+				$url = Lorhondel\Http::BASE_URL . "/players/post/{$part->id}/";
 				$browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
 					function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
 						/*
@@ -214,7 +214,7 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 					'speed' => 3,
 					'skillpoints' => 4,
 				]);
-				$url = "http://lorhondel.valzargaming.com/api/v1/players/delete/{$part->id}/";
+				$url = Lorhondel\Http::BASE_URL . "/players/delete/{$part->id}/";
 				$browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->done( //Make this a function
 					function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
 						echo '[DELETE] '; var_dump($lorhondel->players->offsetUnset($part->id)); 

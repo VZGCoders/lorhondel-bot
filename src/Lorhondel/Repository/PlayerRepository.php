@@ -61,9 +61,10 @@ class PlayerRepository extends AbstractRepository
 		return $browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
 			function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
 				echo '[DELETE] '; var_dump($lorhondel->players->offsetUnset($part->id)); 
-				var_dump($lorhondel->players);
+				//var_dump($lorhondel->players);
 			},
 			function ($error) {
+				echo '[DELETE ERROR]' . PHP_EOL;
 				var_dump($error);
 			}
 		);
@@ -80,7 +81,7 @@ class PlayerRepository extends AbstractRepository
 		echo '[FRESHEN()]' . PHP_EOL;
 		$url = Http::BASE_URL . "/players/get/all/"; echo '[URL] ' . $url . PHP_EOL;
 		$this->factory->lorhondel->browser->get($url)->done( //Make this a function
-			function (Psr\Http\Message\ResponseInterface $response) {
+			function (Psr\Http\Message\ResponseInterface $response) { //TODO: Not receiving response
 				echo '[RESPONSE] ' . PHP_EOL;
 				if (is_object(json_decode((string)$response->getBody()->getContents()))) echo '[VALID JSON]' . PHP_EOL;
 				/*
