@@ -393,24 +393,29 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 			'players' => [
 				'part_name' => '\Lorhondel\Parts\Player\Player',
 				'allowed_methods' => [
-					['get', false, ['all', 'freshen']],
-					['put', true, []],
-					['patch', true, []],
-					['post', true, []],
-					['delete', true, []],
+					['method' => 'get', 'privileged' => false, 'privileged_endpoints' => [null, 'all', 'freshen']],
+					['method' => 'put', 'privileged' => true, 'privileged_endpoints' => []],
+					['method' => 'patch', 'privileged' => true, 'privileged_endpoints' => []],
+					['method' => 'post', 'privileged' => true, 'privileged_endpoints' => []],
+					['method' => 'delete', 'privileged' => true, 'privileged_endpoints' => []],
 				],
 			],
 		];
 		$collection = false;
 		$allowed = false;
+		$target_repository = null;
+		$target_method = null;
+		$target_id2 = null;
 		foreach ($repositories as $key => $value) { //Verify permissions
 			if ($repository == $key) {
 				$collection = true;
-				echo "[REPOSITORY] $repository" . PHP_EOL;
-				foreach($repositories[$key]['allowed_methods'] as $list) {
-					if ($method == $list[0]) {
-						if ($whitelisted || !$list[1] || in_array($id2, $list[2])) {
+				$target_repository = $repository;
+				foreach($repositories[$key]['allowed_methods'] as $methods) {
+					if ($method == $methods['method']) {
+						if ($whitelisted || !$methods['privileged'] || in_array($id2, $methods['privileged_endpoints'])) {
 							echo "[ALLOWED METHOD/ENDPOINT] $method/$id2" . PHP_EOL; 
+							$target_method = $method;
+							$target_id2 = $id2;
 							$allowed = true;
 						} else return new \GuzzleHttp\Psr7\Response(403, ['Content-Type' => 'application/json'], json_encode($_403));
 					}
@@ -418,61 +423,11 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 			}
 		}
 		$process_collection = false;
-		if ($collection && $allowed) { //Look for errors specific to http methods 
-			/*
-			if (!$id2 || $id2 == 'all' || $id2 == 'freshen') {
-				echo '[GET ALL]' . PHP_EOL;
-				$array = sqlGet(['*'], $repository, '', [], '', ''); //array
-				$array = json_validate($array);
-				//Create all into parts and push
-				echo '[ARRAY]' . PHP_EOL;
-				var_dump($array);
-				foreach ($array as $data) {
-					$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
-						'id' => $data->id,
-						'user_id' => $data->user_id ?? $data->userid,
-						'species' => $data->species,
-						'health' => $data->health,
-						'attack' => $data->attack,
-						'defense' => $data->defense,
-						'speed' => $data->speed,
-						'skillpoints' => $data->skillpoints,
-					]);
-					echo '[PART]' . PHP_EOL;
-					var_dump($part);
-					if(!$lorhondel->players->offsetGet($part->id))
-						$lorhondel->players->push($part);
-				}
-				return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($array)); //return isn't being received?
-			
-			}
-			elseif (is_int((int)$id2)) {
-				if (in_array($partial, $allowed)) {
-					if (empty($return = sqlGet([$partial], $repository, 'id', [$id2], '', 1))) {
-						$return = $_404;
-						return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($return));
-					}
-				}
-				elseif (!$partial) {
-					if (empty($return = sqlGet(['*'], $repository, 'id', [$id2], '', 1))) {
-						$return = $_404;
-						return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($return));
-					}
-				}
-				else {
-					$return = $_400;
-					return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($return));
-				}
-			}
-			else {
-				$return = $_400;
-				return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($return));
-			}
+		if ($allowed) { //Catch type errors
+			//
 		}
-			*/
-		}
-		if ($process_collection = true){
-			
+		if ($process_collection = true) { //Process collection request
+			//
 		}
 	
 		switch ($sub) {
