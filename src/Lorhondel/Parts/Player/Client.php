@@ -29,7 +29,7 @@ class Client extends Part
     /**
      * @inheritdoc
      */
-    protected $fillable = ['id', 'player', 'user_id', 'user'];
+    protected static $fillable = ['id', 'player', 'user_id', 'user'];
 
     /**
      * @inheritdoc
@@ -37,6 +37,22 @@ class Client extends Part
     protected $repositories = [
         'players' => PlayerRepository::class,
     ];
+
+	/**
+     * Returns the fillable attributes.
+     *
+     * @return array
+     */
+    public static function getFillableAttributes($context = '')
+	{
+		$fillable = array();
+		foreach (self::$fillable as $attr) {
+			if (!$context || in_array($context, $attrContexts)) {
+				$fillable[] = $attr;
+			}
+		}
+		return $fillable;
+	}
 
     /**
      * Runs any extra construction tasks.

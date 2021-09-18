@@ -36,7 +36,40 @@ class Player extends Part
     /**
      * @inheritdoc
      */
-    protected $fillable = ['id', 'user_id', 'species', 'health', 'attack', 'defense', 'speed', 'skillpoints'];
+    protected static $fillable = ['id', 'user_id', 'species', 'health', 'attack', 'defense', 'speed', 'skillpoints'];
+
+	/**
+     * Returns the fillable attributes.
+     *
+     * @return array
+     */
+    public static function getFillableAttributes($context = '')
+	{
+		$fillable = array();
+		foreach (self::$fillable as $attr) {
+			if (!$context || in_array($context, $attrContexts)) {
+				$fillable[] = $attr;
+			}
+		}
+		return $fillable;
+	}
+
+	/**
+     * @inheritdoc
+     */
+    public function getCreatableAttributes(): array
+    {
+        return [
+            'id' => $this->id,
+            'user_id' => $this->user_id,
+            'species' => $this->species,
+            'health' => $this->health,
+            'attack' => $this->attack,
+            'defense' => $this->defense,
+            'speed' => $this->speed,
+            'skillpoints' => $this->skillpoints,
+        ];
+    }
 
     /**
      * Returns a timestamp for when a player's account was created.
@@ -47,6 +80,7 @@ class Player extends Part
     {
         return \Lorhondel\getSnowflakeTimestamp($this->id);
     }
+	
 
     /**
      * @inheritdoc

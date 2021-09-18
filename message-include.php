@@ -138,12 +138,14 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 					'id' => 116927250145869826,
 					'user_id' => 116927250145869826,
 					'species' => 'Elarian', //Elarian, Manthean, Noldarus, Veias, Jedoa
-					'health' => 999,
-					'attack' => 999,
-					'defense' => 999,
-					'speed' => 999,
-					'skillpoints' => 999,
+					'health' => 888,
+					'attack' => 888,
+					'defense' => 888,
+					'speed' => 888,
+					'skillpoints' => 888,
 				]);
+				echo '[PART]' . var_dump($part);
+				return;
 				$url = Lorhondel\Http::BASE_URL . "/players/patch/{$part->id}/";
 				$browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then(
 					function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
