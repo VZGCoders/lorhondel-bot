@@ -238,12 +238,11 @@ function sqlUpdate(array $columns = [], array $values = [], string $table, strin
 	$sql = str_replace('_', '', $sql);
 	echo '[SQL] ' . $sql . PHP_EOL;
 	
-	if ($wherecolumn && !empty($values)) {
-		if ($stmt = $PDO->prepare($sql)) {
-			if ($stmt->execute($values)) return true;
-			else echo mysqli_stmt_error($stmt);
-		} else echo mysqli_stmt_error($stmt);
-	}
+
+	if ($stmt = $PDO->prepare($sql)) {
+		if ($stmt->execute($values)) return true;
+		else echo mysqli_stmt_error($stmt);
+	} else echo mysqli_stmt_error($stmt);
 	return false;
 }
 function sqlDelete(string $table, string $wherecolumn = '', array $values = [], string $order = '', int|string $limit = '')
@@ -251,45 +250,18 @@ function sqlDelete(string $table, string $wherecolumn = '', array $values = [], 
 	include 'connect.php';
 	$array = array();
 	
-	$sql = "DELETE * FROM $table";
+	$sql = "DELETE FROM $table";
 	if ($wherecolumn && !empty($values)) $sql .= " WHERE $wherecolumn = ?";
 	if ($order) $sql .= " ORDER BY $order";
 	if ($limit) $sql .= " LIMIT $limit";
 	echo '[SQL] ' . $sql . PHP_EOL;
 	
-	if (!$wherecolumn) {
-		$stmt = mysqli_prepare($mysqli, $sql); //Delete all values in the column
-		$stmt->execute();
-		if ($result = $stmt->get_result()) {
-			while ($row = $result->fetch_array(MYSQLI_ASSOC)) {
-				foreach ($row as $r => $v) {
-					$array[$r] = $v;
-				}
-			}
-			
-		} else {
-			var_dump(mysqli_stmt_error($stmt));
-			return false;
-		}
-	} else if ($wherecolumn && !empty($values)) {
-		if ($stmt = mysqli_prepare($mysqli, $sql)) {
-			$stmt->bind_param("s", $value);
-			foreach ($values as $value) {
-				$stmt->execute();
-				if ($result = $stmt->get_result()) {
-					while ($row = $result->fetch_array(MYSQLI_ASSOC)) {
-						foreach ($row as $r => $v) {
-							$array[$r] = $v;
-						}
-					}
-				} else {
-					var_dump(mysqli_stmt_error($stmt));
-					return false;
-				}
-			}
-		} 
-	}
-	return true;
+	
+	if ($stmt = $PDO->prepare($sql)) {
+		if ($stmt->execute($values))	 return true;
+		else echo mysqli_stmt_error($stmt);
+	} else echo mysqli_stmt_error($stmt);
+	return false;
 }
 
 $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRequestInterface $request) use ($lorhondel, $discord, $stats) {
@@ -648,7 +620,7 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 				} else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400)); //The data provided is either missing or didn't get passed to the SQL method
 			}
 			elseif ($target_method == 'post' || $target_method = 'put') { //Put works here because we should never be creating duplicates of objects or reusing the same id for multiple objects
-				if (is_int((int)$id2)) {
+				if ($id2 && is_numeric(($id2))) {
 					if (!empty($return = sqlGet(['*'], $repository, 'id', [$id2], '', 1)))
 						return new \GuzzleHttp\Psr7\Response(204, ['Content-Type' => 'application/json'], json_encode($part));
 					else {
@@ -663,44 +635,67 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 			}
 		}
 		if ($target_method == 'get' || $target_method == 'fetch') {
-			if (is_int((int)$id2))
-				if (in_array($partial, $allowed_properties))
+			if ($id2 && is_numeric(($id2))) {
+				if (in_array($partial, $allowed_properties)) {
 					if (empty($return = sqlGet([$partial], $repository, 'id', [$id2], '', 1)))
 						return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($_404));
-				elseif (!$partial)
-					if (empty($return = sqlGet(['*'], $repository, 'id', [$id2], '', 1)))
-						return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($_404));
-					else return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($return));
-				else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400));
-			else {
+					else {
+						//NYI
+						return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($return ?? $_200));
+					}
+				} elseif (!$partial) {
+					if (!empty($array = sqlGet(['*'], $repository, 'id', [$id2], '', 1))) {
+						foreach ($array as $data) //Create all into parts and push
+						if ($attributes = json_decode(json_encode(json_validate($array)), true)) {
+							foreach ($part_name::getFillableAttributes() as $fillable) {
+								foreach ($attributes[$id2] as $key => $attribute) {
+									if ($key != $fillable && $key == str_replace('_', '', $fillable)) {
+										$attributes[$id2][$fillable] = $attribute;
+										unset($attributes[$id2][$key]);
+									}
+								}
+							}
+							if ($part = $lorhondel->factory($part_name, $attributes[$id2])) {
+								if ($lorhondel->$repository->offsetGet($part->id))
+									$lorhondel->$repository->pull($part->id);
+								$lorhondel->$repository->push($part);
+							}
+						}
+						return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($part ?? $_200));
+					} else return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($_404));
+				}else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400));
+			} else { //all
 				$array = json_validate(sqlGet(['*'], $repository, '', [], '', '')); //array
-				foreach ($array as $data) { //Create all into parts and push
-					$data = json_validate($data);
-					$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
-						'id' => $data->id,
-						'user_id' => $data->user_id ?? $data->userid,
-						'species' => $data->species,
-						'health' => $data->health,
-						'attack' => $data->attack,
-						'defense' => $data->defense,
-						'speed' => $data->speed,
-						'skillpoints' => $data->skillpoints,
-					]);
-					if (!$lorhondel->$repository->offsetGet($part->id))
-						$lorhondel->$repository->push($part);
-				}
+				foreach ($array as $data) //Create all into parts and push
+					if ($attributes = json_decode(json_encode(json_validate($data)), true)) {
+						foreach ($part_name::getFillableAttributes() as $fillable) {
+							foreach ($attributes as $key => $attribute) {
+								 if ($key != $fillable && $key == str_replace('_', '', $fillable)) {
+									 unset($attributes[$key]);
+									 $attributes[$fillable] = $attribute;
+								 }
+							}
+						}
+						if ($part = $lorhondel->factory($part_name, $attributes)) {
+							if ($lorhondel->$repository->offsetGet($part->id))
+								$lorhondel->$repository->pull($part->id);
+							$lorhondel->$repository->push($part);
+						}
+					}
 				return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($array)); //return isn't being received?
 			}
 		}
 		elseif ($target_method == 'delete') { echo '[DELETE]' . PHP_EOL;
-			if (empty($return = sqlGet(['*'], $repository, 'id', [$data->id ?? $id2], '', 1)))
+			if (empty($return = sqlGet(['*'], $repository, 'id', [$id2], '', 1)))
 				return new \GuzzleHttp\Psr7\Response(204, ['Content-Type' => 'application/json'], json_encode($_204)); //Data does not exist to delete
-			elseif (sqlDelete($repository, 'id', [$data->id ?? $id2], '', 1))
-				return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($part ?? $lorhondel->players->pull($data->id) ?? $id2));
-			else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400)); //The data provided is either missing or didn't get passed to the SQL method
+			elseif (sqlDelete($repository, 'id', [$id2], '', 1)) {
+				if($lorhondel->$repository->offsetGet($id2))
+					$lorhondel->$repository->pull($id2);
+				return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($part ?? $lorhondel->players->pull($id2) ?? $id2));
+			} else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400)); //The data provided is either missing or didn't get passed to the SQL method
 		}
 		elseif ($target_method == 'fresh') {
-			if (is_int((int)$id2)) {
+			if ($id2 && is_numeric(($id2))) {
 				if (!empty($data = sqlGet(['*'], $repository, 'id', [$id2], '', 1))) //Recreate the part with data from SQL
 					//if ($attributes = json_decode(json_encode(json_validate($data)), true))
 						if ($attributes = json_decode(json_encode(json_validate($data)), true))
@@ -721,7 +716,7 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 					if ($whitelisted) {
 						//check if already exists
 						//404 if does not exist
-						if (is_int((int)$id2)) {
+						if ($id2 && is_numeric(($id2))) {
 							$data = json_validate($data);
 							$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
 								'id' => $data->id,
@@ -762,7 +757,7 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 				}
 				elseif ($method == 'post') { //Insert but do not replace existing record
 					if ($whitelisted) {
-						if (is_int((int)$id2)) {
+						if ($id2 && is_numeric(($id2))) {
 							$data = json_validate($data);
 							$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
 								'id' => $data->id,
@@ -848,8 +843,9 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 		/*if ($return)*/ return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
 	}
 	catch (Exception $e) {
-			$return = $_5xx;
-			return new \GuzzleHttp\Psr7\Response(500, ['Content-Type' => 'application/json'], json_encode($return));
+		echo '[ERROR]' . PHP_EOL; var_dump($e);
+		$return = $_5xx;
+		return new \GuzzleHttp\Psr7\Response(500, ['Content-Type' => 'application/json'], json_encode($return));
 	}
 });
 $socket = new \React\Socket\Server(sprintf('%s:%s', '0.0.0.0', '27759'), $loop);
