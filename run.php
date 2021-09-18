@@ -157,7 +157,7 @@ function sqlGet(array $columns = [], string $table = '', string $wherecolumn = '
 				}
 			}
 			
-		} else{
+		} else {
 			var_dump (mysqli_stmt_error($stmt));
 			return [];
 		}
@@ -251,8 +251,7 @@ function sqlDelete(string $table, string $wherecolumn = '', array $values = [], 
 	include 'connect.php';
 	$array = array();
 	
-	$sql = "DELETE ";
-	$sql .= "FROM $table";
+	$sql = "DELETE * FROM $table";
 	if ($wherecolumn && !empty($values)) $sql .= " WHERE $wherecolumn = ?";
 	if ($order) $sql .= " ORDER BY $order";
 	if ($limit) $sql .= " LIMIT $limit";
@@ -276,7 +275,6 @@ function sqlDelete(string $table, string $wherecolumn = '', array $values = [], 
 		if ($stmt = mysqli_prepare($mysqli, $sql)) {
 			$stmt->bind_param("s", $value);
 			foreach ($values as $value) {
-				echo 'value: ' . $value . PHP_EOL;
 				$stmt->execute();
 				if ($result = $stmt->get_result()) {
 					while ($row = $result->fetch_array(MYSQLI_ASSOC)) {
@@ -577,6 +575,7 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 				'part_name_short' => 'Player',
 				'allowed_methods' => [
 					['method' => 'get', 'privileged' => false, 'privileged_endpoints' => [null, 'all', 'freshen']],
+					['method' => 'fresh', 'privileged' => false, 'privileged_endpoints' => []],
 					['method' => 'put', 'privileged' => true, 'privileged_endpoints' => []],
 					['method' => 'patch', 'privileged' => true, 'privileged_endpoints' => []],
 					['method' => 'post', 'privileged' => true, 'privileged_endpoints' => []],
@@ -608,7 +607,7 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 		}
 		if (!$target_method) return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400));
 		
-		$requires_part = ['put', 'patch', 'post', 'fresh'];
+		$requires_part = ['put', 'patch', 'post'];
 		$has_part = false;
 		$part = null;
 		$attributes = [];
@@ -635,67 +634,86 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 			foreach($part->getFillableAttributes() as $property)
 				$sanitized_properties[] = str_replace('_', '', $property);
 			$allowed_properties = array_merge($allowed_properties, $sanitized_properties);
-			echo '[ALLOWED_PROPERTIES]' . PHP_EOL; var_dump($allowed_properties);
 		}
 		
 		if ($has_part) { //Catch method-related errors (Process collection request?)
-			if ($target_method = 'put') {
-				//
-			} elseif ($target_method = 'patch') {
+			if ($target_method == 'patch') {
 				if (empty($return = sqlGet(['*'], $repository, 'id', [$id2], '', 1)))
-					return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($part));
-				else {
-					if (sqlUpdate($part->getFillableAttributes(), $attributes, $repository, 'id', $part->id)) {
-						if ($lorhondel->$repository->offsetGet($part->id))
-							$lorhondel->$repository->pull($part->id);
-						$lorhondel->$repository->push($part);
-						return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($part));
-					} else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400)); //The data provided is either missing or didn't get passed to the SQL method
-				}
-			} elseif ($target_method = 'post') {
-				//
+					return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($part)); //Data does not exist to update
+				elseif (sqlUpdate($part->getFillableAttributes(), $attributes, $repository, 'id', $part->id)) {
+					if ($lorhondel->$repository->offsetGet($part->id))
+						$lorhondel->$repository->pull($part->id);
+					$lorhondel->$repository->push($part);
+					return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($part));
+				} else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400)); //The data provided is either missing or didn't get passed to the SQL method
 			}
-		} else {
-			if ($target_method = 'get') {
-				if (is_int((int)$id2))
-					if (in_array($partial, $allowed_properties))
-						if (empty($return = sqlGet([$partial], $repository, 'id', [$id2], '', 1)))
-							return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($_404));
-					elseif (!$partial)
-						if (empty($return = sqlGet(['*'], $repository, 'id', [$id2], '', 1)))
-							return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($_404));
-						else return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($return));
-					else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400));
-				else { echo '[GET ALL]' . PHP_EOL;
-					$array = sqlGet(['*'], $repository, '', [], '', ''); //array
-					$array = json_validate($array);
-					//Create all into parts and push
-					//echo '[ARRAY]' . PHP_EOL;
-					//var_dump($array);
-					foreach ($array as $data) {
-						$data = json_validate($data);
-						$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
-							'id' => $data->id,
-							'user_id' => $data->user_id ?? $data->userid,
-							'species' => $data->species,
-							'health' => $data->health,
-							'attack' => $data->attack,
-							'defense' => $data->defense,
-							'speed' => $data->speed,
-							'skillpoints' => $data->skillpoints,
-						]);
-						//echo '[PART]' . PHP_EOL;
-						//var_dump($part);
-						if (!$lorhondel->$repository->offsetGet($part->id))
-							$lorhondel->$repository->push($part);
+			elseif ($target_method == 'post' || $target_method = 'put') { //Put works here because we should never be creating duplicates of objects or reusing the same id for multiple objects
+				if (is_int((int)$id2)) {
+					if (!empty($return = sqlGet(['*'], $repository, 'id', [$id2], '', 1)))
+						return new \GuzzleHttp\Psr7\Response(204, ['Content-Type' => 'application/json'], json_encode($part));
+					else {
+						if (sqlCreate($repository, $data)) {
+							if (!$lorhondel->players->offsetGet($data->id))
+								$lorhondel->players->push($part);
+							else echo '[EXISTS] ' . $data->id . PHP_EOL;
+							return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($part));
+						} else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400)); //The data provided is either missing or didn't get passed to the SQL method
 					}
-					return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($array)); //return isn't being received?
-				}
-			}
-			elseif ($target_method = 'delete') {
-				//
+				} else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400));
 			}
 		}
+		if ($target_method == 'get' || $target_method == 'fetch') {
+			if (is_int((int)$id2))
+				if (in_array($partial, $allowed_properties))
+					if (empty($return = sqlGet([$partial], $repository, 'id', [$id2], '', 1)))
+						return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($_404));
+				elseif (!$partial)
+					if (empty($return = sqlGet(['*'], $repository, 'id', [$id2], '', 1)))
+						return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($_404));
+					else return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($return));
+				else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400));
+			else {
+				$array = json_validate(sqlGet(['*'], $repository, '', [], '', '')); //array
+				foreach ($array as $data) { //Create all into parts and push
+					$data = json_validate($data);
+					$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
+						'id' => $data->id,
+						'user_id' => $data->user_id ?? $data->userid,
+						'species' => $data->species,
+						'health' => $data->health,
+						'attack' => $data->attack,
+						'defense' => $data->defense,
+						'speed' => $data->speed,
+						'skillpoints' => $data->skillpoints,
+					]);
+					if (!$lorhondel->$repository->offsetGet($part->id))
+						$lorhondel->$repository->push($part);
+				}
+				return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($array)); //return isn't being received?
+			}
+		}
+		elseif ($target_method == 'delete') { echo '[DELETE]' . PHP_EOL;
+			if (empty($return = sqlGet(['*'], $repository, 'id', [$data->id ?? $id2], '', 1)))
+				return new \GuzzleHttp\Psr7\Response(204, ['Content-Type' => 'application/json'], json_encode($_204)); //Data does not exist to delete
+			elseif (sqlDelete($repository, 'id', [$data->id ?? $id2], '', 1))
+				return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($part ?? $lorhondel->players->pull($data->id) ?? $id2));
+			else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400)); //The data provided is either missing or didn't get passed to the SQL method
+		}
+		elseif ($target_method == 'fresh') {
+			if (is_int((int)$id2)) {
+				if (!empty($data = sqlGet(['*'], $repository, 'id', [$id2], '', 1))) //Recreate the part with data from SQL
+					//if ($attributes = json_decode(json_encode(json_validate($data)), true))
+						if ($attributes = json_decode(json_encode(json_validate($data)), true))
+						if ($part = $lorhondel->factory($part_name, $attributes[$id2])) {
+							if ($lorhondel->$repository->offsetGet($id2))
+								$lorhondel->$repository->pull($id2);
+							$lorhondel->$repository->push($part);
+							return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($part));
+						} else return new \GuzzleHttp\Psr7\Response(500, ['Content-Type' => 'application/json'], json_encode($_5xx)); //Nothing from SQL should be throwing an error, so this is a problem!
+				else return new \GuzzleHttp\Psr7\Response(204, ['Content-Type' => 'application/json'], json_encode($part));
+			} else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400));
+		}
+
 		switch ($repository) { //gateway
 			case 'players':
 				$allowed_properties = ['*', 'id', 'user_id', 'species', 'health', 'attack', 'defense', 'speed', 'skillpoints'];
@@ -733,7 +751,7 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 								}
 							}
 						}
-						else{
+						else {
 							$return = $_400;
 							return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($return));
 						}
@@ -788,7 +806,7 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 						if (empty($return = sqlGet(['*'], $repository, 'id', [$id2], '', 1))) {
 							$return = $_204;
 							return new \GuzzleHttp\Psr7\Response(204, ['Content-Type' => 'application/json'], json_encode($return));
-						} else{
+						} else {
 							$data = json_validate($data);
 							$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
 								'id' => $data->id,
