@@ -96,6 +96,70 @@ class PlayerRepository extends AbstractRepository
 	}
 	
 	/**
+     * Returns a part with fresh values.
+     *
+     * @param Part $part The part to get fresh values.
+     *
+     * @return ExtendedPromiseInterface
+     * @throws \Exception
+     */
+    public function fresh(Part $part): ExtendedPromiseInterface
+    {
+        if (! $part->created) {
+            return \React\Promise\reject(new \Exception('You cannot get a non-existant part.'));
+        }
+
+        if (! isset($this->endpoints['get'])) {
+            return \React\Promise\reject(new \Exception('You cannot get this part.'));
+        }
+
+        $url = Http::BASE_URL . "/players/fresh/{$part->id}/";
+		return $browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
+			function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
+				echo '[FRESH] '; var_dump($lorhondel->players->offsetUnset($part->id)); 
+				//var_dump($lorhondel->players);
+			},
+			function ($error) {
+				echo '[FRESH ERROR]' . PHP_EOL;
+				var_dump($error);
+			}
+		);
+    }
+	
+	/**
+     * Gets a part from the repository or Lorhondel servers.
+     *
+     * @param string $id    The ID to search for.
+     * @param bool   $fresh Whether we should skip checking the cache.
+     *
+     * @return ExtendedPromiseInterface
+     * @throws \Exception
+     */
+    public function fetch(string $id, bool $fresh = false): ExtendedPromiseInterface
+    {
+        if (! $fresh && $part = $this->get($this->discrim, $id)) {
+            return \React\Promise\resolve($part);
+        }
+
+        if (! isset($this->endpoints['get'])) {
+            return \React\Promise\resolve(new \Exception('You cannot get this part.'));
+        }
+
+        $part = $this->factory->create($this->class, [$this->discrim => $id]);
+        $url = Http::BASE_URL . "/players/fetch/{$part->id}/";
+		return $browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
+			function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
+				echo '[FETCH] '; var_dump($lorhondel->players->offsetUnset($part->id)); 
+				//var_dump($lorhondel->players);
+			},
+			function ($error) {
+				echo '[FETCH ERROR]' . PHP_EOL;
+				var_dump($error);
+			}
+		);
+    }
+	
+	/**
      * Freshens the repository collection.
      *
      * @return ExtendedPromiseInterface
