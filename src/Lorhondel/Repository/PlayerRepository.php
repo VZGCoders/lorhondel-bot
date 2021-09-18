@@ -37,14 +37,9 @@ class PlayerRepository extends AbstractRepository
         'delete' => Endpoint::PLAYER,
     ];
 
-    /**
-     * Attempts to delete a part on the Lorhondel servers.
-     *
-     * @param Part|snowflake $part The part to delete.
-     *
-     * @return ExtendedPromiseInterface
-     * @throws \Exception
-	 */
+	 /**
+     * @inheritdoc
+     */
     protected $class = Player::class;
 	
 	/**
@@ -55,6 +50,7 @@ class PlayerRepository extends AbstractRepository
      * @return ExtendedPromiseInterface
      * @throws \Exception
      */
+
     public function save(Part $part)
     {
 		if ($this->factory->lorhondel->players->offsetGet($part->id)) $method = 'patch';
@@ -72,6 +68,14 @@ class PlayerRepository extends AbstractRepository
 		);
     }
 	
+	/**
+     * Attempts to delete a part on the Lorhondel servers.
+     *
+     * @param Part|snowflake $part The part to delete.
+     *
+     * @return ExtendedPromiseInterface
+     * @throws \Exception
+	 */
 	public function delete($part): ExtendedPromiseInterface
 	{
 		if (! ($part instanceof Part)) {

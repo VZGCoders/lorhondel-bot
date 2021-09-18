@@ -116,7 +116,7 @@ function json_validate($data)
         echo '[JSON ERROR] '. $error . PHP_EOL;
     }
     // everything is OK
-	echo '[JSON OKAY]' . PHP_EOL; var_dump ($result);
+	//echo '[JSON OKAY]' . PHP_EOL; //var_dump ($result);
     return $result;
 }
 
@@ -128,7 +128,7 @@ function sqlGet(array $columns = [], string $table = '', string $wherecolumn = '
 		foreach ($columns as &$column)
 			$column = str_replace('_', '', $column);
 	}
-	if(!$table) return [];
+	if (!$table) return [];
 	include 'connect.php'; //$mysqli and $pdo
 	$array = array();
 	
@@ -240,7 +240,7 @@ function sqlUpdate(array $columns = [], array $values = [], string $table, strin
 	
 	if ($wherecolumn && !empty($values)) {
 		if ($stmt = $PDO->prepare($sql)) {
-			if($stmt->execute($values)) return true;
+			if ($stmt->execute($values)) return true;
 			else echo mysqli_stmt_error($stmt);
 		} else echo mysqli_stmt_error($stmt);
 	}
@@ -298,13 +298,13 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 	try{
 		echo '[API] ';
 		$path = explode('/', $request->getUri()->getPath());
-		$ver = (isset($path[1]) ? (string) strtolower($path[1]) : false); if ($ver) echo '[ver] ' . $ver . ' ';
-		$repository = $sub = (isset($path[2]) ? (string) strtolower($path[2]) : false); if ($sub) echo '[sub] ' . $sub . ' ';
-		$method = $id = (isset($path[3]) ? (string) strtolower($path[3]) : false); if ($id) echo '[method/id] ' . $id . ' ';
-		$id2 = (isset($path[4]) ? (string) strtolower($path[4]) : false); if ($id2) echo '[id2] ' . $id2 . ' ';
-		$partial = $id3 = (isset($path[5]) ? (string) strtolower($path[5]) : false); if ($id3) echo '[partial/id3] ' . $id3 . ' ';
-		$id4 = (isset($path[6]) ? (string) strtolower($path[6]) : false); if ($id4) echo '[id4] ' . $id4 . ' ';
-		$id5 = (isset($path[7]) ? (string) strtolower($path[7]) : false); if ($id5) echo '[id5] ' . $id5 . ' ';
+		$ver = (isset($path[1]) ? (string) strtolower($path[1]) : false); if ($ver) echo "/$ver/";
+		$repository = $sub = (isset($path[2]) ? (string) strtolower($path[2]) : false); if ($repository) echo "$repository/";
+		$method = $id = (isset($path[3]) ? (string) strtolower($path[3]) : false); if ($method) echo "$method/";
+		$id2 = (isset($path[4]) ? (string) strtolower($path[4]) : false); if ($id2) echo "$id2/";
+		$partial = $id3 = (isset($path[5]) ? (string) strtolower($path[5]) : false); if ($partial) echo "$partial/";
+		$id4 = (isset($path[6]) ? (string) strtolower($path[6]) : false); if ($id4) echo "$id4/";
+		$id5 = (isset($path[7]) ? (string) strtolower($path[7]) : false); if ($id5) echo "$id5/";
 		echo PHP_EOL;
 		if ($data = json_decode((string)$request->getBody())) {
 			echo '[-----DATA START-----]' . PHP_EOL;
@@ -392,6 +392,7 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 		$repositories = [
 			'players' => [
 				'part_name' => '\Lorhondel\Parts\Player\Player',
+				'part_name_short' => 'Player',
 				'allowed_methods' => [
 					['method' => 'get', 'privileged' => false, 'privileged_endpoints' => [null, 'all', 'freshen']],
 					['method' => 'put', 'privileged' => true, 'privileged_endpoints' => []],
@@ -401,33 +402,57 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 				],
 			],
 		];
-		$collection = false;
-		$allowed = false;
+
+		//$collection = false;
+		$part_name = '';
 		$target_repository = null;
 		$target_method = null;
 		$target_id2 = null;
 		foreach ($repositories as $key => $value) { //Verify permissions
 			if ($repository == $key) {
-				$collection = true;
-				$target_repository = $repository;
+				//$collection = true;
+				$target_repository = $key;
+				$part_name = $repositories[$key]['part_name'];
 				foreach($repositories[$key]['allowed_methods'] as $methods) {
 					if ($method == $methods['method']) {
 						if ($whitelisted || !$methods['privileged'] || in_array($id2, $methods['privileged_endpoints'])) {
 							echo "[ALLOWED METHOD/ENDPOINT] $method/$id2" . PHP_EOL; 
 							$target_method = $method;
 							$target_id2 = $id2;
-							$allowed = true;
 						} else return new \GuzzleHttp\Psr7\Response(403, ['Content-Type' => 'application/json'], json_encode($_403));
 					}
 				}
 			}
 		}
-		$process_collection = false;
-		if ($allowed) { //Catch type errors
-			//
+		
+		$requires_part = ['put', 'patch', 'post', 'fresh'];
+		$has_part = false;
+		//Catch endpoint-related errors for parts
+		if (in_array($method, $requires_part)) {
+			echo '[METHOD/ENDPOINT REQUIRES PART]' . PHP_EOL;
+			//Attempt to build the part
+			$data = json_validate($data);
+			//echo '[DATA DUMP]' . PHP_EOL; var_dump($data);
+			if( $attributes = json_decode(json_encode($data), true))
+				if ($part = $lorhondel->factory($part_name, $attributes)) $has_part = true;
+				else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($return));
+			else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400));
 		}
-		if ($process_collection = true) { //Process collection request
-			//
+		
+		if ($has_part) { //Catch method-related errors (Process collection request?)
+			if ($target_method = 'put') {
+				//
+			} elseif ($target_method = 'patch') {
+				//
+			} elseif ($target_method = 'post') {
+				//
+			}
+		} else {
+			if ($target_method = 'get') {
+				//
+			} elseif ($target_method = 'delete') {
+				//
+			}
 		}
 	
 		switch ($sub) {
@@ -619,9 +644,10 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 							$array = sqlGet(['*'], $repository, '', [], '', ''); //array
 							$array = json_validate($array);
 							//Create all into parts and push
-							echo '[ARRAY]' . PHP_EOL;
-							var_dump($array);
+							//echo '[ARRAY]' . PHP_EOL;
+							//var_dump($array);
 							foreach ($array as $data) {
+								$data = json_validate($data);
 								$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
 									'id' => $data->id,
 									'user_id' => $data->user_id ?? $data->userid,
@@ -632,9 +658,9 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 									'speed' => $data->speed,
 									'skillpoints' => $data->skillpoints,
 								]);
-								echo '[PART]' . PHP_EOL;
-								var_dump($part);
-								if(!$lorhondel->players->offsetGet($part->id))
+								//echo '[PART]' . PHP_EOL;
+								//var_dump($part);
+								if (!$lorhondel->players->offsetGet($part->id))
 									$lorhondel->players->push($part);
 							}
 							return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($array)); //return isn't being received?
