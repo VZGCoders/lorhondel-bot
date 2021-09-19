@@ -271,10 +271,10 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 		$ver = (isset($path[1]) ? (string) strtolower($path[1]) : false); if ($ver) echo "/$ver/";
 		$repository = $sub = (isset($path[2]) ? (string) strtolower($path[2]) : false); if ($repository) echo "$repository/";
 		$method = $id = (isset($path[3]) ? (string) strtolower($path[3]) : false); if ($method) echo "$method/";
-		$id2 = (isset($path[4]) ? (string) strtolower($path[4]) : false); if ($id2) echo "$id2/";
-		$partial = $id3 = (isset($path[5]) ? (string) strtolower($path[5]) : false); if ($partial) echo "$partial/";
-		$id4 = (isset($path[6]) ? (string) strtolower($path[6]) : false); if ($id4) echo "$id4/";
-		$id5 = (isset($path[7]) ? (string) strtolower($path[7]) : false); if ($id5) echo "$id5/";
+		$id2 = $repository2 = (isset($path[4]) ? (string) strtolower($path[4]) : false); if ($id2) echo "$id2/";
+		$partial = $method2 = (isset($path[5]) ? (string) strtolower($path[5]) : false); if ($partial) echo "$partial/";
+		$id3 = (isset($path[6]) ? (string) strtolower($path[6]) : false); if ($id3) echo "$id3/";
+		$id4 = (isset($path[7]) ? (string) strtolower($path[7]) : false); if ($id4) echo "$id4/";
 		echo PHP_EOL;
 		if ($data = json_decode((string)$request->getBody())) {
 			echo '[-----DATA START-----]' . PHP_EOL;
@@ -545,6 +545,18 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 			'players' => [
 				'part_name' => '\Lorhondel\Parts\Player\Player',
 				'part_name_short' => 'Player',
+				'allowed_methods' => [
+					['method' => 'get', 'privileged' => false, 'privileged_endpoints' => [null, 'all', 'freshen']],
+					['method' => 'fresh', 'privileged' => false, 'privileged_endpoints' => []],
+					['method' => 'put', 'privileged' => true, 'privileged_endpoints' => []],
+					['method' => 'patch', 'privileged' => true, 'privileged_endpoints' => []],
+					['method' => 'post', 'privileged' => true, 'privileged_endpoints' => []],
+					['method' => 'delete', 'privileged' => true, 'privileged_endpoints' => []],
+				],
+			],
+			'parties' => [
+				'part_name' => '\Lorhondel\Parts\Party\Party',
+				'part_name_short' => 'Party',
 				'allowed_methods' => [
 					['method' => 'get', 'privileged' => false, 'privileged_endpoints' => [null, 'all', 'freshen']],
 					['method' => 'fresh', 'privileged' => false, 'privileged_endpoints' => []],

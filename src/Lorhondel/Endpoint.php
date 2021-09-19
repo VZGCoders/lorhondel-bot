@@ -170,19 +170,32 @@ class Endpoint
     public const APPLICATION_CURRENT = 'oauth2/applications/@me';
 	
 	// GET, PATCH
-    public const PLAYER_CURRENT = 'players/@me';
+    public const PLAYER_CURRENT = 'players/:player_id';
     // GET
-    public const PLAYER = 'players/get/:id';
+    public const PLAYER = 'players/get/:player_id';
+	// PUT
+    //public const PLAYER_PUT = 'players/put/:player_id';
 	// POST
-    public const PLAYER_POST = 'players/post/:id';
-	// PUT
-	public const PLAYER_PUT = 'players/put/:id';
-	// PUT
-	public const PLAYER_PATCH = 'players/patch/:id';
-    // GET
-    public const PLAYER_CURRENT_CONNECTIONS = self::PLAYER_CURRENT.'/connections';
+    public const PLAYER_POST = 'players/post/:player_id';
+	// PATCH
+	public const PLAYER_PATCH = 'players/patch/:player_id';
+	// DELETE
+	public const PLAYER_DELETE = 'players/delete/:player_id';
+    // GET (NYI)
+    //public const PLAYER_CURRENT_CONNECTIONS = self::PLAYER_CURRENT.'/connections';
 	
-	
+	// 
+    public const PLAYER_CURRENT_PARTY = self::PLAYER_CURRENT.'/parties/:party_id';
+	 // GET
+    public const PARTY = 'parties/get/:party_id';
+	// PUT
+    //public const PARTY_PUT = 'parties/put/:party_id';
+	// POST
+    public const PARTY_POST = 'parties/post/:party_id';
+	// PATCH
+	public const PARTY_PATCH = 'parties/patch/:party_id';
+	// DELETE
+	public const PARTY_DELETE = 'parties/delete/:party_id';
 
     // GET, PATCH, DELETE
     public const WEBHOOK = 'webhooks/:webhook_id';

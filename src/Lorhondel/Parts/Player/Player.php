@@ -21,6 +21,7 @@ use React\Promise\ExtendedPromiseInterface;
 
  * @property int    $id            The unique identifier of the player.
  * @property int    $user_id       Discord user id.
+ * @property int    $party         Current party id.
  *
  * @property string $species       The species of the player.
  * @property int    $health        Health, obviously.
@@ -36,7 +37,7 @@ class Player extends Part
     /**
      * @inheritdoc
      */
-    protected static $fillable = ['id', 'user_id', 'species', 'health', 'attack', 'defense', 'speed', 'skillpoints'];
+    protected static $fillable = ['id', 'user_id', 'party', 'species', 'health', 'attack', 'defense', 'speed', 'skillpoints'];
 
 	/**
      * Returns the fillable attributes.
@@ -62,6 +63,7 @@ class Player extends Part
         return [
             'id' => $this->id,
             'user_id' => $this->user_id,
+			'party' => $this->party,
             'species' => $this->species,
             'health' => $this->health,
             'attack' => $this->attack,
@@ -88,7 +90,7 @@ class Player extends Part
     public function getRepositoryAttributes(): array
     {
         return [
-            'id' => $this->id,
+            'player_id' => $this->id,
         ];
     }
 
@@ -99,6 +101,6 @@ class Player extends Part
      */
     public function __toString()
     {
-        return "<@{$this->id}>";
+        return "<@{$this->user_id}>";
     }
 }

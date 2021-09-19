@@ -121,6 +121,9 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 			case 'players':
 				$message->reply(json_encode($lorhondel->players));
 				break;
+			case 'playersfreshen':
+				$lorhondel->players->freshen();
+				break;
 			case 'get':
 				$url = Lorhondel\Http::BASE_URL . '/players/get/116927250145869826/';
 				$browser->post($url, ['Content-Type' => 'application/json'], json_encode('116927250145869826'))->then(
@@ -183,6 +186,7 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 				$url = Lorhondel\Http::BASE_URL . "/players/post/{$part->id}/";
 				$browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then(
 					function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
+						$message->react("👍");
 						/*
 						if ((string)$response->getBody() == json_encode($part)) {
 							if ($response->getStatusCode() == 200) {
@@ -194,7 +198,8 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 						}
 						*/
 					},
-					function ($error) {
+					function ($error) use ($message) {
+						$message->react("👎");
 						var_dump($error);
 					}
 				);
