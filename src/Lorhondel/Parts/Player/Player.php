@@ -21,7 +21,7 @@ use React\Promise\ExtendedPromiseInterface;
 
  * @property int    $id            The unique identifier of the player.
  * @property int    $user_id       Discord user id.
- * @property int    $party         Current party id.
+ * @property int    $party_id      Current party id.
  *
  * @property string $species       The species of the player.
  * @property int    $health        Health, obviously.
@@ -48,7 +48,7 @@ class Player extends Part
 	{
 		$fillable = array();
 		foreach (self::$fillable as $attr) {
-			if (!$context || in_array($context, $attrContexts)) {
+			if (!$context || in_array($context, self::$fillable)) {
 				$fillable[] = $attr;
 			}
 		}
@@ -63,7 +63,7 @@ class Player extends Part
         return [
             'id' => $this->id,
             'user_id' => $this->user_id,
-			'party' => $this->party,
+			'party_id' => $this->party_id,
             'species' => $this->species,
             'health' => $this->health,
             'attack' => $this->attack,

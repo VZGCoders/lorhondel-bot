@@ -46,7 +46,7 @@ class Player extends Part
 	{
 		$fillable = array();
 		foreach (self::$fillable as $attr) {
-			if (!$context || in_array($context, $attrContexts)) {
+			if (!$context || in_array($context, self::$fillable)) {
 				$fillable[] = $attr;
 			}
 		}
@@ -76,12 +76,11 @@ class Player extends Part
      */
     public function leave(): ExtendedPromiseInterface
     {
-        return $this->lorhondel->parties->leave($this->id);
+        //return $this->lorhondel->parties->leave($this->id);
     }
 
     /**
-     * Transfers ownership of the party to
-     * another player.
+     * Transfers ownership of the party to another player.
      *
      * @param Player|int $player The member to transfer ownership to.
      *
