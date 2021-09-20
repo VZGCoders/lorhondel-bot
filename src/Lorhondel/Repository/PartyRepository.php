@@ -234,15 +234,8 @@ class PartyRepository extends AbstractRepository
 			} else return false;
 			$player->party_id = $party->id;
 			$this->factory->lorhondel->players->save($player);
+			$this->save($party);
 		} else return false;
-
-		/*
-        return $this->http->delete(Endpoint::bind(Endpoint::PLAYER_CURRENT_PARTY, $party))->then(function () use ($party) {
-            $this->pull('id', $party);
-
-            return $this;
-        });
-		*/
     }
 	
 	/**
@@ -299,7 +292,7 @@ class PartyRepository extends AbstractRepository
 
 		foreach ($party as $key => $value) {
 			if ($value == $player->id) {
-				$party->$value = null;
+				$party->$key = null;
 			}
 		}
 
