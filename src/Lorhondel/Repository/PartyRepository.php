@@ -299,7 +299,7 @@ class PartyRepository extends AbstractRepository
 		}
 		if(! $member) return false;
 
-		if ($succeed = $party->succession($party))
+		if ($succeed = $party->succession($party)) {
 			return $this->save($party);
 		} else return $succeed;
     }
