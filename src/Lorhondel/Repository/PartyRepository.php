@@ -198,29 +198,7 @@ class PartyRepository extends AbstractRepository
 			}
 		);
     }
-	
-	/**
-     * Causes the player to leave a party.
-     *
-     * @param Party|int $party
-     *
-     * @return ExtendedPromiseInterface
-     */
-    public function leave($party)
-    {
-        if ($party instanceof party) {
-            $party = $party->id;
-        }
 
-		/*
-        return $this->http->delete(Endpoint::bind(Endpoint::PLAYER_CURRENT_PARTY, $party))->then(function () use ($party) {
-            $this->pull('id', $party);
-
-            return $this;
-        });
-		*/
-    }
-	
 	/**
      * Causes the player to join a party.
      *
@@ -230,17 +208,17 @@ class PartyRepository extends AbstractRepository
      */
     public function join($party, $player)
     {
-		if ($player instanceof Player) {
-            $player_id = $this->factory->lorhondel->players->offsetGet($id);
-        } elseif ($player = $this->offsetGet($player)) {
-			$player_id = $player->id;
-		} else return false;
+		if (!$party instanceof Party) {
+            if ($party = $this->offsetGet($party)) {
+				return false;
+			}
+		}
 
-        if ($party instanceof Party) {
-            $party_id = $party->id;
-        } elseif ($party = $this->offsetGet($party)) {
-			$party_id = $party->id;
-		} else return false;
+        if (!$player instanceof Player) {
+            if (!$player = $this->factory->lorhondel->players->offsetGet($player)) {
+				return false;
+			}
+		}
 
 		if (!$player->party_id) {
 			if (!$party->player1) {
@@ -277,13 +255,17 @@ class PartyRepository extends AbstractRepository
      */
     public function induct($party, $player)
     {
-        if ($party instanceof Party) {
-            $party = $party->id;
-        }
+		if (!$party instanceof Party) {
+            if ($party = $this->offsetGet($party)) {
+				return false;
+			}
+		}
 
-		if ($player instanceof Player) {
-            $player = $player->id;
-        }
+        if (!$player instanceof Player) {
+            if (!$player = $this->factory->lorhondel->players->offsetGet($player)) {
+				return false;
+			}
+		}
 
 		/*
         return $this->http->delete(Endpoint::bind(Endpoint::PLAYER_CURRENT_PARTY, $party))->then(function () use ($party) {
@@ -304,16 +286,16 @@ class PartyRepository extends AbstractRepository
     public function kick($party, $player)
     {
         if (!$party instanceof Party) {
-            if ($party != $this->offsetGet($party)) {
+            if ($party = $this->offsetGet($party)) {
 				return false;
 			}
-        }
+		}
 
-		if ($player instanceof Player) {
+		if (!$player instanceof Player) {
             if (!$player = $this->factory->lorhondel->players->offsetGet($player)) {
 				return false;
 			}
-        }
+		}
 
 		foreach ($party as $key => $value) {
 			if ($value == $player->id) {
@@ -372,15 +354,19 @@ class PartyRepository extends AbstractRepository
      */
     public function transferOwnership($party, $player): ExtendedPromiseInterface
     {
-		if ($party instanceof Party) {
-            $party = $party->id;
-        }
+		if (!$party instanceof Party) {
+            if (!$party = $this->offsetGet($party)) {
+				return false;
+			}
+		}
+
+		if (!$player instanceof Player) {
+            if (!$player = $this->factory->lorhondel->players->offsetGet($player)) {
+				return false;
+			}
+		}
 		
-        if ($player instanceof Player) {
-            $player = $player->id;
-        }
-		
-		if(in_array($player, (array) $party));
+		if(in_array($player->id, (array) $party));
 
 		/*
         return $this->http->patch(Endpoint::bind(Endpoint::PARTY_PATCH), ['leader' => $player])->then(function ($response) use ($player) {

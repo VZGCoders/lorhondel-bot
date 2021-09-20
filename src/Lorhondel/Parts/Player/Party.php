@@ -67,18 +67,8 @@ class Player extends Part
 			'player4' => $this->player4,
 			'player5' => $this->player5,
         ];
-    }	
-	
-	/**
-     * Leaves the party.
-     *
-     * @return ExtendedPromiseInterface
-     */
-    public function leave(): ExtendedPromiseInterface
-    {
-        //return $this->lorhondel->parties->leave($this->id);
     }
-	
+
 	/**
      * @inheritdoc
      */
