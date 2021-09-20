@@ -50,7 +50,7 @@ class Client extends Part
 	{
 		$fillable = array();
 		foreach (self::$fillable as $attr) {
-			if (!$context || in_array($context, self::$fillable)) {
+			if (! $context || in_array($context, self::$fillable)) {
 				$fillable[] = $attr;
 			}
 		}

@@ -208,28 +208,28 @@ class PartyRepository extends AbstractRepository
      */
     public function join($party, $player)
     {
-		if (!$party instanceof Party) {
+		if (! ($party instanceof Party)) {
             if ($party = $this->offsetGet($party)) {
 				return false;
 			}
 		}
 
-        if (!$player instanceof Player) {
-            if (!$player = $this->factory->lorhondel->players->offsetGet($player)) {
+        if (! ($player instanceof Player)) {
+            if (! $player = $this->factory->lorhondel->players->offsetGet($player)) {
 				return false;
 			}
 		}
 
-		if (!$player->party_id) {
-			if (!$party->player1) {
+		if (! $player->party_id) {
+			if (! $party->player1) {
 				$party->player1 = $player->id;
-			} elseif (!$party->player2) {
+			} elseif (! $party->player2) {
 				$party->player2 = $player->id;
-			} elseif (!$party->player3) {
+			} elseif (! $party->player3) {
 				$party->player3 = $player->id;
-			} elseif (!$party->player4) {
+			} elseif (! $party->player4) {
 				$party->player4 = $player->id;
-			} elseif (!$party->player5) {
+			} elseif (! $party->player5) {
 				$party->player5 = $player->id;
 			} else return false;
 			$player->party_id = $party_id;
@@ -255,14 +255,14 @@ class PartyRepository extends AbstractRepository
      */
     public function induct($party, $player)
     {
-		if (!$party instanceof Party) {
+		if (! $party instanceof Party) {
             if ($party = $this->offsetGet($party)) {
 				return false;
 			}
 		}
 
-        if (!$player instanceof Player) {
-            if (!$player = $this->factory->lorhondel->players->offsetGet($player)) {
+        if (! $player instanceof Player) {
+            if (! $player = $this->factory->lorhondel->players->offsetGet($player)) {
 				return false;
 			}
 		}
@@ -285,14 +285,14 @@ class PartyRepository extends AbstractRepository
      */
     public function kick($party, $player)
     {
-        if (!$party instanceof Party) {
+        if (! $party instanceof Party) {
             if ($party = $this->offsetGet($party)) {
 				return false;
 			}
 		}
 
-		if (!$player instanceof Player) {
-            if (!$player = $this->factory->lorhondel->players->offsetGet($player)) {
+		if (! $player instanceof Player) {
+            if (! $player = $this->factory->lorhondel->players->offsetGet($player)) {
 				return false;
 			}
 		}
@@ -303,27 +303,18 @@ class PartyRepository extends AbstractRepository
 			}
 		}
 
-		if (!$party->leader) {
-			if (!$party->succession()) {
+		if (! $party->leader) {
+			if (! $party->succession()) {
 				//
 			}
 		}
 
-		if (!$party->leader) {
+		if (! $party->leader) {
 			return $this->disband();
 		}
 		
 		else {
-			$url = Http::BASE_URL . "/parties/patch/{$party->id}/";
-			return $browser->post($url, ['Content-Type' => 'application/json'], json_encode($party))->then( //Make this a function
-				function (Psr\Http\Message\ResponseInterface $response) {
-					//
-				},
-				function ($error) {
-					echo '[PATCH ERROR]' . PHP_EOL;
-					var_dump($error);
-				}
-			);
+			$this->save($party);
 		}
 		
 		
@@ -354,14 +345,14 @@ class PartyRepository extends AbstractRepository
      */
     public function transferOwnership($party, $player): ExtendedPromiseInterface
     {
-		if (!$party instanceof Party) {
-            if (!$party = $this->offsetGet($party)) {
+		if (! $party instanceof Party) {
+            if (! $party = $this->offsetGet($party)) {
 				return false;
 			}
 		}
 
-		if (!$player instanceof Player) {
-            if (!$player = $this->factory->lorhondel->players->offsetGet($player)) {
+		if (! $player instanceof Player) {
+            if (! $player = $this->factory->lorhondel->players->offsetGet($player)) {
 				return false;
 			}
 		}
@@ -395,7 +386,7 @@ class PartyRepository extends AbstractRepository
 			$party->leader = $party->player5;
 		else return $party->disband();
 		
-		return true;
+		return $this->save($party);
     }
 	
 	public function disband($party)
@@ -426,7 +417,7 @@ class PartyRepository extends AbstractRepository
 			$this->factory->lorhondel->players->save($player);
 		}
 		
-		$this->delete($party);
+		return $this->delete($party);
 	}
 	
 
