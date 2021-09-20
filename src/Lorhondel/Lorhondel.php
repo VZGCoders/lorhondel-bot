@@ -276,8 +276,8 @@ class Lorhondel
 		$this->loop = $options['loop'];
 		$this->browser = $options['browser'];
 		if ($options['discord'] || $options['discord_options']) {
-			if($options['discord']) $this->discord = $options['discord'];
-			elseif($options['discord_options']) $this->discord = new \Discord\Discord($options['discord_options']);
+			if ($options['discord']) $this->discord = $options['discord'];
+			elseif ($options['discord_options']) $this->discord = new \Discord\Discord($options['discord_options']);
 		}
 		
 		$connector = new SocketConnector($this->loop, $options['socket_options']);
@@ -1149,7 +1149,7 @@ class Lorhondel
 	public function run(): void
 	{
 		if ($this->verbose) $this->emit('[LORHONDEL] [RUN]');
-		if(!(isset($this->discord))) $this->emit('[WARNING] Discord not set!');
+		if (!(isset($this->discord))) $this->emit('[WARNING] Discord not set!');
 		else $this->discord->run();
 	}
 	

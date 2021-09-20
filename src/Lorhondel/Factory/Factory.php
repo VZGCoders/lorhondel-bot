@@ -95,7 +95,7 @@ class Factory
      */
     public function repository(string $class, array $data = [], $browser = null): AbstractRepository
     {
-		if($class == 'Player')
+		if ($class == 'Player')
 			return new $class($this->http, $this, $data, $browser);
         return new $class($this->http, $this, $data);
     }

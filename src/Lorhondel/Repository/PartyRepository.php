@@ -223,15 +223,15 @@ class PartyRepository extends AbstractRepository
 		if (!$player->party_id) {
 			if (!$party->player1) {
 				$party->player1 = $player->id;
-			}elseif (!$party->player2) {
+			} elseif (!$party->player2) {
 				$party->player2 = $player->id;
-			}elseif (!$party->player3) {
+			} elseif (!$party->player3) {
 				$party->player3 = $player->id;
-			}elseif (!$party->player4) {
+			} elseif (!$party->player4) {
 				$party->player4 = $player->id;
-			}elseif (!$party->player5) {
+			} elseif (!$party->player5) {
 				$party->player5 = $player->id;
-			}else return false;
+			} else return false;
 			$player->party_id = $party_id;
 			$this->factory->lorhondel->players->save($player);
 		} else return false;
@@ -304,7 +304,7 @@ class PartyRepository extends AbstractRepository
 		}
 
 		if (!$party->leader) {
-			if(!$party->succession()) {
+			if (!$party->succession()) {
 				//
 			}
 		}
@@ -366,17 +366,10 @@ class PartyRepository extends AbstractRepository
 			}
 		}
 		
-		if(in_array($player->id, (array) $party));
-
-		/*
-        return $this->http->patch(Endpoint::bind(Endpoint::PARTY_PATCH), ['leader' => $player])->then(function ($response) use ($player) {
-            if ($response->leader != $player) {
-                throw new Exception('Ownership was not transferred correctly.');
-            }
-
-            return $this;
-        });
-		*/
+		if (in_array($player->id, (array) $party)) {
+			$party->leader = $player->id;
+			$this->save($party);
+		}
     }
 
 	/**
@@ -390,15 +383,15 @@ class PartyRepository extends AbstractRepository
             $party_id = $party->id;
         } else return false;
 		
-		if($party->player1 && ($party->player1 != $party->leader))
+		if ($party->player1 && ($party->player1 != $party->leader))
 			$party->leader = $party->player1;
-		elseif($party->player2 && ($party->player2 != $party->leader))
+		elseif ($party->player2 && ($party->player2 != $party->leader))
 			$party->leader = $party->player2;
-		elseif($party->player3 && ($party->player3 != $party->leader))
+		elseif ($party->player3 && ($party->player3 != $party->leader))
 			$party->leader = $party->player3;
-		elseif($party->player4 && ($party->player4 != $party->leader))
+		elseif ($party->player4 && ($party->player4 != $party->leader))
 			$party->leader = $party->player4;
-		elseif($party->player5 && ($party->player5 != $party->leader))
+		elseif ($party->player5 && ($party->player5 != $party->leader))
 			$party->leader = $party->player5;
 		else return $party->disband();
 		
