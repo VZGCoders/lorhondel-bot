@@ -78,32 +78,6 @@ class Player extends Part
     {
         //return $this->lorhondel->parties->leave($this->id);
     }
-
-    /**
-     * Transfers ownership of the party to another player.
-     *
-     * @param Player|int $player The member to transfer ownership to.
-     *
-     * @return ExtendedPromiseInterface
-     */
-    public function transferOwnership($player): ExtendedPromiseInterface
-    {
-        if ($player instanceof Player) {
-            $player = $player->id;
-        }
-		
-		if(in_array($player, (array) $this));
-
-		/*
-        return $this->http->patch(Endpoint::bind(Endpoint::PARTY_PATCH), ['leader' => $player])->then(function ($response) use ($player) {
-            if ($response->leader != $player) {
-                throw new Exception('Ownership was not transferred correctly.');
-            }
-
-            return $this;
-        });
-		*/
-    }
 	
 	/**
      * @inheritdoc

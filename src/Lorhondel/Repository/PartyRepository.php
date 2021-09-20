@@ -4,6 +4,8 @@
  * This file is a part of the Lorhondel project.
  *
  * Copyright (c) 2021-present Valithor Obsidion <valzargaming@gmail.com>
+ *
+ * This object works differently than other repositories because it is a collection of parties which contain references to object in other repositories
  */
 
 namespace Lorhondel\Repository;
@@ -30,7 +32,7 @@ class PartyRepository extends AbstractRepository
      * @inheritdoc
      */
     protected $endpoints = [
-        'all' => Endpoint::PLAYER_CURRENT_PARTIES,
+        'all' => Endpoint::PLAYER_CURRENT_PARTY,
         'get' => Endpoint::PARTY,
         'create' => Endpoint::PARTY,
         'update' => Endpoint::PARTY,
@@ -226,11 +228,35 @@ class PartyRepository extends AbstractRepository
      *
      * @return ExtendedPromiseInterface
      */
-    public function join($party)
+    public function join($party, $player)
     {
+		if ($player instanceof Player) {
+            $player_id = $this->factory->lorhondel->players->offsetGet($id);
+        } elseif ($player = $this->offsetGet($player)) {
+			$player_id = $player->id;
+		} else return false;
+
         if ($party instanceof Party) {
-            $party = $party->id;
-        }
+            $party_id = $party->id;
+        } elseif ($party = $this->offsetGet($party)) {
+			$party_id = $party->id;
+		} else return false;
+
+		if (!$player->party_id) {
+			if (!$party->player1) {
+				$party->player1 = $player->id;
+			}elseif (!$party->player2) {
+				$party->player2 = $player->id;
+			}elseif (!$party->player3) {
+				$party->player3 = $player->id;
+			}elseif (!$party->player4) {
+				$party->player4 = $player->id;
+			}elseif (!$party->player5) {
+				$party->player5 = $player->id;
+			}else return false;
+			$player->party_id = $party_id;
+			$this->factory->lorhondel->players->save($player);
+		} else return false;
 
 		/*
         return $this->http->delete(Endpoint::bind(Endpoint::PLAYER_CURRENT_PARTY, $party))->then(function () use ($party) {
@@ -244,16 +270,17 @@ class PartyRepository extends AbstractRepository
 	/**
      * Causes the player to join a party.
      *
+	 * @param Player|int $party
      * @param Party|int $party
      *
      * @return ExtendedPromiseInterface
      */
-    public function induct($player, $party)
+    public function induct($party, $player)
     {
         if ($party instanceof Party) {
             $party = $party->id;
         }
-		
+
 		if ($player instanceof Player) {
             $player = $player->id;
         }
@@ -265,37 +292,163 @@ class PartyRepository extends AbstractRepository
             return $this;
         });
 		*/
+
+    }/**
+     * Causes the player to leave a party.
+     *
+	 * @param Player|int $player The player to remove
+     * @param Party|int $party The party to remove from
+     *
+     * @return ExtendedPromiseInterface
+     */
+    public function kick($party, $player)
+    {
+        if (!$party instanceof Party) {
+            if ($party != $this->offsetGet($party)) {
+				return false;
+			}
+        }
+
+		if ($player instanceof Player) {
+            if (!$player = $this->factory->lorhondel->players->offsetGet($player)) {
+				return false;
+			}
+        }
+
+		foreach ($party as $key => $value) {
+			if ($value == $player->id) {
+				$party->$value = null;
+			}
+		}
+
+		if (!$party->leader) {
+			if(!$party->succession()) {
+				//
+			}
+		}
+
+		if (!$party->leader) {
+			return $this->disband();
+		}
+		
+		else {
+			$url = Http::BASE_URL . "/parties/patch/{$party->id}/";
+			return $browser->post($url, ['Content-Type' => 'application/json'], json_encode($party))->then( //Make this a function
+				function (Psr\Http\Message\ResponseInterface $response) {
+					//
+				},
+				function ($error) {
+					echo '[PATCH ERROR]' . PHP_EOL;
+					var_dump($error);
+				}
+			);
+		}
+		
+		
+		//Update the party (and leader?)
+		//DELETE if party is empty, else PATCH
+
+		
     }
 	
-	
+	/**
+     * Kicks a member. Alias for `$players->expel($party, $player)`.
+     *
+     * @param Player|string $player
+     *
+     * @return ExtendedPromiseInterface
+     */
+    public function expel($party, $player)
+    {
+        return $this->kick($party, $player);
+    }
 
 	/**
-     * Alias for delete.
+     * Transfers ownership of the party to another player.
      *
-     * @param Player $player The player to kick.
+     * @param Player|int $player The member to transfer ownership to.
      *
-     * @return PromiseInterface
-     *
-     * @see self::delete()
+     * @return ExtendedPromiseInterface
      */
-    public function kick(Player $player): PromiseInterface
+    public function transferOwnership($party, $player): ExtendedPromiseInterface
     {
-        return $this->delete($player);
+		if ($party instanceof Party) {
+            $party = $party->id;
+        }
+		
+        if ($player instanceof Player) {
+            $player = $player->id;
+        }
+		
+		if(in_array($player, (array) $party));
+
+		/*
+        return $this->http->patch(Endpoint::bind(Endpoint::PARTY_PATCH), ['leader' => $player])->then(function ($response) use ($player) {
+            if ($response->leader != $player) {
+                throw new Exception('Ownership was not transferred correctly.');
+            }
+
+            return $this;
+        });
+		*/
     }
-	
+
 	/**
-     * Alias for delete.
-     *
-     * @param Player $player The player to kick.
-     *
-     * @return PromiseInterface
-     *
-     * @see self::delete()
+	 *
+	 * Assign a new party leader or disband the party if no players remain
+	 *
      */
-    public function kick(Player $player): PromiseInterface
+    public function succession($party)
     {
-        return $this->delete($player);
+		if ($party instanceof Party || $party = $this->offsetGet($party)) {
+            $party_id = $party->id;
+        } else return false;
+		
+		if($party->player1 && ($party->player1 != $party->leader))
+			$party->leader = $party->player1;
+		elseif($party->player2 && ($party->player2 != $party->leader))
+			$party->leader = $party->player2;
+		elseif($party->player3 && ($party->player3 != $party->leader))
+			$party->leader = $party->player3;
+		elseif($party->player4 && ($party->player4 != $party->leader))
+			$party->leader = $party->player4;
+		elseif($party->player5 && ($party->player5 != $party->leader))
+			$party->leader = $party->player5;
+		else return $party->disband();
+		
+		return true;
     }
 	
+	public function disband($party)
+	{
+		//
+		if ($party instanceof Party || $party = $this->offsetGet($party)) {
+            $party_id = $party->id;
+        } else return false;
+		
+		if ($party->player1 && $player = $this->factory->lorhondel->players->offsetGet($party->player1)) {
+			$player->party_id = null;
+			
+		}
+		if ($party->player2 && $player = $this->factory->lorhondel->players->offsetGet($party->player2)) {
+			$player->party_id = null;
+			$this->factory->lorhondel->players->save($player);
+		}
+		if ($party->player3 && $player = $this->factory->lorhondel->players->offsetGet($party->player3)) {
+			$player->party_id = null;
+			$this->factory->lorhondel->players->save($player);
+		}
+		if ($party->player4 && $player = $this->factory->lorhondel->players->offsetGet($party->player4)) {
+			$player->party_id = null;
+			$this->factory->lorhondel->players->save($player);
+		}
+		if ($party->player5 && $player = $this->factory->lorhondel->players->offsetGet($party->player5)) {
+			$player->party_id = null;
+			$this->factory->lorhondel->players->save($player);
+		}
+		
+		$this->delete($party);
+	}
 	
+
 }

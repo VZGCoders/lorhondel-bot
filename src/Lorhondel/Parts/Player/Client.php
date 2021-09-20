@@ -13,6 +13,7 @@ use Lorhondel\Endpoint;
 use Lorhondel\Parts\OAuth\Application;
 use Lorhondel\Parts\Part;
 use Lorhondel\Repository\PlayerRepository;
+use Lorhondel\Repository\PartyRepository;
 use React\Promise\ExtendedPromiseInterface;
 
 /**
@@ -23,6 +24,7 @@ use React\Promise\ExtendedPromiseInterface;
  * @property int|null                 $user_id          The unique identifier of the user.
  * @property User|null                $user             The Discord user instance of the player.
  * @property PlayerRepository         $players
+ * @property PartiesRepository        $parties
  */
 class Client extends Part
 {
@@ -36,6 +38,7 @@ class Client extends Part
      */
     protected $repositories = [
         'players' => PlayerRepository::class,
+		'parties' => PartyRepository::class,
     ];
 
 	/**

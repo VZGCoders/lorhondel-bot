@@ -764,6 +764,7 @@ try{
 		include 'ready-include.php'; //All modular event handlers
 		include 'connect.php';
 		$lorhondel->players->freshen();	//Import existing parts from SQL
+		$lorhondel->parties->freshen();	//Import existing parts from SQL
 	 });
 	$discord->run();
 }catch (Throwable $e) { //Restart the bot
