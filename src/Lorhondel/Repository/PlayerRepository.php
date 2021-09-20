@@ -54,7 +54,7 @@ class PlayerRepository extends AbstractRepository
 
     public function save(Part $part)
     {
-		if ($this->factory->lorhondel->players->offsetGet($part->id)) $method = 'patch';
+		if ($this->offsetGet($part->id)) $method = 'patch';
 		else $method = 'post';
 		$url = Http::BASE_URL . "/players/$method/{$part->id}/";
 		return $browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
