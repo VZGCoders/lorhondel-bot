@@ -234,7 +234,7 @@ class PartyRepository extends AbstractRepository
 			} else return false;
 			$player->party_id = $party->id;
 			$this->factory->lorhondel->players->save($player);
-			$this->save($party);
+			return $this->save($party);
 		} else return false;
     }
 	
@@ -290,31 +290,18 @@ class PartyRepository extends AbstractRepository
 			}
 		}
 
+		$member = false;
 		foreach ($party as $key => $value) {
 			if ($value == $player->id) {
 				$party->$key = null;
+				$member = true;
 			}
 		}
+		if(! $member) return false;
 
-		if (! $party->leader) {
-			if (! $party->succession()) {
-				//
-			}
-		}
-
-		if (! $party->leader) {
-			return $this->disband();
-		}
-		
-		else {
-			$this->save($party);
-		}
-		
-		
-		//Update the party (and leader?)
-		//DELETE if party is empty, else PATCH
-
-		
+		if ($succeed = $party->succession($party))
+			return $this->save($party);
+		} else return $succeed;
     }
 	
 	/**
@@ -358,7 +345,8 @@ class PartyRepository extends AbstractRepository
 
 	/**
 	 *
-	 * Assign a new party leader or disband the party if no players remain
+	 * Disbands the party if no players remain
+	 * Assign a new party leader if no leader exists
 	 *
      */
     public function succession($party)
@@ -367,19 +355,20 @@ class PartyRepository extends AbstractRepository
             $party_id = $party->id;
         } else return false;
 		
-		if ($party->player1 && ($party->player1 != $party->leader))
-			$party->leader = $party->player1;
-		elseif ($party->player2 && ($party->player2 != $party->leader))
-			$party->leader = $party->player2;
-		elseif ($party->player3 && ($party->player3 != $party->leader))
-			$party->leader = $party->player3;
-		elseif ($party->player4 && ($party->player4 != $party->leader))
-			$party->leader = $party->player4;
-		elseif ($party->player5 && ($party->player5 != $party->leader))
-			$party->leader = $party->player5;
-		else return $party->disband();
-		
-		return $this->save($party);
+		if (! $party->leader) {
+			if ($party->player1 && ($party->player1 != $party->leader))
+				$party->leader = $party->player1;
+			elseif ($party->player2 && ($party->player2 != $party->leader))
+				$party->leader = $party->player2;
+			elseif ($party->player3 && ($party->player3 != $party->leader))
+				$party->leader = $party->player3;
+			elseif ($party->player4 && ($party->player4 != $party->leader))
+				$party->leader = $party->player4;
+			elseif ($party->player5 && ($party->player5 != $party->leader))
+				$party->leader = $party->player5;
+			else return $party->disband();
+			return $this->save($party);
+		} else return false;
     }
 	
 	public function disband($party)
