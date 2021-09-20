@@ -220,7 +220,7 @@ class PartyRepository extends AbstractRepository
 			}
 		}
 
-		if (! $player->party_id) {
+		if (! $player->party_id && ! in_array($player->id, (array) $party)) {
 			if (! $party->player1) {
 				$party->player1 = $player->id;
 			} elseif (! $party->player2) {
@@ -232,7 +232,7 @@ class PartyRepository extends AbstractRepository
 			} elseif (! $party->player5) {
 				$party->player5 = $player->id;
 			} else return false;
-			$player->party_id = $party_id;
+			$player->party_id = $party->id;
 			$this->factory->lorhondel->players->save($player);
 		} else return false;
 
