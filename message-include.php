@@ -118,6 +118,11 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 				]);
 				$message->reply($part);
 				break;
+			case 'characters':
+				$characters = $lorhondel->players->filter(fn($p) => $p->user_id == $message->author->user->id);
+				$message->reply(json_encode($characters));
+				//$message->reply(json_encode($lorhondel->players));
+				break;
 			case 'players':
 				$message->reply(json_encode($lorhondel->players));
 				break;

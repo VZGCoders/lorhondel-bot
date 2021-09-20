@@ -95,7 +95,7 @@ class Client extends Part
     public function getUpdatableAttributes($discord = null): array
     {
 		if (isset($this->attributes['user_id'])) {
-			$attributes['user'] = $this->discord->users->offsetGet($attributes['user_id']);
+			$attributes['user_id'] = $this->discord->users->offsetGet($attributes['user_id']);
 		}
 
         return $attributes;
