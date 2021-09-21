@@ -670,8 +670,8 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 						return new \GuzzleHttp\Psr7\Response(204, ['Content-Type' => 'application/json'], json_encode($part));
 					else {
 						if (sqlCreate($repository, $data)) {
-							if (!$lorhondel->players->offsetGet($data->id))
-								$lorhondel->players->push($part);
+							if (!$lorhondel->$repository->offsetGet($data->id))
+								$lorhondel->$repository->push($part);
 							else echo '[EXISTS] ' . $data->id . PHP_EOL;
 							return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($part));
 						} else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400)); //The data provided is either missing or didn't get passed to the SQL method
@@ -736,7 +736,7 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 			elseif (sqlDelete($repository, 'id', [$id2], '', 1)) {
 				if ($lorhondel->$repository->offsetGet($id2))
 					$lorhondel->$repository->pull($id2);
-				return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($part ?? $lorhondel->players->pull($id2) ?? $id2));
+				return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($part ?? $lorhondel->$repository->pull($id2) ?? $id2));
 			} else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400)); //The data provided is either missing or didn't get passed to the SQL method
 		}
 		elseif ($target_method == 'fresh') {
