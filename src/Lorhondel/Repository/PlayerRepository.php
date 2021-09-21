@@ -85,8 +85,8 @@ class PlayerRepository extends AbstractRepository
 		
 		$url = Http::BASE_URL . "/players/delete/{$part->id}/";
 		return $this->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
-			function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
-				echo '[DELETE] '; var_dump($lorhondel->players->offsetUnset($part->id)); 
+			function (Psr\Http\Message\ResponseInterface $response) use ($part) {
+				echo '[DELETE] '; //var_dump($lorhondel->players->offsetUnset($part->id)); 
 				//var_dump($lorhondel->players);
 			},
 			function ($error) {
