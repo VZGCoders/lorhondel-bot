@@ -153,25 +153,8 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 					'skillpoints' => 888,
 				]);
 				echo '[PART]' . var_dump($part);
+				$lorhondel->players->patch($part);
 				return;
-				$url = Lorhondel\Http::BASE_URL . "/players/patch/{$part->id}/";
-				$browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then(
-					function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
-						/*
-						if ((string)$response->getBody() == json_encode($part)) {
-							if ($response->getStatusCode() == 200) {
-								echo '[PUSH] '; var_dump($lorhondel->players->push($part));
-							} elseif ($response->getStatusCode() == 204) {
-								if (!$old_part = $lorhondel->players->offsetGet($part->id))
-									echo '[PUSH] '; var_dump($lorhondel->players->push($part));
-							}
-						}
-						*/
-					},
-					function ($error) {
-						var_dump($error);
-					}
-				);
 				break;
 			case 'post':
 				echo '[POST]' . PHP_EOL;
@@ -179,6 +162,8 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 				$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
 					'id' => $snowflake,
 					'user_id' => 116927250145869826,
+					'party_id' => null,
+					'active' => false,
 					'species' => 'Elarian', //Elarian, Manthean, Noldarus, Veias, Jedoa
 					'health' => 0,
 					'attack' => 1,
@@ -186,28 +171,7 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 					'speed' => 3,
 					'skillpoints' => 4,
 				]);
-				//$result = sqlCreate('players', json_encode($part));
-				//$lorhondel->players->save($part); //Use $Browser instead, this is currently broken
-				$url = Lorhondel\Http::BASE_URL . "/players/post/{$part->id}/";
-				$browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then(
-					function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
-						$message->react("👍");
-						/*
-						if ((string)$response->getBody() == json_encode($part)) {
-							if ($response->getStatusCode() == 200) {
-								echo '[PUSH] '; var_dump($lorhondel->players->push($part));
-							} elseif ($response->getStatusCode() == 204) {
-								if (!$old_part = $lorhondel->players->offsetGet($part->id))
-									echo '[PUSH] '; var_dump($lorhondel->players->push($part));
-							}
-						}
-						*/
-					},
-					function ($error) use ($message) {
-						$message->react("👎");
-						var_dump($error);
-					}
-				);
+				$lorhondel->players->save($part); //Use $Browser instead, this is currently broken
 				break;
 			case 'save':
 				echo '[save]' . PHP_EOL;
@@ -221,28 +185,7 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 					'speed' => 3,
 					'skillpoints' => 4,
 				]);
-				//$result = sqlCreate('players', json_encode($part));
-				//$lorhondel->players->save($part); //Use $Browser instead, this is currently broken
-				$url = Lorhondel\Http::BASE_URL . "/players/post/{$part->id}/";
-				$browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
-					function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
-						/*
-						$message->reply((string)$response->getBody() . json_encode($part));
-						if ((string)$response->getBody() == json_encode($part)) {
-							if ($response->getStatusCode() == 200) { //Newly created in SQL
-								echo '[PUSH] '; var_dump($lorhondel->players->push($part));
-							} elseif ($response->getStatusCode() == 204) { //id already exists in SQL
-								if (!$old_part = $lorhondel->players->offsetGet($part->id))
-									echo '[CREATED] '; $part->created = true;
-									echo '[PUSH] '; var_dump($lorhondel->players->push($part));
-							}
-						}
-						*/
-					},
-					function ($error) {
-						var_dump($error);
-					}
-				);
+				$lorhondel->players->save($part);
 				break;
 			case 'delete':
 				echo '[delete]' . PHP_EOL;
@@ -256,17 +199,7 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 					'speed' => 3,
 					'skillpoints' => 4,
 				]);
-				$url = Lorhondel\Http::BASE_URL . "/players/delete/{$part->id}/";
-				$browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->done( //Make this a function
-					function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
-						echo '[DELETE] '; var_dump($lorhondel->players->offsetUnset($part->id)); 
-						var_dump($lorhondel->players);
-						
-					},
-					function ($error) {
-						var_dump($error);
-					}
-				);
+				$lorhondel->players->delete($part);
 				break;
 			case 'stats':
 				if ($embed = $stats->handle())

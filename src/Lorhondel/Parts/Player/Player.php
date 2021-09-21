@@ -22,6 +22,7 @@ use React\Promise\ExtendedPromiseInterface;
  * @property int    $id            The unique identifier of the player.
  * @property int    $user_id       Discord user id.
  * @property int    $party_id      Current party id.
+ * @property bool   $active        Whether the player is active.
  *
  * @property string $name          The name of the player.
  * @property string $species       The species of the player.
@@ -38,7 +39,7 @@ class Player extends Part
     /**
      * @inheritdoc
      */
-    protected static $fillable = ['id', 'user_id', 'party_id', 'name', 'species', 'health', 'attack', 'defense', 'speed', 'skillpoints'];
+    protected static $fillable = ['id', 'user_id', 'party_id', 'active', 'name', 'species', 'health', 'attack', 'defense', 'speed', 'skillpoints'];
 
 	/**
      * Returns the fillable attributes.
@@ -65,6 +66,7 @@ class Player extends Part
             'id' => $this->id,
             'user_id' => $this->user_id,
 			'party_id' => $this->party_id,
+			'active' => $this->active,
 			'name' => $this->name,
             'species' => $this->species,
             'health' => $this->health,

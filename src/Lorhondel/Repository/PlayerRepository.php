@@ -57,9 +57,9 @@ class PlayerRepository extends AbstractRepository
 		if ($this->offsetGet($part->id)) $method = 'patch';
 		else $method = 'post';
 		$url = Http::BASE_URL . "/players/$method/{$part->id}/";
-		return $browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
-			function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
-				echo '[DELETE] '; var_dump($lorhondel->players->offsetUnset($part->id)); 
+		return $this->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
+			function (Psr\Http\Message\ResponseInterface $response) use ($part) {
+				echo '[DELETE] '; //var_dump($lorhondel->players->offsetUnset($part->id)); 
 				//var_dump($lorhondel->players);
 			},
 			function ($error) {
@@ -84,7 +84,7 @@ class PlayerRepository extends AbstractRepository
         }
 		
 		$url = Http::BASE_URL . "/players/delete/{$part->id}/";
-		return $browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
+		return $this->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
 			function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
 				echo '[DELETE] '; var_dump($lorhondel->players->offsetUnset($part->id)); 
 				//var_dump($lorhondel->players);
@@ -115,7 +115,7 @@ class PlayerRepository extends AbstractRepository
         }
 
         $url = Http::BASE_URL . "/players/fresh/{$part->id}/";
-		return $browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
+		return $this->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
 			function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
 				echo '[FRESH] '; var_dump($lorhondel->players->offsetUnset($part->id)); 
 				//var_dump($lorhondel->players);
@@ -148,7 +148,7 @@ class PlayerRepository extends AbstractRepository
 
         $part = $this->factory->create($this->class, [$this->discrim => $id]);
         $url = Http::BASE_URL . "/players/fetch/{$part->id}/";
-		return $browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
+		return $this->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
 			function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
 				echo '[FETCH] '; var_dump($lorhondel->players->offsetUnset($part->id)); 
 				//var_dump($lorhondel->players);

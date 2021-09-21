@@ -144,6 +144,15 @@ function sqlGet(array $columns = [], string $table = '', string $wherecolumn = '
 	if ($order) $sql .= " ORDER BY $order";
 	if ($limit) $sql .= " LIMIT $limit";
 	echo '[SQL] ' . $sql . PHP_EOL;
+	$value_string = '(';
+	foreach ($values as $value) {
+		if ($value !== null) {
+			if ($value == false) $value = '0';
+			$value_string .= "$value, ";
+		}
+	}
+	$value_string = substr($value_string, 0, strlen($value_string)-2);
+	echo $value_string . PHP_EOL;
 	
 	if (!$wherecolumn) {
 		$stmt = mysqli_prepare($mysqli, $sql); //Select all values in the column
@@ -193,26 +202,34 @@ function sqlCreate(string $table, $data)
 	var_dump ($data);
 	//$data = json_decode(json_encode($data), true); //var_dump($data);
 	$types = '';
-	$values = array();
+	$values_clean = array();
 	if (!empty($data)) {
 		$sql = "INSERT INTO $table (";
 		foreach ($data as $key => $value) {
-			$sql .= str_replace('_', '', $key) . ', ';
+			if ($value !== null)
+				$sql .= str_replace('_', '', $key) . ', ';
 		}
 		$sql = substr($sql, 0, strlen($sql)-2) . ') VALUES (';
 		foreach ($data as $key => $value) {
-			$sql .= '?, ';
-			$types .= 's';
-			$values[] = str_replace('_', '', $value); //Remove any _ from variable names
+			if ($value !== null) {
+				$sql .= '?, ';
+				//$types .= 's';
+				if ($value == false) $value = '0';
+				else $value = str_replace('_', '', $value); //Remove any _ from variable names
+				$values_clean[] = $value;
+				//$sql .= "$value, ";
+			}
 		}
 		$sql = substr($sql, 0, strlen($sql)-2) . ')';
 	} else return false;
 	echo '[SQL] ' . $sql . PHP_EOL;
+	echo '[VALUES_CLEAN] '; var_dump($values_clean);
 	
-	$stmt = mysqli_prepare($mysqli, $sql);
-	$stmt->bind_param($types, ...$values);
-	return $stmt->execute();
-	//printf("%d row inserted.\n", $stmt->affected_rows);
+	if ($stmt = $PDO->prepare($sql)) {
+		if ($stmt->execute($values_clean)) return true;
+		else echo mysqli_stmt_error($stmt);
+	} else echo mysqli_stmt_error($stmt);
+	return false;
 }
 function sqlUpdate(array $columns = [], array $values = [], string $table, string $wherecolumn = '', $target = '')
 {
@@ -237,7 +254,15 @@ function sqlUpdate(array $columns = [], array $values = [], string $table, strin
 	}
 	$sql = str_replace('_', '', $sql);
 	echo '[SQL] ' . $sql . PHP_EOL;
-	
+	$value_string = '(';
+	foreach ($values as $value) {
+		if ($value !== null) {
+			if ($value == false) $value = '0';
+			$value_string .= "$value, ";
+		}
+	}
+	$value_string = substr($value_string, 0, strlen($value_string)-2);
+	echo $value_string . PHP_EOL;
 
 	if ($stmt = $PDO->prepare($sql)) {
 		if ($stmt->execute($values)) return true;
@@ -255,7 +280,15 @@ function sqlDelete(string $table, string $wherecolumn = '', array $values = [], 
 	if ($order) $sql .= " ORDER BY $order";
 	if ($limit) $sql .= " LIMIT $limit";
 	echo '[SQL] ' . $sql . PHP_EOL;
-	
+	$value_string = '(';
+	foreach ($values as $value) {
+		if ($value !== null) {
+			if ($value == false) $value = '0';
+			$value_string .= "$value, ";
+		}
+	}
+	$value_string = substr($value_string, 0, strlen($value_string)-2) . ')';
+	echo $value_string . PHP_EOL;
 	
 	if ($stmt = $PDO->prepare($sql)) {
 		if ($stmt->execute($values))	 return true;
@@ -701,7 +734,7 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 			if (empty($return = sqlGet(['*'], $repository, 'id', [$id2], '', 1)))
 				return new \GuzzleHttp\Psr7\Response(204, ['Content-Type' => 'application/json'], json_encode($_204)); //Data does not exist to delete
 			elseif (sqlDelete($repository, 'id', [$id2], '', 1)) {
-				if($lorhondel->$repository->offsetGet($id2))
+				if ($lorhondel->$repository->offsetGet($id2))
 					$lorhondel->$repository->pull($id2);
 				return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($part ?? $lorhondel->players->pull($id2) ?? $id2));
 			} else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400)); //The data provided is either missing or didn't get passed to the SQL method
