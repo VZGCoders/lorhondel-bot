@@ -138,8 +138,8 @@ function sqlGet(array $columns = [], string $table = '', string $wherecolumn = '
 		else $sql .= $columns[$x] . ' ';
 	$sql .= "FROM $table";
 	if ($wherecolumn && !empty($values)) {
-		$sql .= " WHERE $wherecolumn = ?";
 		$wherecolumn = str_replace('_', '', $wherecolumn);
+		$sql .= " WHERE $wherecolumn = ?";
 	}
 	if ($order) $sql .= " ORDER BY $order";
 	if ($limit) $sql .= " LIMIT $limit";
@@ -636,7 +636,7 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 			echo '[DATA DUMP]' . PHP_EOL; var_dump($data);
 			if ($attributes = json_decode(json_encode($data), true))
 				if ($part = $lorhondel->factory($part_name, $attributes)) $has_part = true;
-				else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($return));
+				else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($part));
 			else {
 				echo '[ATTRIBUTES FAIL]' . PHP_EOL;
 				return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400));
