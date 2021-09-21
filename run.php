@@ -276,7 +276,10 @@ function sqlDelete(string $table, string $wherecolumn = '', array $values = [], 
 	$array = array();
 	
 	$sql = "DELETE FROM $table";
-	if ($wherecolumn && !empty($values)) $sql .= " WHERE $wherecolumn = ?";
+	if ($wherecolumn && !empty($values)) {
+		$wherecolumn = str_replace('_', '', $wherecolumn);
+		$sql .= " WHERE $wherecolumn = ?";
+	}
 	if ($order) $sql .= " ORDER BY $order";
 	if ($limit) $sql .= " LIMIT $limit";
 	echo '[SQL] ' . $sql . PHP_EOL;
