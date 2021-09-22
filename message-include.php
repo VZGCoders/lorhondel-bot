@@ -129,6 +129,17 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 			case 'parties':
 				$message->reply(json_encode($lorhondel->parties));
 				break;
+			case 'getcurrentplayer':
+				$player = getCurrentPlayer($lorhondel, $author_id);
+				if ($player) $message->channel->sendEmbed(playerEmbed($discord, getCurrentPlayer($lorhondel, $author_id)));
+				else $message->reply('No players found!');
+				break;
+			case str_contains($message_content_lower, 'setcurrentplayer '):
+				$id = trim(str_replace('setcurrentplayer ', '', $message_content_lower));
+				if(is_numeric($id) && $player = $lorhondel->players->offsetGet($id))
+					$message->reply('Result: ' . (setCurrentPlayer($lorhondel, $author_id, $id) ?? 'None'));
+				else $message->reply('Invalid input!');
+				break;
 			case 'playersfreshen':
 				$lorhondel->players->freshen();
 				break;

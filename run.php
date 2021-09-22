@@ -294,6 +294,118 @@ function sqlDelete(string $table, string $wherecolumn = '', array $values = [], 
 	return false;
 }
 
+function getCurrentPlayer($lorhondel, $user_id)
+{
+	include 'connect.php';
+	$sql = "SELECT * FROM players WHERE userid = ? AND active = 1";
+	$get = array();
+	$part = null;
+	if ($stmt = $PDO->prepare($sql))
+		if ($stmt->execute([$user_id]))
+			if ($result = $stmt->fetchAll())
+				$get = $result;
+	echo '[getCurrentPlayer]'; var_dump($get);
+	if (! empty($get)) {
+		$part = partPusher($lorhondel, 'players', '\Lorhondel\Parts\Player\Player', $get);
+		echo '[getCurrentPlayer2]'; var_dump($part);
+		return $part;
+	} else return null;
+}
+
+function setCurrentPlayer($lorhondel, $user_id, $id)
+{
+	include 'connect.php';
+	$deactivated = false;
+	$activated = false;
+	$part = null;
+	$sql = "UPDATE players SET active = 0 WHERE userid = ?";
+	if ($stmt = $PDO->prepare($sql))
+		if ($stmt->execute([$id]))
+			if ($result = $stmt->fetchAll())
+				$deactivated = true; //echo "[DEACTIVATED] $user_id";
+	$sql = "UPDATE players SET active = 1 WHERE userid = ? AND id = ?";
+	if ($stmt = $PDO->prepare($sql))
+		if ($stmt->execute([$user_id, $id]))
+			$activated = true; //echo "[ACTIVATED] $user_id/$id";
+	
+	echo '[setCurrentPlayer]'; var_dump($result);
+	//get
+	if ($activated) {
+		$get = json_validate(sqlGet(['*'], 'players', 'id', [$id], '', 1));
+		$part = partPusher($lorhondel, 'players', '\Lorhondel\Parts\Player\Player', $get);
+		echo '[setCurrentPlayer Part]'; var_dump($part);
+	}
+	
+	return $part ?? $result;
+}
+
+function getCurrentParty($lorhondel, $id)
+{
+	include 'connect.php';
+	$sql = "SELECT * FROM parties WHERE ? in (player1, player2, player3, player4, player5)";
+	if ($stmt = $PDO->prepare($sql))
+		if ($stmt->execute([$user_id]))
+			if ($result = $stmt->get_result())
+				return $result;
+	return false;
+}
+
+function setCurrentParty($lorhondel, $user_id)
+{
+	include 'connect.php';
+	//
+}
+
+function playerEmbed($discord, $player)
+{
+	$embed = $discord->factory(\Discord\Parts\Embed\Embed::class);
+	$embed->setColor(0xe1452d)
+		//->setDescription('$author_guild_name') // Set a description (below title, above fields)
+	//	->setImage('https://avatars1.githubusercontent.com/u/4529744?s=460&v=4') // Set an image (below everything except footer)
+		->setTimestamp()                                                                     	// Set a timestamp (gets shown next to footer)
+		->setFooter('Palace Bot by Valithor#5947')                             					// Set a footer without icon
+		->setURL('');                             												// Set the URL
+	if ($player->name) $embed->addFieldValues('Name', $player->name, true);
+	$embed->addFieldValues('Species', $player->species, true);
+	if ($player->party_id) $embed->addFieldValues('Party ID', $player->party_id, false);
+	$embed	
+		->addFieldValues('Health', $player->health, true)
+		->addFieldValues('Attack', $player->attack, true)
+		->addFieldValues('Defense', $player->defense, true)
+		->addFieldValues('Speed', $player->speed, true)
+		->addFieldValues('Skill Points', $player->skillpoints, true);
+	if ($user = $discord->users->offsetGet($player->user_id)) {
+		$embed->setAuthor("{$user->username} ({$user->id})", $user->avatar); // Set an author with icon
+		$embed->setThumbnail("{$user->avatar}"); // Set a thumbnail (the image in the top right corner)
+	}
+	return $embed;
+}
+
+function partPusher($lorhondel, $repository, $part_name, $array)
+{
+	$part = null;
+	foreach ($array as $data) { //Create all into parts and push
+		if ($attributes = json_decode(json_encode(json_validate($data)), true)) {
+			foreach ($part_name::getFillableAttributes() as $fillable) {
+				foreach ($attributes as $key => $attribute) {
+					 if ($key != $fillable && $key == str_replace('_', '', $fillable)) {
+						 unset($attributes[$key]);
+						 $attributes[$fillable] = $attribute;
+					 }
+				}
+			}
+			if ($part = $lorhondel->factory($part_name, $attributes)) {
+				if ($lorhondel->$repository->offsetGet($part->id))
+					$lorhondel->$repository->pull($part->id);
+				$lorhondel->$repository->push($part);
+			}
+		}
+	}
+	return $part;
+}
+
+
+
 $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRequestInterface $request) use ($lorhondel, $discord, $stats) {
 	try{
 		echo '[API] ';
@@ -684,7 +796,7 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 					return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($get));
 				} else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400)); //The data provided is either missing or didn't get passed to the SQL method
 			}
-			elseif ($target_method == 'post' || $target_method = 'put') { //Put works here because we should never be creating duplicates of objects or reusing the same id for multiple objects
+			elseif ($target_method == 'post' || $target_method == 'put') { //Put works here because we should never be creating duplicates of objects or reusing the same id for multiple objects
 				if ($id2 && is_numeric(($id2))) {
 					if (!empty($return = sqlGet(['*'], $repository, 'id', [$id2], '', 1)))
 						return new \GuzzleHttp\Psr7\Response(204, ['Content-Type' => 'application/json'], json_encode($part));

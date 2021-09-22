@@ -20,6 +20,7 @@ use React\Promise\ExtendedPromiseInterface;
  *
 
  * @property int    $id            The unique identifier of the player.
+ * @property string $name          Name of the party.
  * @property string $leader        Plaintext property name.
  *
  * @property int    $player1       Party creator snowflake (usually).
@@ -35,7 +36,7 @@ class Party extends Part
     /**
      * @inheritdoc
      */
-    protected static $fillable = ['id', 'leader', 'player1', 'player2', 'player3', 'player4', 'player5'];
+    protected static $fillable = ['id', 'name', 'leader', 'player1', 'player2', 'player3', 'player4', 'player5'];
 
 	/**
      * Returns the fillable attributes.
