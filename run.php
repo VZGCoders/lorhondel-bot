@@ -256,10 +256,7 @@ function sqlUpdate(array $columns = [], array $values = [], string $table, strin
 	echo '[SQL] ' . $sql . PHP_EOL;
 	$value_string = '(';
 	foreach ($values as $value) {
-		if ($value !== null) {
-			if ($value == false) $value = '0';
-			$value_string .= "$value, ";
-		}
+		$value_string .= "$value, ";
 	}
 	$value_string = substr($value_string, 0, strlen($value_string)-2) . ')';
 	echo $value_string . PHP_EOL;
@@ -285,10 +282,7 @@ function sqlDelete(string $table, string $wherecolumn = '', array $values = [], 
 	echo '[SQL] ' . $sql . PHP_EOL;
 	$value_string = '(';
 	foreach ($values as $value) {
-		if ($value !== null) {
-			if ($value == false) $value = '0';
-			$value_string .= "$value, ";
-		}
+		$value_string .= "$value, ";
 	}
 	$value_string = substr($value_string, 0, strlen($value_string)-2) . ')';
 	echo $value_string . PHP_EOL;
