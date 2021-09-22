@@ -134,6 +134,13 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 				if ($player) $message->channel->sendEmbed(playerEmbed($discord, getCurrentPlayer($lorhondel, $author_id)));
 				else $message->reply('No players found!');
 				break;
+			case 'getcurrentparty':
+				if (! $player = getCurrentPlayer($lorhondel, $author_id))
+					return $message->reply('No players found!');
+				if(! $party = getCurrentParty($lorhondel, $player->id))
+					return $message->reply('No party found!');
+				$message->channel->sendEmbed(partyEmbed($lorhondel, $discord, $party));
+				break;
 			case str_contains($message_content_lower, 'setcurrentplayer '):
 				$id = trim(str_replace('setcurrentplayer ', '', $message_content_lower));
 				if(is_numeric($id) && $player = $lorhondel->players->offsetGet($id))

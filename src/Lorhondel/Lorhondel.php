@@ -278,7 +278,7 @@ class Lorhondel
 		if ($options['discord'] || $options['discord_options']) {
 			if ($options['discord']) $this->discord = $options['discord'];
 			elseif ($options['discord_options']) $this->discord = new \Discord\Discord($options['discord_options']);
-		}
+		} else echo '[LORHONDEL-WARNING] No discord set!' . PHP_EOL;
 		
 		$connector = new SocketConnector($this->loop, $options['socket_options']);
         $this->wsFactory = new Connector($this->loop, $connector);

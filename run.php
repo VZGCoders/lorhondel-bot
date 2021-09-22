@@ -294,6 +294,29 @@ function sqlDelete(string $table, string $wherecolumn = '', array $values = [], 
 	return false;
 }
 
+function partPusher($lorhondel, $repository, $part_name, $array)
+{
+	$part = null;
+	foreach ($array as $data) { //Create all into parts and push
+		if ($attributes = json_decode(json_encode(json_validate($data)), true)) {
+			foreach ($part_name::getFillableAttributes() as $fillable) {
+				foreach ($attributes as $key => $attribute) {
+					 if ($key != $fillable && $key == str_replace('_', '', $fillable)) {
+						 unset($attributes[$key]);
+						 $attributes[$fillable] = $attribute;
+					 }
+				}
+			}
+			if ($part = $lorhondel->factory($part_name, $attributes)) {
+				if ($lorhondel->$repository->offsetGet($part->id))
+					$lorhondel->$repository->pull($part->id);
+				$lorhondel->$repository->push($part);
+			}
+		}
+	}
+	return $part;
+}
+
 function getCurrentPlayer($lorhondel, $user_id)
 {
 	include 'connect.php';
@@ -342,12 +365,13 @@ function setCurrentPlayer($lorhondel, $user_id, $id)
 function getCurrentParty($lorhondel, $id)
 {
 	include 'connect.php';
+	$part = null;
 	$sql = "SELECT * FROM parties WHERE ? in (player1, player2, player3, player4, player5)";
 	if ($stmt = $PDO->prepare($sql))
-		if ($stmt->execute([$user_id]))
-			if ($result = $stmt->get_result())
-				return $result;
-	return false;
+		if ($stmt->execute([$id]))
+			if ($result = $stmt->fetchAll())
+				$part = partPusher($lorhondel, 'parties', '\Lorhondel\Parts\Party\Party', $result);
+	return $part ?? false;
 }
 
 function setCurrentParty($lorhondel, $user_id)
@@ -356,15 +380,25 @@ function setCurrentParty($lorhondel, $user_id)
 	//
 }
 
-function playerEmbed($discord, $player)
+function getPlayerLocation()
+{
+	//
+}
+
+function setPartyLocation()
+{
+	//
+}
+
+function playerEmbed($lorhondel, $discord, $player)
 {
 	$embed = $discord->factory(\Discord\Parts\Embed\Embed::class);
 	$embed->setColor(0xe1452d)
-		//->setDescription('$author_guild_name') // Set a description (below title, above fields)
+	//	->setDescription('$author_guild_name') // Set a description (below title, above fields)
 	//	->setImage('https://avatars1.githubusercontent.com/u/4529744?s=460&v=4') // Set an image (below everything except footer)
-		->setTimestamp()                                                                     	// Set a timestamp (gets shown next to footer)
-		->setFooter('Palace Bot by Valithor#5947')                             					// Set a footer without icon
-		->setURL('');                             												// Set the URL
+		->setTimestamp()
+		->setFooter('Lonhondel by ArtsyAxolotl#5128')
+		->setURL('');
 	if ($player->name) $embed->addFieldValues('Name', $player->name, true);
 	$embed->addFieldValues('Species', $player->species, true);
 	if ($player->party_id) $embed->addFieldValues('Party ID', $player->party_id, false);
@@ -381,30 +415,43 @@ function playerEmbed($discord, $player)
 	return $embed;
 }
 
-function partPusher($lorhondel, $repository, $part_name, $array)
+function partyEmbed($lorhondel, $discord, $party)
 {
-	$part = null;
-	foreach ($array as $data) { //Create all into parts and push
-		if ($attributes = json_decode(json_encode(json_validate($data)), true)) {
-			foreach ($part_name::getFillableAttributes() as $fillable) {
-				foreach ($attributes as $key => $attribute) {
-					 if ($key != $fillable && $key == str_replace('_', '', $fillable)) {
-						 unset($attributes[$key]);
-						 $attributes[$fillable] = $attribute;
-					 }
-				}
-			}
-			if ($part = $lorhondel->factory($part_name, $attributes)) {
-				if ($lorhondel->$repository->offsetGet($part->id))
-					$lorhondel->$repository->pull($part->id);
-				$lorhondel->$repository->push($part);
+	$players = array();
+	$players[] = $player1 = $lorhondel->players->offsetGet($party->player1);
+	$players[] = $player2 = $lorhondel->players->offsetGet($party->player2);
+	$players[] = $player3 = $lorhondel->players->offsetGet($party->player3);
+	$players[] = $player4 = $lorhondel->players->offsetGet($party->player4);
+	$players[] = $player5 = $lorhondel->players->offsetGet($party->player5);
+	
+	$embed = $discord->factory(\Discord\Parts\Embed\Embed::class);
+	$embed->setColor(0xe1452d)
+	//	->setDescription('$author_guild_name') // Set a description (below title, above fields)
+	//	->setImage('https://avatars1.githubusercontent.com/u/4529744?s=460&v=4') // Set an image (below everything except footer)
+		->setTimestamp()
+		->setFooter('Lorhondel by ArtsyAxolotl#5128')                             					// Set a footer without icon
+		->setURL('');                             												// Set the URL
+	if ($party->name) $embed->addFieldValues('Name', $party->name, false);
+	$embed->addFieldValues('Party ID', $party->id, false);
+	foreach ($players as $player) {
+		if ($player && $user = $discord->users->offsetGet($player->user_id)) {
+			$embed->setAuthor("{$user->username} ({$user->id})", $user->avatar); // Set an author with icon
+			if($player->id == $party->{$party->leader}) {
+				$embed->addFieldValues('Leader', $player->name ?? $player->id, true);
+				$embed->setThumbnail("{$user->avatar}"); // Set a thumbnail (the image in the top right corner)
 			}
 		}
 	}
-	return $part;
+	$inline = false;
+	for ($x=0; $x<=count($players); $x++) {
+		if ($players[$x]) {
+			$embed->addFieldValues('Player ' . $x+1, $players[$x]->name ?? $players[$x]->id, $inline);
+			$inline = true;
+		}
+		$x++;
+	}
+	return $embed;
 }
-
-
 
 $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRequestInterface $request) use ($lorhondel, $discord, $stats) {
 	try{
