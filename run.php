@@ -390,9 +390,9 @@ function setPartyLocation()
 	//
 }
 
-function playerEmbed($lorhondel, $discord, $player)
+function playerEmbed($lorhondel, $player)
 {
-	$embed = $discord->factory(\Discord\Parts\Embed\Embed::class);
+	$embed = $lorhondel->discord->factory(\Discord\Parts\Embed\Embed::class);
 	$embed->setColor(0xe1452d)
 	//	->setDescription('$author_guild_name') // Set a description (below title, above fields)
 	//	->setImage('https://avatars1.githubusercontent.com/u/4529744?s=460&v=4') // Set an image (below everything except footer)
@@ -408,15 +408,16 @@ function playerEmbed($lorhondel, $discord, $player)
 		->addFieldValues('Defense', $player->defense, true)
 		->addFieldValues('Speed', $player->speed, true)
 		->addFieldValues('Skill Points', $player->skillpoints, true);
-	if ($user = $discord->users->offsetGet($player->user_id)) {
+	if ($user = $lorhondel->discord->users->offsetGet($player->user_id)) {
 		$embed->setAuthor("{$user->username} ({$user->id})", $user->avatar); // Set an author with icon
 		$embed->setThumbnail("{$user->avatar}"); // Set a thumbnail (the image in the top right corner)
 	}
 	return $embed;
 }
 
-function partyEmbed($lorhondel, $discord, $party)
+function partyEmbed($lorhondel, $party)
 {
+	echo '[CLASS]' . get_class($lorhondel->discord) . PHP_EOL;;
 	$players = array();
 	$players[] = $player1 = $lorhondel->players->offsetGet($party->player1);
 	$players[] = $player2 = $lorhondel->players->offsetGet($party->player2);
@@ -424,7 +425,7 @@ function partyEmbed($lorhondel, $discord, $party)
 	$players[] = $player4 = $lorhondel->players->offsetGet($party->player4);
 	$players[] = $player5 = $lorhondel->players->offsetGet($party->player5);
 	
-	$embed = $discord->factory(\Discord\Parts\Embed\Embed::class);
+	$embed = $lorhondel->discord->factory(\Discord\Parts\Embed\Embed::class);
 	$embed->setColor(0xe1452d)
 	//	->setDescription('$author_guild_name') // Set a description (below title, above fields)
 	//	->setImage('https://avatars1.githubusercontent.com/u/4529744?s=460&v=4') // Set an image (below everything except footer)
@@ -434,7 +435,7 @@ function partyEmbed($lorhondel, $discord, $party)
 	if ($party->name) $embed->addFieldValues('Name', $party->name, false);
 	$embed->addFieldValues('Party ID', $party->id, false);
 	foreach ($players as $player) {
-		if ($player && $user = $discord->users->offsetGet($player->user_id)) {
+		if ($player && $user = $lorhondel->discord->users->offsetGet($player->user_id)) {
 			$embed->setAuthor("{$user->username} ({$user->id})", $user->avatar); // Set an author with icon
 			if($player->id == $party->{$party->leader}) {
 				$embed->addFieldValues('Leader', $player->name ?? $player->id, true);
@@ -483,8 +484,8 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 		}
 		*/
 		
-		$lorhondelBattleground = $discord->getChannel(887118621065768970);
-		$lorhondelBotSpam = $discord->getChannel(887118679697940481);
+		$lorhondelBattleground = $lorhondel->discord->getChannel(887118621065768970);
+		$lorhondelBotSpam = $lorhondel->discord->getChannel(887118679697940481);
 		
 		$_5xx = array();
 		$_5xx['message'] = '5xx: Server Error'; //Something went wrong (Code is broken)
@@ -582,67 +583,67 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 				} else return webapiFail('stats', $stats);
 				break;
 			case 'channel':
-				if (!$id || !webapiSnow($id) || !$return = $discord->getChannel($id))
+				if (!$id || !webapiSnow($id) || !$return = $lorhondel->discord->getChannel($id))
 					return webapiFail('channel_id', $id);
 				break;
 
 			case 'guild':
-				if (!$id || !webapiSnow($id) || !$return = $discord->guilds->offsetGet($id))
+				if (!$id || !webapiSnow($id) || !$return = $lorhondel->discord->guilds->offsetGet($id))
 					return webapiFail('guild_id', $id);
 				break;
 				
 			case 'bans':
-				if (!$id || !webapiSnow($id) || !$guild = $discord->guilds->offsetGet($id))
+				if (!$id || !webapiSnow($id) || !$guild = $lorhondel->discord->guilds->offsetGet($id))
 					return webapiFail('guild_id', $id);
 				$return = $guild->bans;
 				break;
 				
 			case 'channels':
-				if (!$id || !webapiSnow($id) || !$guild = $discord->guilds->offsetGet($id))
+				if (!$id || !webapiSnow($id) || !$guild = $lorhondel->discord->guilds->offsetGet($id))
 					return webapiFail('guild_id', $id);
 				$return = $guild->channels;
 				break;
 				
 			case 'members':
-				if (!$id || !webapiSnow($id) || !$guild = $discord->guilds->offsetGet($id))
+				if (!$id || !webapiSnow($id) || !$guild = $lorhondel->discord->guilds->offsetGet($id))
 					return webapiFail('guild_id', $id);
 				$return = $guild->members;
 				break;
 				
 			case 'emojis':
-				if (!$id || !webapiSnow($id) || !$guild = $discord->guilds->offsetGet($id))
+				if (!$id || !webapiSnow($id) || !$guild = $lorhondel->discord->guilds->offsetGet($id))
 					return webapiFail('guild_id', $id);
 				$return = $guild->emojis;
 				break;
 			
 			case 'invites':
-				if (!$id || !webapiSnow($id) || !$guild = $discord->guilds->offsetGet($id))
+				if (!$id || !webapiSnow($id) || !$guild = $lorhondel->discord->guilds->offsetGet($id))
 					return webapiFail('guild_id', $id);
 				$return = $guild->invites;
 				break;
 			
 			case 'roles':
-				if (!$id || !webapiSnow($id) || !$guild = $discord->guilds->offsetGet($id))
+				if (!$id || !webapiSnow($id) || !$guild = $lorhondel->discord->guilds->offsetGet($id))
 					return webapiFail('guild_id', $id);
 				$return = $guild->roles;
 				break;
 
 			case 'guildMember':
 			case 'member':
-				if (!$id || !webapiSnow($id) || !$guild = $discord->guilds->offsetGet($id))
+				if (!$id || !webapiSnow($id) || !$guild = $lorhondel->discord->guilds->offsetGet($id))
 					return webapiFail('guild_id', $id);
 				if (!$id2 || !webapiSnow($id2) || !$return = $guild->members->offsetGet($id2))
 					return webapiFail('user_id', $id2);
 				break;
 
 			case 'user':
-				if (!$id || !webapiSnow($id) || !$return = $discord->users->offsetGet($id)) {
+				if (!$id || !webapiSnow($id) || !$return = $lorhondel->discord->users->offsetGet($id)) {
 					return webapiFail('user_id', $id);
 				}
 				break;
 
 			case 'userName':
-				if (!$id || !$return = $discord->users->get('name', $id))
+				if (!$id || !$return = $lorhondel->discord->users->get('name', $id))
 					return webapiFail('user_name', $id);
 				break;
 
@@ -662,7 +663,7 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 					echo '[REJECT]' . $request->getServerParams()['REMOTE_ADDR'] . PHP_EOL;
 					return new \GuzzleHttp\Psr7\Response(501, ['Content-Type' => 'text/plain'], 'Reject'.PHP_EOL);
 				}
-				if (!$id || !webapiSnow($id) || !$return = $discord->user->fetch($id))
+				if (!$id || !webapiSnow($id) || !$return = $lorhondel->discord->user->fetch($id))
 					return webapiFail('user_id', $id);
 				break;
 
@@ -674,8 +675,8 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 				if (!$id || !webapiSnow($id))
 					return webapiFail('user_id', $id);
 				$return = false;
-				if ($user = $discord->users->offsetGet($id)) { //Search all guilds the bot is in and check if the user id exists as a guild owner
-					foreach ($discord->guilds as $guild) {
+				if ($user = $lorhondel->discord->users->offsetGet($id)) { //Search all guilds the bot is in and check if the user id exists as a guild owner
+					foreach ($lorhondel->discord->guilds as $guild) {
 						if ($id == $guild->owner_id) {
 							$return = true;
 							break 1;
@@ -688,8 +689,8 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 				if (!$id || !webapiSnow($id)) {
 					return webapiFail('user_id', $id);
 				}
-				if (!$user = $discord->users->offsetGet($id)) {
-					$discord->users->fetch($id)->done(
+				if (!$user = $lorhondel->discord->users->offsetGet($id)) {
+					$lorhondel->discord->users->fetch($id)->done(
 						function ($user) {
 							$return = $user->avatar;
 							return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'text/json'], json_encode($return));
@@ -707,13 +708,13 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 			case 'avatars':
 				$idarray = $data ?? array(); // $data contains POST data
 				$return = [];
-				$promise = $discord->users->fetch($idarray[0])->then(function ($user) use (&$return) {
+				$promise = $lorhondel->discord->users->fetch($idarray[0])->then(function ($user) use (&$return) {
 				  $return[$user->id] = $user->avatar;
 				});
 				
 				for ($i = 1; $i < count($idarray); $i++) {
 				  $promise->then(function () use (&$return, $idarray, $i, $discord) {
-					return $discord->users->fetch($idarray[$i])->then(function ($user) use (&$return) {
+					return $lorhondel->discord->users->fetch($idarray[$i])->then(function ($user) use (&$return) {
 					  $return[$user->id] = $user->avatar;
 					});
 				  });
@@ -964,7 +965,7 @@ $webapi->on('error', function ($e) {
 
 try{
 	include 'rescue-try-include.php';
-	$discord->on('error', function ($error) { //Handling of thrown errors
+	$lorhondel->discord->on('error', function ($error) { //Handling of thrown errors
 		echo "[ERROR] $error" . PHP_EOL;
 		try{
 			echo '[ERROR EVENT]' . $error->getMessage() . " in file " . $error->getFile() . " on line " . $error->getLine() . PHP_EOL;
@@ -972,19 +973,19 @@ try{
 			echo '[ERROR EVENT]' . $e->getMessage() . " in file " . $e->getFile() . " on line " . $e->getLine() . PHP_EOL;
 		}
 	});
-	$discord->once('ready', function ($discord) use ($lorhondel, $loop, $token, $stats, /*$connector,*/ $browser) {
-		$act  = $discord->factory(\Discord\Parts\User\Activity::class, [
+	$lorhondel->discord->once('ready', function ($discord) use ($lorhondel, $loop, $token, $stats, /*$connector,*/ $browser) {
+		$act  = $lorhondel->discord->factory(\Discord\Parts\User\Activity::class, [
 		'name' => 'superiority',
 		'type' => \Discord\Parts\User\Activity::TYPE_COMPETING
 		]);
-		$discord->updatePresence($act, false, 'online', false);
+		$lorhondel->discord->updatePresence($act, false, 'online', false);
 		echo "[READY]" . PHP_EOL;
 		include 'ready-include.php'; //All modular event handlers
 		include 'connect.php';
 		$lorhondel->players->freshen();	//Import existing parts from SQL
 		$lorhondel->parties->freshen();	//Import existing parts from SQL
 	 });
-	$discord->run();
+	$lorhondel->discord->run();
 }catch (Throwable $e) { //Restart the bot
 	include 'rescue-catch-include.php';
 }

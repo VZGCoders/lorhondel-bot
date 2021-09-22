@@ -131,7 +131,7 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 				break;
 			case 'getcurrentplayer':
 				$player = getCurrentPlayer($lorhondel, $author_id);
-				if ($player) $message->channel->sendEmbed(playerEmbed($discord, getCurrentPlayer($lorhondel, $author_id)));
+				if ($player) $message->channel->sendEmbed(playerEmbed($lorhondel, getCurrentPlayer($lorhondel, $author_id)));
 				else $message->reply('No players found!');
 				break;
 			case 'getcurrentparty':
@@ -139,7 +139,7 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 					return $message->reply('No players found!');
 				if(! $party = getCurrentParty($lorhondel, $player->id))
 					return $message->reply('No party found!');
-				$message->channel->sendEmbed(partyEmbed($lorhondel, $discord, $party));
+				$message->channel->sendEmbed(partyEmbed($lorhondel, $party));
 				break;
 			case str_contains($message_content_lower, 'setcurrentplayer '):
 				$id = trim(str_replace('setcurrentplayer ', '', $message_content_lower));
@@ -243,6 +243,9 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 			case 'stats':
 				if ($embed = $stats->handle())
 					$message->channel->sendEmbed($embed);
+				break;
+			case 'discord':
+				$message->reply(get_class($lorhondel->discord));
 				break;
 		}
 	}
