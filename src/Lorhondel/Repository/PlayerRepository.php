@@ -59,11 +59,11 @@ class PlayerRepository extends AbstractRepository
 		$url = Http::BASE_URL . "/players/$method/{$part->id}/";
 		return $this->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
 			function (Psr\Http\Message\ResponseInterface $response) use ($part) {
-				echo '[DELETE] '; //var_dump($lorhondel->players->offsetUnset($part->id)); 
+				echo '[SAVE] '; //var_dump($lorhondel->players->offsetUnset($part->id)); 
 				//var_dump($lorhondel->players);
 			},
 			function ($error) {
-				echo '[DELETE ERROR]' . PHP_EOL;
+				echo '[SAVE ERROR]' . PHP_EOL;
 				var_dump($error);
 			}
 		);

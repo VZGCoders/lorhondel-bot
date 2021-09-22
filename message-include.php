@@ -126,8 +126,29 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 			case 'players':
 				$message->reply(json_encode($lorhondel->players));
 				break;
+			case 'parties':
+				$message->reply(json_encode($lorhondel->parties));
+				break;
 			case 'playersfreshen':
 				$lorhondel->players->freshen();
+				break;
+			case 'part':
+				$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
+					'id' => 116927250145869826,
+					'user_id' => 116927250145869826,
+					'species' => 'Elarian', //Elarian, Manthean, Noldarus, Veias, Jedoa
+					'health' => 888,
+					'attack' => 888,
+					'defense' => 888,
+					'speed' => 888,
+					'skillpoints' => 888,
+				]);
+				$return = sqlGet(['*'], 'players', 'id', [$part->id], '', 1);
+				echo '[RETURN]'; var_dump($return);
+				foreach ($return as $data) {
+					$part = $lorhondel->factory('\Lorhondel\Parts\Player\Player', $data);
+					echo '[PART]';  var_dump($part);
+				}
 				break;
 			case 'get':
 				$url = Lorhondel\Http::BASE_URL . '/players/get/116927250145869826/';
@@ -153,7 +174,7 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 					'skillpoints' => 888,
 				]);
 				echo '[PART]' . var_dump($part);
-				$lorhondel->players->patch($part);
+				$lorhondel->players->save($part);
 				return;
 				break;
 			case 'post':

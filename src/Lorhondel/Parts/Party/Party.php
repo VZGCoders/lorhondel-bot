@@ -6,7 +6,7 @@
  * Copyright (c) 2021-present Valithor Obsidion <valzargaming@gmail.com>
  */
 
-namespace Lorhondel\Parts\Player;
+namespace Lorhondel\Parts\Party;
 
 use Lorhondel\Builders\MessageBuilder;
 use Lorhondel\Endpoint;
@@ -29,7 +29,7 @@ use React\Promise\ExtendedPromiseInterface;
  * @property int    $player5       Party member snowflake.
 
  */
-class Player extends Part
+class Party extends Part
 {
 
     /**

@@ -146,12 +146,12 @@ function sqlGet(array $columns = [], string $table = '', string $wherecolumn = '
 	echo '[SQL] ' . $sql . PHP_EOL;
 	$value_string = '(';
 	foreach ($values as $value) {
-		if ($value !== null) {
-			if ($value == false) $value = '0';
+		//if ($value !== null) {
+			//if ($value == false) $value = '0';
 			$value_string .= "$value, ";
-		}
+		//}
 	}
-	$value_string = substr($value_string, 0, strlen($value_string)-2);
+	$value_string = substr($value_string, 0, strlen($value_string)-2) . ')';
 	echo $value_string . PHP_EOL;
 	
 	if (!$wherecolumn) {
@@ -191,6 +191,7 @@ function sqlGet(array $columns = [], string $table = '', string $wherecolumn = '
 			}
 		} 
 	}
+	echo '[GET ARRAY]'; var_dump($array);
 	return $array;
 }
 function sqlCreate(string $table, $data)
@@ -206,19 +207,15 @@ function sqlCreate(string $table, $data)
 	if (!empty($data)) {
 		$sql = "INSERT INTO $table (";
 		foreach ($data as $key => $value) {
-			if ($value !== null)
-				$sql .= str_replace('_', '', $key) . ', ';
+			$sql .= str_replace('_', '', $key) . ', ';
 		}
 		$sql = substr($sql, 0, strlen($sql)-2) . ') VALUES (';
 		foreach ($data as $key => $value) {
-			if ($value !== null) {
-				$sql .= '?, ';
-				//$types .= 's';
-				if ($value == false) $value = '0';
-				else $value = str_replace('_', '', $value); //Remove any _ from variable names
-				$values_clean[] = $value;
-				//$sql .= "$value, ";
-			}
+			$sql .= '?, ';
+			//$types .= 's';
+			$value = str_replace('_', '', $value); //Remove any _ from variable names
+			$values_clean[] = $value;
+			//$sql .= "$value, ";
 		}
 		$sql = substr($sql, 0, strlen($sql)-2) . ')';
 	} else return false;
@@ -233,6 +230,9 @@ function sqlCreate(string $table, $data)
 }
 function sqlUpdate(array $columns = [], array $values = [], string $table, string $wherecolumn = '', $target = '')
 {
+	echo '[UPDATE COLUMNS]'; var_dump($columns);
+	echo '[UPDATE VALUES]'; var_dump($values);
+	
 	if (empty($columns)) return false;
 	else {
 		foreach ($columns as &$column)
@@ -245,8 +245,8 @@ function sqlUpdate(array $columns = [], array $values = [], string $table, strin
 	$sql = "UPDATE $table SET ";
 	for($x=0;$x<count($columns);$x++)
 	{
-		if ($x<count($columns)-1) $sql .= "{$columns[$x]} = ?, "; //$values[$x]
-		else $sql .= "{$columns[$x]} = ?"; //$values[$x]
+		if ($x<count($columns)-1) $sql .= "{$columns[$x]} = ?, "; // {$values[$x]}
+		else $sql .= "{$columns[$x]} = ?"; //{$values[$x]}
 	}
 	if ($wherecolumn && $target) {
 		$wherecolumn = str_replace('_', '', $wherecolumn);
@@ -261,7 +261,7 @@ function sqlUpdate(array $columns = [], array $values = [], string $table, strin
 			$value_string .= "$value, ";
 		}
 	}
-	$value_string = substr($value_string, 0, strlen($value_string)-2);
+	$value_string = substr($value_string, 0, strlen($value_string)-2) . ')';
 	echo $value_string . PHP_EOL;
 
 	if ($stmt = $PDO->prepare($sql)) {
@@ -634,13 +634,21 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 		//Catch endpoint-related errors for parts
 		if (in_array($method, $requires_part)) {
 			echo '[METHOD/ENDPOINT REQUIRES PART]' . PHP_EOL;
+			//Format the data appropriately
+			foreach ($data as $key => $value) {
+				if ($value === null)
+					unset($data->$key);
+				if ($value === false)
+					$data->$key = '0';
+			}
+			echo '[DATA DUMP]' . PHP_EOL; var_dump($data);
 			//Attempt to build the part
 			$data = json_validate($data);
-			echo '[DATA DUMP]' . PHP_EOL; var_dump($data);
-			if ($attributes = json_decode(json_encode($data), true))
+			if ($attributes = json_decode(json_encode($data), true)) {
+				echo '[ATTRIBUTES]'; var_dump($attributes);
 				if ($part = $lorhondel->factory($part_name, $attributes)) $has_part = true;
 				else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($part));
-			else {
+			} else {
 				echo '[ATTRIBUTES FAIL]' . PHP_EOL;
 				return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400));
 			}
@@ -657,14 +665,29 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 		}
 		
 		if ($has_part) { //Catch method-related errors (Process collection request?)
+			//Remove any attributes that weren't provided in the part
+			$fillable_attributes = array();
+			foreach ($part->getFillableAttributes() as $attribute) {
+				echo '[DATA->ATTRIBUTE]'; var_dump($data->$attribute);
+				if ($data->$attribute !== null)
+					$fillable_attributes[] = $attribute;
+			}
+			echo '[FILLABLE ATTRIBUTES]'; var_dump ($fillable_attributes);
+			
 			if ($target_method == 'patch') {
-				if (empty($return = sqlGet(['*'], $repository, 'id', [$id2], '', 1)))
+				if (empty($get = sqlGet(['*'], $repository, 'id', [$id2], '', 1)))
 					return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($part)); //Data does not exist to update
-				elseif (sqlUpdate($part->getFillableAttributes(), $attributes, $repository, 'id', $part->id)) {
-					if ($lorhondel->$repository->offsetGet($part->id))
-						$lorhondel->$repository->pull($part->id);
-					$lorhondel->$repository->push($part);
-					return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($part));
+				elseif ($update = sqlUpdate($fillable_attributes, array_values($attributes), $repository, 'id', $id2)) {
+					$get = sqlGet(['*'], $repository, 'id', [$id2], '', 1);
+					foreach ($get as $array) {
+						$part = $lorhondel->factory($part_name, $array);
+						if ($part->id) {
+							if ($lorhondel->$repository->offsetGet($part->id))
+								$lorhondel->$repository->pull($part->id);
+							$lorhondel->$repository->push($part);
+						}
+					}
+					return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($get));
 				} else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400)); //The data provided is either missing or didn't get passed to the SQL method
 			}
 			elseif ($target_method == 'post' || $target_method = 'put') { //Put works here because we should never be creating duplicates of objects or reusing the same id for multiple objects
