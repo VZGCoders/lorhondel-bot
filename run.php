@@ -690,10 +690,16 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 						return new \GuzzleHttp\Psr7\Response(204, ['Content-Type' => 'application/json'], json_encode($part));
 					else {
 						if (sqlCreate($repository, $data)) {
-							if (!$lorhondel->$repository->offsetGet($data->id))
-								$lorhondel->$repository->push($part);
-							else echo '[EXISTS] ' . $data->id . PHP_EOL;
-							return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($part));
+							$get = sqlGet(['*'], $repository, 'id', [$id2], '', 1);
+							foreach ($get as $array) {
+								$part = $lorhondel->factory($part_name, $array);
+								if ($part->id) {
+									if (!$lorhondel->$repository->offsetGet($part->id))
+										$lorhondel->$repository->push($part);
+									else echo '[EXISTS] ' . $data->id . PHP_EOL;
+								}
+							}
+							return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($get));
 						} else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400)); //The data provided is either missing or didn't get passed to the SQL method
 					}
 				} else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400));
@@ -793,7 +799,7 @@ $webapi->on('error', function ($e) {
 		'prv' => ($e->getPrevious() ? $e->getPrevious()->getMessage() : null)
 	]);
 	*/
-	echo '[ERROR] ' . $e->getMessage() . PHP_EOL;
+	echo '[WEBAPI ERROR] ' . $e->getMessage() . PHP_EOL;
 	var_dump($e);
 });
 
@@ -823,4 +829,3 @@ try{
 }catch (Throwable $e) { //Restart the bot
 	include 'rescue-catch-include.php';
 }
-?>
