@@ -348,11 +348,8 @@ function setCurrentPlayer($lorhondel, $user_id, $id)
 		echo '[FOUND ACTIVE PLAYER]'; var_dump($collection);
 		foreach ($collection as $player) //There should only be one
 			$lorhondel->players->offsetGet($player->id)->active = 0;
-		if ($player = $lorhondel->players->offsetGet($id) && $player->user_id == $user_id) {
+		if ($player = $lorhondel->players->offsetGet($id) && $player->user_id == $user_id)
 			$player->active = 1;
-			return $player;
-		}
-		else return false;
 	}
 	
 	include 'connect.php';
@@ -377,7 +374,7 @@ function setCurrentPlayer($lorhondel, $user_id, $id)
 		echo '[setCurrentPlayer Part]'; var_dump($part);
 	}
 	
-	return $part ?? $result;
+	return $player ?? $part ?? $result;
 }
 
 function getCurrentParty($lorhondel, $id)
