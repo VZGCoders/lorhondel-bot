@@ -344,12 +344,15 @@ function getCurrentPlayer($lorhondel, $user_id)
 
 function setCurrentPlayer($lorhondel, $user_id, $id)
 {
+	$cached = false;
 	if ($collection = $lorhondel->players->filter(fn($p) => $p->user_id == $user_id && $p->active == 1 )) {
 		echo '[FOUND ACTIVE PLAYER]'; var_dump($collection);
 		foreach ($collection as $player) //There should only be one
 			$lorhondel->players->offsetGet($player->id)->active = 0;
-		if ($player = $lorhondel->players->offsetGet($id) && $player->user_id == $user_id)
+		if ($player = $lorhondel->players->offsetGet($id) && $player->user_id == $user_id) {
 			$player->active = 1;
+			$cached = true;
+		}
 	}
 	
 	include 'connect.php';
@@ -365,10 +368,9 @@ function setCurrentPlayer($lorhondel, $user_id, $id)
 	if ($stmt = $PDO->prepare($sql))
 		if ($stmt->execute([$user_id, $id]))
 			$activated = true; //echo "[ACTIVATED] $user_id/$id";
-	
 	echo '[setCurrentPlayer]'; var_dump($result);
-	//get
-	if ($activated) {
+	
+	if (! $cached && $activated) {
 		$get = json_validate(sqlGet(['*'], 'players', 'id', [$id], '', 1));
 		$part = partPusher($lorhondel, 'players', '\Lorhondel\Parts\Player\Player', $get);
 		echo '[setCurrentPlayer Part]'; var_dump($part);
