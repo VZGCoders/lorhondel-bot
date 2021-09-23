@@ -319,6 +319,13 @@ function partPusher($lorhondel, $repository, $part_name, $array)
 
 function getCurrentPlayer($lorhondel, $user_id)
 {
+	if ($collection = $lorhondel->players->filter(fn($p) => $p->user_id == $user_id && $p->active == 1 )) {
+		echo '[FOUND ACTIVE PLAYER]'; var_dump($collection);
+		foreach ($collection as $player) //There should only be one
+			return $player;
+	}
+	
+	//No active Player part was found, so check SQL to make sure
 	include 'connect.php';
 	$sql = "SELECT * FROM players WHERE userid = ? AND active = 1";
 	$get = array();
@@ -337,6 +344,17 @@ function getCurrentPlayer($lorhondel, $user_id)
 
 function setCurrentPlayer($lorhondel, $user_id, $id)
 {
+	if ($collection = $lorhondel->players->filter(fn($p) => $p->user_id == $user_id && $p->active == 1 )) {
+		echo '[FOUND ACTIVE PLAYER]'; var_dump($collection);
+		foreach ($collection as $player) //There should only be one
+			$lorhondel->players->offsetGet($player->id)->active = 0;
+		if ($player = $lorhondel->players->offsetGet($id) && $player->user_id == $user_id) {
+			$player->active = 1;
+			return $player;
+		}
+		else return false;
+	}
+	
 	include 'connect.php';
 	$deactivated = false;
 	$activated = false;
@@ -364,6 +382,13 @@ function setCurrentPlayer($lorhondel, $user_id, $id)
 
 function getCurrentParty($lorhondel, $id)
 {
+	if ($part = $lorhondel->parties->filter(fn($p) => $p->player1 == $id || p->player2 == $id || p->player3 == $id || p->player4 == $id || p->player5 == $id)) {
+		echo '[FOUND PARTY]'; var_dump($part);
+		foreach ($part as $party) //There should only be one
+			return $party;
+	}
+	
+	//No Party part for the Player was found, so check SQL to make sure
 	include 'connect.php';
 	$part = null;
 	$sql = "SELECT * FROM parties WHERE ? in (player1, player2, player3, player4, player5)";
@@ -376,16 +401,13 @@ function getCurrentParty($lorhondel, $id)
 
 function setCurrentParty($lorhondel, $user_id)
 {
+	
+	
 	include 'connect.php';
 	//
 }
 
 function getPlayerLocation()
-{
-	//
-}
-
-function setPartyLocation()
 {
 	//
 }
@@ -437,7 +459,7 @@ function partyEmbed($lorhondel, $party)
 	foreach ($players as $player) {
 		if ($player && $user = $lorhondel->discord->users->offsetGet($player->user_id)) {
 			$embed->setAuthor("{$user->username} ({$user->id})", $user->avatar); // Set an author with icon
-			if($player->id == $party->{$party->leader}) {
+			if ($player->id == $party->{$party->leader}) {
 				$embed->addFieldValues('Leader', $player->name ?? $player->id, true);
 				$embed->setThumbnail("{$user->avatar}"); // Set a thumbnail (the image in the top right corner)
 			}
@@ -756,6 +778,19 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 					['method' => 'delete', 'privileged' => true, 'privileged_endpoints' => []],
 				],
 			],
+			'battles' => [
+				'part_name' => '\Lorhondel\Parts\Battle\Battle',
+				'part_name_short' => 'Battle',
+				'allowed_methods' => [
+					['method' => 'get', 'privileged' => false, 'privileged_endpoints' => [null, 'all', 'freshen']],
+					['method' => 'fresh', 'privileged' => false, 'privileged_endpoints' => []],
+					['method' => 'put', 'privileged' => true, 'privileged_endpoints' => []],
+					['method' => 'patch', 'privileged' => true, 'privileged_endpoints' => []],
+					['method' => 'post', 'privileged' => true, 'privileged_endpoints' => []],
+					['method' => 'delete', 'privileged' => true, 'privileged_endpoints' => []],
+				],
+			],
+			
 		];
 
 		//$collection = false;
@@ -984,6 +1019,7 @@ try{
 		include 'connect.php';
 		$lorhondel->players->freshen();	//Import existing parts from SQL
 		$lorhondel->parties->freshen();	//Import existing parts from SQL
+		$lorhondel->battles->freshen();	//Import existing parts from SQL
 	 });
 	$lorhondel->discord->run();
 }catch (Throwable $e) { //Restart the bot

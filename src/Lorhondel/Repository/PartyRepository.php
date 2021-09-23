@@ -297,7 +297,7 @@ class PartyRepository extends AbstractRepository
 				$member = true;
 			}
 		}
-		if(! $member) return false;
+		if (! $member) return false;
 
 		if ($succeed = $party->succession($party)) {
 			return $this->save($party);
