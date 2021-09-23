@@ -25,6 +25,7 @@ use React\Promise\ExtendedPromiseInterface;
  * @property User|null                $user             The Discord user instance of the player.
  * @property PlayerRepository         $players
  * @property PartiesRepository        $parties
+ * @property PartyRepository          $parties
  */
 class Client extends Part
 {
