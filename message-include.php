@@ -102,7 +102,7 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 	if ($creator) { //Debug commands
 		switch($message_content_lower) {
 			case 'ping':
-				$message->reply('Pong!');
+				return $message->reply('Pong!');
 				break;
 			case 'factory':
 				$snowflake = \Lorhondel\generateSnowflake(time(), 0, 0, count($lorhondel->players));
@@ -120,35 +120,34 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 				break;
 			case 'characters':
 				$characters = $lorhondel->players->filter(fn($p) => $p->user_id == $message->author->user->id);
-				$message->reply(json_encode($characters));
-				//$message->reply(json_encode($lorhondel->players));
+				return $message->reply(json_encode($characters));
 				break;
 			case 'players':
-				$message->reply(json_encode($lorhondel->players));
+				return $message->reply(json_encode($lorhondel->players));
 				break;
 			case 'parties':
-				$message->reply(json_encode($lorhondel->parties));
+				return $message->reply(json_encode($lorhondel->parties));
 				break;
 			case 'getcurrentplayer':
 				$player = getCurrentPlayer($lorhondel, $author_id);
-				if ($player) $message->channel->sendEmbed(playerEmbed($lorhondel, getCurrentPlayer($lorhondel, $author_id)));
-				else $message->reply('No players found!');
+				if ($player) return $message->channel->sendEmbed(playerEmbed($lorhondel, getCurrentPlayer($lorhondel, $author_id)));
+				else return $message->reply('No players found!');
 				break;
 			case 'getcurrentparty':
 				if (! $player = getCurrentPlayer($lorhondel, $author_id))
 					return $message->reply('No players found!');
 				if(! $party = getCurrentParty($lorhondel, $player->id))
 					return $message->reply('No party found!');
-				$message->channel->sendEmbed(partyEmbed($lorhondel, $party));
+				return $message->channel->sendEmbed(partyEmbed($lorhondel, $party));
 				break;
 			case str_contains($message_content_lower, 'setcurrentplayer '):
 				$id = trim(str_replace('setcurrentplayer ', '', $message_content_lower));
 				if(is_numeric($id) && $player = $lorhondel->players->offsetGet($id))
-					$message->reply('Result: ' . (setCurrentPlayer($lorhondel, $author_id, $id) ?? 'None'));
-				else $message->reply('Invalid input!');
+					return $message->reply('Result: ' . (setCurrentPlayer($lorhondel, $author_id, $id) ?? 'None'));
+				else return $message->reply('Invalid input!');
 				break;
 			case 'playersfreshen':
-				$lorhondel->players->freshen();
+				return $lorhondel->players->freshen();
 				break;
 			case 'part':
 				$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
@@ -167,10 +166,11 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 					$part = $lorhondel->factory('\Lorhondel\Parts\Player\Player', $data);
 					echo '[PART]';  var_dump($part);
 				}
+				return;
 				break;
 			case 'get':
 				$url = Lorhondel\Http::BASE_URL . '/players/get/116927250145869826/';
-				$browser->post($url, ['Content-Type' => 'application/json'], json_encode('116927250145869826'))->then(
+				return $browser->post($url, ['Content-Type' => 'application/json'], json_encode('116927250145869826'))->then(
 					function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel) {
 						echo '[RESPONSE]' . PHP_EOL;
 						print_r($response->getBody());
@@ -192,8 +192,7 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 					'skillpoints' => 888,
 				]);
 				echo '[PART]' . var_dump($part);
-				$lorhondel->players->save($part);
-				return;
+				return $lorhondel->players->save($part);
 				break;
 			case 'post':
 				echo '[POST]' . PHP_EOL;
@@ -210,7 +209,7 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 					'speed' => 3,
 					'skillpoints' => 4,
 				]);
-				$lorhondel->players->save($part); //Use $Browser instead, this is currently broken
+				return $lorhondel->players->save($part); //Use $Browser instead, this is currently broken
 				break;
 			case 'save':
 				echo '[save]' . PHP_EOL;
@@ -224,7 +223,7 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 					'speed' => 3,
 					'skillpoints' => 4,
 				]);
-				$lorhondel->players->save($part);
+				return $lorhondel->players->save($part);
 				break;
 			case 'delete':
 				echo '[delete]' . PHP_EOL;
@@ -238,14 +237,14 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 					'speed' => 3,
 					'skillpoints' => 4,
 				]);
-				$lorhondel->players->delete($part);
+				return $lorhondel->players->delete($part);
 				break;
 			case 'stats':
 				if ($embed = $stats->handle())
-					$message->channel->sendEmbed($embed);
+					return $message->channel->sendEmbed($embed);
 				break;
 			case 'discord':
-				$message->reply(get_class($lorhondel->discord));
+				return $message->reply(get_class($lorhondel->discord));
 				break;
 			case 'create party':
 				if(! empty($collection = $lorhondel->players->filter(fn($p) => $p->user_id == $author_id && $p->active == 1 ))) {
@@ -267,12 +266,13 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 												$player->party_id = $party->id;
 												echo '[COLLECTION PLAYER]'; var_dump($player);
 												$lorhondel->players->save($player); //This is not saving the party_id and user_id
-												$message->reply('Party created and assigned!');
+												return $message->reply('Party created and assigned!');
 											}
-										} else $message->reply('Unable to locate party part!');
+										} else return $message->reply('Unable to locate party part!');
 									}
 								);
 								$player->timer = $timer;
+								return;
 							} else return $message->reply('You must leave your current party first!');
 						} else return $message->reply('No players found!');
 					}
