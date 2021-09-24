@@ -60,8 +60,8 @@ class PartyRepository extends AbstractRepository
 		else $method = 'post';
 		$url = Http::BASE_URL . "/parties/$method/{$part->id}/";
 		return $this->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
-			function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
-				echo '[SAVE] '; var_dump($lorhondel->parties->offsetUnset($part->id)); 
+			function (Psr\Http\Message\ResponseInterface $response) use ($part) {
+				echo '[SAVE] '; var_dump($this->factory->lorhondel->parties->offsetUnset($part->id)); 
 				//var_dump($lorhondel->parties);
 			},
 			function ($error) {
@@ -171,7 +171,7 @@ class PartyRepository extends AbstractRepository
     public function freshen()
     {
 		$url = Http::BASE_URL . "/parties/get/all/"; echo '[URL] ' . $url . PHP_EOL;
-		$this->browser->get($url)->done( //Make this a function
+		return $this->browser->get($url)->done( //Make this a function
 			function (Psr\Http\Message\ResponseInterface $response) { //TODO: Not receiving response
 				echo '[RESPONSE] ' . PHP_EOL;
 				if (is_object(json_decode((string)$response->getBody()->getContents()))) echo '[VALID JSON]' . PHP_EOL;

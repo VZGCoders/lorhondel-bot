@@ -169,7 +169,7 @@ class PlayerRepository extends AbstractRepository
     public function freshen()
     {
 		$url = Http::BASE_URL . "/players/get/all/"; echo '[URL] ' . $url . PHP_EOL;
-		$this->factory->lorhondel->browser->get($url)->done( //Make this a function
+		return $this->factory->lorhondel->browser->get($url)->done( //Make this a function
 			function (Psr\Http\Message\ResponseInterface $response) { //TODO: Not receiving response
 				echo '[RESPONSE] ' . PHP_EOL;
 				if (is_object(json_decode((string)$response->getBody()->getContents()))) echo '[VALID JSON]' . PHP_EOL;

@@ -124,10 +124,6 @@ function sqlGet(array $columns = [], string $table = '', string $wherecolumn = '
 {
 	//sqlGet(['*'], $repository, '', [], '', 500); //get all
 	if (empty($columns)) return [];
-	else {
-		foreach ($columns as &$column)
-			$column = str_replace('_', '', $column);
-	}
 	if (!$table) return [];
 	include 'connect.php'; //$mysqli and $pdo
 	$array = array();
@@ -138,7 +134,6 @@ function sqlGet(array $columns = [], string $table = '', string $wherecolumn = '
 		else $sql .= $columns[$x] . ' ';
 	$sql .= "FROM $table";
 	if ($wherecolumn && !empty($values)) {
-		$wherecolumn = str_replace('_', '', $wherecolumn);
 		$sql .= " WHERE $wherecolumn = ?";
 	}
 	if ($order) $sql .= " ORDER BY $order";
@@ -207,13 +202,13 @@ function sqlCreate(string $table, $data)
 	if (!empty($data)) {
 		$sql = "INSERT INTO $table (";
 		foreach ($data as $key => $value) {
-			$sql .= str_replace('_', '', $key) . ', ';
+			$sql .= $key . ', ';
 		}
 		$sql = substr($sql, 0, strlen($sql)-2) . ') VALUES (';
 		foreach ($data as $key => $value) {
 			$sql .= '?, ';
 			//$types .= 's';
-			$value = str_replace('_', '', $value); //Remove any _ from variable names
+			$value = $value; //Remove any _ from variable names
 			$values_clean[] = $value;
 			//$sql .= "$value, ";
 		}
@@ -234,10 +229,6 @@ function sqlUpdate(array $columns = [], array $values = [], string $table, strin
 	echo '[UPDATE VALUES]'; var_dump($values);
 	
 	if (empty($columns)) return false;
-	else {
-		foreach ($columns as &$column)
-			$column = str_replace('_', '', $column);
-	}
 	if (!$table) return false;
 	if (count($columns) != count($values)) return false;
 	include 'connect.php';
@@ -249,10 +240,8 @@ function sqlUpdate(array $columns = [], array $values = [], string $table, strin
 		else $sql .= "{$columns[$x]} = ?"; //{$values[$x]}
 	}
 	if ($wherecolumn && $target) {
-		$wherecolumn = str_replace('_', '', $wherecolumn);
 		$sql .= " WHERE $wherecolumn = '$target'";
 	}
-	$sql = str_replace('_', '', $sql);
 	echo '[SQL] ' . $sql . PHP_EOL;
 	$value_string = '(';
 	foreach ($values as $value) {
@@ -274,7 +263,6 @@ function sqlDelete(string $table, string $wherecolumn = '', array $values = [], 
 	
 	$sql = "DELETE FROM $table";
 	if ($wherecolumn && !empty($values)) {
-		$wherecolumn = str_replace('_', '', $wherecolumn);
 		$sql .= " WHERE $wherecolumn = ?";
 	}
 	if ($order) $sql .= " ORDER BY $order";
@@ -299,14 +287,6 @@ function partPusher($lorhondel, $repository, $part_name, $array)
 	$part = null;
 	foreach ($array as $data) { //Create all into parts and push
 		if ($attributes = json_decode(json_encode(json_validate($data)), true)) {
-			foreach ($part_name::getFillableAttributes() as $fillable) {
-				foreach ($attributes as $key => $attribute) {
-					 if ($key != $fillable && $key == str_replace('_', '', $fillable)) {
-						 unset($attributes[$key]);
-						 $attributes[$fillable] = $attribute;
-					 }
-				}
-			}
 			if ($part = $lorhondel->factory($part_name, $attributes)) {
 				if ($lorhondel->$repository->offsetGet($part->id))
 					$lorhondel->$repository->pull($part->id);
@@ -327,7 +307,7 @@ function getCurrentPlayer($lorhondel, $user_id)
 	
 	//No active Player part was found, so check SQL to make sure
 	include 'connect.php';
-	$sql = "SELECT * FROM players WHERE userid = ? AND active = 1";
+	$sql = "SELECT * FROM players WHERE user_id = ? AND active = 1";
 	$get = array();
 	$part = null;
 	if ($stmt = $PDO->prepare($sql))
@@ -349,22 +329,22 @@ function setCurrentPlayer($lorhondel, $user_id, $id)
 		echo '[FOUND ACTIVE PLAYER]'; var_dump($collection);
 		foreach ($collection as $player) //There should only be one
 			$lorhondel->players->offsetGet($player->id)->active = 0;
-		if ($player = $lorhondel->players->offsetGet($id) && $player->user_id == $user_id) {
-			$player->active = 1;
-			$cached = true;
-		}
+	}
+	if ($player = $lorhondel->players->offsetGet($id) && $player->user_id == $user_id) {
+		$player->active = 1;
+		$cached = true;
 	}
 	
 	include 'connect.php';
 	$deactivated = false;
 	$activated = false;
 	$part = null;
-	$sql = "UPDATE players SET active = 0 WHERE userid = ?";
+	$sql = "UPDATE players SET active = 0 WHERE user_id = ?";
 	if ($stmt = $PDO->prepare($sql))
 		if ($stmt->execute([$id]))
 			if ($result = $stmt->fetchAll())
 				$deactivated = true; //echo "[DEACTIVATED] $user_id";
-	$sql = "UPDATE players SET active = 1 WHERE userid = ? AND id = ?";
+	$sql = "UPDATE players SET active = 1 WHERE user_id = ? AND id = ?";
 	if ($stmt = $PDO->prepare($sql))
 		if ($stmt->execute([$user_id, $id]))
 			$activated = true; //echo "[ACTIVATED] $user_id/$id";
@@ -846,19 +826,16 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 		$allowed_properties = [];
 		if ($part) {
 			$allowed_properties = array_merge(['*'], $part->getFillableAttributes());
-			$sanitized_properties = [];
-			foreach($part->getFillableAttributes() as $property)
-				$sanitized_properties[] = str_replace('_', '', $property);
-			$allowed_properties = array_merge($allowed_properties, $sanitized_properties);
 		}
 		
 		if ($has_part) { //Catch method-related errors (Process collection request?)
 			//Remove any attributes that weren't provided in the part
 			$fillable_attributes = array();
 			foreach ($part->getFillableAttributes() as $attribute) {
-				echo '[DATA->ATTRIBUTE]'; var_dump($data->$attribute);
-				if ($data->$attribute !== null)
+				if (property_exists($data, $attribute) && $data->$attribute !== null) {
+					echo '[DATA->ATTRIBUTE]'; var_dump($data->$attribute);
 					$fillable_attributes[] = $attribute;
+				}
 			}
 			echo '[FILLABLE ATTRIBUTES]'; var_dump ($fillable_attributes);
 			
@@ -896,7 +873,11 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 							return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($get));
 						} else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400)); //The data provided is either missing or didn't get passed to the SQL method
 					}
-				} else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400));
+				} else {
+					if (sqlCreate($repository, $data)) //Create a new part without using an ID
+						echo '[CREATED PART WITHOUT ID]' . PHP_EOL; //$lorhondel->$repository->freshen(); //attempt to retrieve the new part by freshening the repository
+					return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($data));
+				}
 			}
 		}
 		if ($target_method == 'get' || $target_method == 'fetch') {
@@ -912,14 +893,6 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 					if (!empty($array = sqlGet(['*'], $repository, 'id', [$id2], '', 1))) {
 						foreach ($array as $data) //Create all into parts and push
 						if ($attributes = json_decode(json_encode(json_validate($array)), true)) {
-							foreach ($part_name::getFillableAttributes() as $fillable) {
-								foreach ($attributes[$id2] as $key => $attribute) {
-									if ($key != $fillable && $key == str_replace('_', '', $fillable)) {
-										$attributes[$id2][$fillable] = $attribute;
-										unset($attributes[$id2][$key]);
-									}
-								}
-							}
 							if ($part = $lorhondel->factory($part_name, $attributes[$id2])) {
 								if ($lorhondel->$repository->offsetGet($part->id))
 									$lorhondel->$repository->pull($part->id);
@@ -933,14 +906,6 @@ $webapi = new \React\Http\HttpServer($loop, function (\Psr\Http\Message\ServerRe
 				$array = json_validate(sqlGet(['*'], $repository, '', [], '', '')); //array
 				foreach ($array as $data) //Create all into parts and push
 					if ($attributes = json_decode(json_encode(json_validate($data)), true)) {
-						foreach ($part_name::getFillableAttributes() as $fillable) {
-							foreach ($attributes as $key => $attribute) {
-								 if ($key != $fillable && $key == str_replace('_', '', $fillable)) {
-									 unset($attributes[$key]);
-									 $attributes[$fillable] = $attribute;
-								 }
-							}
-						}
 						if ($part = $lorhondel->factory($part_name, $attributes)) {
 							if ($lorhondel->$repository->offsetGet($part->id))
 								$lorhondel->$repository->pull($part->id);

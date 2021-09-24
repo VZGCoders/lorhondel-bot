@@ -247,6 +247,37 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 			case 'discord':
 				$message->reply(get_class($lorhondel->discord));
 				break;
+			case 'create party':
+				if(! empty($collection = $lorhondel->players->filter(fn($p) => $p->user_id == $author_id && $p->active == 1 ))) {
+					echo '[COLLECTION PARTY]'; var_dump($collection);
+					foreach ($collection as $player) {
+						if (property_exists($player, 'timer')) return $message->reply('Please wait for the previous task to finish!');
+						if ($player instanceof \Lorhondel\Parts\Player\Player) {
+							if (! $player->party_id) {
+								$lorhondel->parties->save($lorhondel->factory(\Lorhondel\Parts\Party\Party::class, ['player1' => $player->id]));
+								$lorhondel->parties->freshen();
+								$message->react("⏰");
+								$timer = $lorhondel->getLoop()->addTimer(3, 
+									function($result) use ($lorhondel, $message, $player) {
+										unset($player->timer);
+										$message->react("👍");
+										if(! empty($collection = $lorhondel->parties->filter(fn($p) => $p->player1 == $player->id))) {
+											echo '[COLLECTION]'; var_dump($collection);
+											foreach ($collection as $party) { //There should only be one
+												$player->party_id = $party->id;
+												echo '[COLLECTION PLAYER]'; var_dump($player);
+												$lorhondel->players->save($player); //This is not saving the party_id and user_id
+												$message->reply('Party created and assigned!');
+											}
+										} else $message->reply('Unable to locate party part!');
+									}
+								);
+								$player->timer = $timer;
+							} else return $message->reply('You must leave your current party first!');
+						} else return $message->reply('No players found!');
+					}
+				} else return $message->reply('No active players found!');
+				break;
 		}
 	}
 }
