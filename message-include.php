@@ -136,13 +136,13 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 			case 'getcurrentparty':
 				if (! $player = getCurrentPlayer($lorhondel, $author_id))
 					return $message->reply('No players found!');
-				if(! $party = getCurrentParty($lorhondel, $player->id))
+				if (! $party = getCurrentParty($lorhondel, $player->id))
 					return $message->reply('No party found!');
 				return $message->channel->sendEmbed(partyEmbed($lorhondel, $party));
 				break;
 			case str_contains($message_content_lower, 'setcurrentplayer '):
 				$id = trim(str_replace('setcurrentplayer ', '', $message_content_lower));
-				if(is_numeric($id) && $player = $lorhondel->players->offsetGet($id))
+				if (is_numeric($id) && $player = $lorhondel->players->offsetGet($id))
 					return $message->reply('Result: ' . (setCurrentPlayer($lorhondel, $author_id, $id) ?? 'None'));
 				else return $message->reply('Invalid input!');
 				break;
@@ -247,7 +247,7 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 				return $message->reply(get_class($lorhondel->discord));
 				break;
 			case 'create party':
-				if(! empty($collection = $lorhondel->players->filter(fn($p) => $p->user_id == $author_id && $p->active == 1 ))) {
+				if (! empty($collection = $lorhondel->players->filter(fn($p) => $p->user_id == $author_id && $p->active == 1 ))) {
 					echo '[COLLECTION PARTY]'; var_dump($collection);
 					foreach ($collection as $player) {
 						if (property_exists($player, 'timer')) return $message->reply('Please wait for the previous task to finish!');
@@ -260,7 +260,7 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 									function($result) use ($lorhondel, $message, $player) {
 										unset($player->timer);
 										$message->react("👍");
-										if(! empty($collection = $lorhondel->parties->filter(fn($p) => $p->player1 == $player->id))) {
+										if (! empty($collection = $lorhondel->parties->filter(fn($p) => $p->player1 == $player->id))) {
 											echo '[COLLECTION]'; var_dump($collection);
 											foreach ($collection as $party) { //There should only be one
 												$player->party_id = $party->id;

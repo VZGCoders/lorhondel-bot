@@ -56,11 +56,11 @@ $options = array(
 );
 $lorhondel = new Lorhondel\Lorhondel($options);
 
-try{
+try {
 	include 'rescue-try-include.php';
 	$lorhondel->discord->on('error', function ($error) { //Handling of thrown errors
 		echo "[ERROR] $error" . PHP_EOL;
-		try{
+		try {
 			echo '[ERROR EVENT]' . $error->getMessage() . " in file " . $error->getFile() . " on line " . $error->getLine() . PHP_EOL;
 		}catch(Exception $e) {
 			echo '[ERROR EVENT]' . $e->getMessage() . " in file " . $e->getFile() . " on line " . $e->getLine() . PHP_EOL;

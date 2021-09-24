@@ -574,7 +574,7 @@ function appendImages($array)
     clearstatcache();
         
     /* Save the file */
-	try{
+	try {
 		$combined->writeImage($path);
 	}catch(Exception $e) {
 		return null;

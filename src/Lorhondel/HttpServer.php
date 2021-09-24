@@ -17,7 +17,7 @@ class HttpServer
 		
         $this->webapi = new \React\Http\HttpServer($lorhondel->getLoop(), function (\Psr\Http\Message\ServerRequestInterface $request) use ($lorhondel) {
 			$discord = $lorhondel->discord;
-			try{
+			try {
 				echo '[API] ';
 				$path = explode('/', $request->getUri()->getPath());
 				$ver = (isset($path[1]) ? (string) strtolower($path[1]) : false); if ($ver) echo "/$ver/";
