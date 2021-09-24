@@ -9,7 +9,6 @@
 ini_set('max_execution_time', 0);
 
 include 'vendor/autoload.php';
-include 'autoload.php'; //Needed for testing
 
 include 'src/Lorhondel/Lorhondel.php';
 ini_set('memory_limit', '-1'); 	//Unlimited memory usage

@@ -25,13 +25,13 @@ use React\Promise\ExtendedPromiseInterface;
  * @property string $status        Placeholder.
  * @property int    $turn          Turn number.
  *
- * @property        $enemy1        Placeholder
+ * @property Enemy  $enemy1        The Enemy the party is fighting.
  *
- * @property        $player1act    Placeholder
- * @property        $player2act    Placeholder
- * @property        $player3act    Placeholder
- * @property        $player4act    Placeholder
- * @property        $player5act    Placeholder
+ * @property        $player1act    The action that will be taken by player1 on their turn.
+ * @property        $player2act    The action that will be taken by player2 on their turn.
+ * @property        $player3act    The action that will be taken by player3 on their turn.
+ * @property        $player4act    The action that will be taken by player4 on their turn.
+ * @property        $player5act    The action that will be taken by player5 on their turn.
  *
  * @property TimerInterface $timer Controls the flow of battle. //Declared with $this->timer=addPeriodicTimer($int, function ($timer) ...) and nulled with cancelTimer($this->timer).
  */

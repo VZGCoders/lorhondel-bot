@@ -522,5 +522,20 @@ class HttpServer
 		});
 		$this->webapi->listen($this->socket);
     }
+
+	private function webapiFail($part, $id)
+	{
+		//logInfo('[webapi] Failed', ['part' => $part, 'id' => $id]);
+		//return new \GuzzleHttp\Psr7\Response(($id ? 404 : 400), ['Content-Type' => 'text/plain'], ($id ? 'Invalid' : 'Missing').' '.$part.PHP_EOL);
+		$return = array();
+		$return['message'] = '404: Not Found';
+		$return['code'] = 0;
+		return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($return));
+	}
+
+	private function webapiSnow($string)
+	{
+		return preg_match('/^[0-9]{16,18}$/', $string);
+	}
 	
 }

@@ -28,7 +28,9 @@ use React\Promise\ExtendedPromiseInterface;
  * @property int    $player3       Party member snowflake.
  * @property int    $player4       Party member snowflake.
  * @property int    $player5       Party member snowflake.
-
+ *
+ * @property int    $battle        The unique identifier of the active battle.
+ 
  */
 class Party extends Part
 {
