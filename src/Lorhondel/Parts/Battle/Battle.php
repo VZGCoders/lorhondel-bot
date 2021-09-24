@@ -26,8 +26,6 @@ use React\Promise\ExtendedPromiseInterface;
  * @property int    $turn          Turn number.
  *
  * @property        $enemy1        Placeholder
- * @property        $enemy2        Placeholder
- * @property        $enemy3        Placeholder
  *
  * @property        $player1act    Placeholder
  * @property        $player2act    Placeholder
