@@ -11,6 +11,7 @@ namespace Lorhondel;
 use Lorhondel\Exceptions\IntentException;
 use Lorhondel\Factory\Factory;
 use Lorhondel\Http;
+use Lorhondel\HttpServer;
 use Lorhondel\WebSockets\Event;
 use Lorhondel\WebSockets\Handlers;
 use Lorhondel\WebSockets\Intents;
@@ -239,6 +240,13 @@ class Lorhondel
     protected $http;
 	
 	/**
+     * The HTTP server.
+     *
+     * @var Http Server.
+     */
+	protected $httpserver;
+	
+	/**
      * The part/repository factory.
      *
      * @var Factory Part factory.
@@ -301,6 +309,14 @@ class Lorhondel
             $this->options['logger'],
             new React($this->loop, $options['socket_options'])
         );
+		
+		if ($options['server']) {
+			if ($options['socket']) $this->httpServer = new HttpServer($this, $options['socket']);
+			else {
+				$socket = new \React\Socket\Server(sprintf('%s:%s', '0.0.0.0', '27759'), $loop);
+				if ($options['socket']) $this->httpServer = new HttpServer($this, $socket);
+			}
+		}
 
         $this->factory = new Factory($this, $this->http);
 		$this->client = $this->factory->create(Client::class, [], true);
@@ -1086,11 +1102,12 @@ class Lorhondel
 		if ($this->verbose) $this->emit('[LORHONDEL] [RESOLVE OPTIONS]');
 		$options['loop'] = $options['loop'] ?? Factory::create();
 		$options['browser'] = $options['browser'] ?? new \React\Http\Browser($options['loop']);
+		$options['server'] = $options['loop'] ?? false;
 		//Discord must be Discord or null
 		//Twitch must be Twitch or null
 		
 		$resolver = new OptionsResolver();
-		 $resolver
+		$resolver
             ->setRequired('token')
             ->setAllowedTypes('token', 'string')
             ->setDefined([
@@ -1107,7 +1124,9 @@ class Lorhondel
                 'intents',
                 'socket_options',
 				'browser',
-				'discord'
+				'discord',
+				'server',
+				'socket',
             ])
             ->setDefaults([
                 'loop' => LoopFactory::create(),

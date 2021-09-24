@@ -6,7 +6,7 @@
  * Copyright (c) 2021-present Valithor Obsidion <valzargaming@gmail.com>
  */
  
-include_once 'autoload.php';
+namespace Lorhondel;
 
 //echo '[MESSAGE]' . PHP_EOL;
 if (is_null($message) || empty($message)) return; //An invalid message object was passed
