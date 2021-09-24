@@ -197,6 +197,21 @@ class Endpoint
 	// DELETE
 	public const PARTY_DELETE = 'parties/delete/:party_id';
 
+	// 
+    public const PLAYER_CURRENT_BATTLE = self::PLAYER_CURRENT.'/battles/:battle_id';
+	 // GET
+    public const BATTLE = 'battles/get/:battle_id';
+	// PUT
+    //public const BATTLE_PUT = 'battles/put/:battle_id';
+	// POST
+    public const BATTLE_POST = 'battles/post/:battle_id';
+	// PATCH
+	public const BATTLE_PATCH = 'battles/patch/:battle_id';
+	// DELETE
+	public const BATTLE_DELETE = 'battles/delete/:battle_id';
+
+
+
     // GET, PATCH, DELETE
     public const WEBHOOK = 'webhooks/:webhook_id';
     // GET, PATCH, DELETE

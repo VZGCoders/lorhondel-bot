@@ -14,25 +14,23 @@ use Lorhondel\Parts\OAuth\Application;
 use Lorhondel\Parts\Part;
 use Lorhondel\Repository\PlayerRepository;
 use Lorhondel\Repository\PartyRepository;
+use Lorhondel\Repository\BattleRepository;
 use React\Promise\ExtendedPromiseInterface;
 
 /**
  * The client is the main interface for the client. Most calls on the main class are forwarded here.
  *
- * @property string                   $id               The unique identifier of the client.
- * @property Player                   $player           The player instance of the client.
- * @property int|null                 $user_id          The unique identifier of the user.
  * @property User|null                $user             The Discord user instance of the player.
  * @property PlayerRepository         $players
- * @property PartiesRepository        $parties
  * @property PartyRepository          $parties
+ * @property BattleRepository         $battles
  */
 class Client extends Part
 {
     /**
      * @inheritdoc
      */
-    protected static $fillable = ['id', 'player', 'user_id', 'user'];
+    protected static $fillable = ['user'];
 
     /**
      * @inheritdoc
@@ -40,6 +38,7 @@ class Client extends Part
     protected $repositories = [
         'players' => PlayerRepository::class,
 		'parties' => PartyRepository::class,
+		'battles' => BattleRepository::class,
     ];
 
 	/**
