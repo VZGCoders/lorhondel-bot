@@ -171,7 +171,7 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 			case 'get':
 				$url = Lorhondel\Http::BASE_URL . '/players/get/116927250145869826/';
 				return $browser->post($url, ['Content-Type' => 'application/json'], json_encode('116927250145869826'))->then(
-					function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel) {
+					function ($response) use ($lorhondel) {
 						echo '[RESPONSE]' . PHP_EOL;
 						print_r($response->getBody());
 					},
@@ -209,7 +209,7 @@ if (str_starts_with($message_content, $command_symbol)) //Commands
 					'speed' => 3,
 					'skillpoints' => 4,
 				]);
-				return $lorhondel->players->save($part); //Use $Browser instead, this is currently broken
+				return $lorhondel->players->save($part);
 				break;
 			case 'save':
 				echo '[save]' . PHP_EOL;

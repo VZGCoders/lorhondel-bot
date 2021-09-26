@@ -58,8 +58,8 @@ class BattleRepository extends AbstractRepository
 		else $method = 'post';
 		$url = Http::BASE_URL . "/battles/$method/{$part->id}/";
 		return $this->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
-			function (Psr\Http\Message\ResponseInterface $response) use ($part) {
-				echo '[SAVE] '; //var_dump($lorhondel->battles->offsetUnset($part->id)); 
+			function ($response) use ($part) {
+				echo '[SAVE RESPONSE] '; //var_dump($lorhondel->battles->offsetUnset($part->id)); 
 				//var_dump($lorhondel->battles);
 			},
 			function ($error) {
@@ -85,8 +85,8 @@ class BattleRepository extends AbstractRepository
 		
 		$url = Http::BASE_URL . "/battles/delete/{$part->id}/";
 		return $this->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
-			function (Psr\Http\Message\ResponseInterface $response) use ($part) {
-				echo '[DELETE] '; //var_dump($lorhondel->battles->offsetUnset($part->id)); 
+			function ($response) use ($part) {
+				echo '[DELETE RESPONSE] '; //var_dump($lorhondel->battles->offsetUnset($part->id)); 
 				//var_dump($lorhondel->battles);
 			},
 			function ($error) {
@@ -116,8 +116,8 @@ class BattleRepository extends AbstractRepository
 
         $url = Http::BASE_URL . "/battles/fresh/{$part->id}/";
 		return $this->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
-			function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
-				echo '[FRESH] '; var_dump($lorhondel->battles->offsetUnset($part->id)); 
+			function ($response) use ($lorhondel, $message, $part) {
+				echo '[FETCH RESPONSE] '; var_dump($lorhondel->battles->offsetUnset($part->id)); 
 				//var_dump($lorhondel->battles);
 			},
 			function ($error) {
@@ -149,8 +149,8 @@ class BattleRepository extends AbstractRepository
         $part = $this->factory->create($this->class, [$this->discrim => $id]);
         $url = Http::BASE_URL . "/battles/fetch/{$part->id}/";
 		return $this->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
-			function (Psr\Http\Message\ResponseInterface $response) use ($lorhondel, $message, $part) {
-				echo '[FETCH] '; var_dump($lorhondel->battles->offsetUnset($part->id)); 
+			function ($response) use ($lorhondel, $message, $part) {
+				echo '[FETCH RESPONSE] '; var_dump($lorhondel->battles->offsetUnset($part->id)); 
 				//var_dump($lorhondel->battles);
 			},
 			function ($error) {
@@ -170,8 +170,8 @@ class BattleRepository extends AbstractRepository
     {
 		$url = Http::BASE_URL . "/battles/get/all/"; echo '[URL] ' . $url . PHP_EOL;
 		$this->factory->lorhondel->browser->get($url)->done( //Make this a function
-			function (Psr\Http\Message\ResponseInterface $response) { //TODO: Not receiving response
-				echo '[RESPONSE] ' . PHP_EOL;
+			function ($response) { //TODO: Not receiving response
+				echo '[FRESHEN RESPONSE] ' . PHP_EOL;
 				if (is_object(json_decode((string)$response->getBody()->getContents()))) echo '[VALID JSON]' . PHP_EOL;
 				/*
 				$freshen = (string)$response->getBody()->getContents();

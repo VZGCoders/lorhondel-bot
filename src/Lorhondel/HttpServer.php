@@ -487,7 +487,7 @@ class HttpServer
 						return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($array)); //return isn't being received?
 					}
 				}
-				elseif ($target_method == 'delete') { echo '[DELETE]' . PHP_EOL;
+				elseif ($target_method == 'delete') { echo '[DELETE RESPONSE]' . PHP_EOL;
 					if (empty($return = sqlGet(['*'], $repository, 'id', [$id2], '', 1)))
 						return new \GuzzleHttp\Psr7\Response(204, ['Content-Type' => 'application/json'], json_encode($_204)); //Data does not exist to delete
 					elseif (sqlDelete($repository, 'id', [$id2], '', 1)) {
