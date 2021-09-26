@@ -20,7 +20,7 @@ foreach($GLOBALS as $key => $value) {
 	$temp = array($value);
 	if (!in_array($key, $blacklist_globals)) {
 		try {
-			VarSave("_globals", "$key.php", $value);
+			\Lorhondel\VarSave("_globals", "$key.php", $value);
 		}catch (Throwable $e) { //This will probably crash the bot
 			echo "$key, ";
 		}

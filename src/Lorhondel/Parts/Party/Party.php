@@ -8,12 +8,8 @@
 
 namespace Lorhondel\Parts\Party;
 
-use Lorhondel\Builders\MessageBuilder;
 use Lorhondel\Endpoint;
-use Lorhondel\Parts\Channel\Channel;
 use Lorhondel\Parts\Part;
-use Lorhondel\Parts\Channel\Message;
-use React\Promise\ExtendedPromiseInterface;
 
 /**
  * A party is a reference to a group of players.

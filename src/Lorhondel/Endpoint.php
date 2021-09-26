@@ -210,6 +210,19 @@ class Endpoint
 	// DELETE
 	public const BATTLE_DELETE = 'battles/delete/:battle_id';
 
+// 
+    public const PLAYER_CURRENT_VOTE = self::PLAYER_CURRENT.'/votes/:vote_id';
+	 // GET
+    public const VOTE = 'votes/get/:vote_id';
+	// PUT
+    //public const VOTE_PUT = 'votes/put/:vote_id';
+	// POST
+    public const VOTE_POST = 'votes/post/:vote_id';
+	// PATCH
+	public const VOTE_PATCH = 'votes/patch/:vote_id';
+	// DELETE
+	public const VOTE_DELETE = 'votes/delete/:vote_id';
+
 
 
     // GET, PATCH, DELETE

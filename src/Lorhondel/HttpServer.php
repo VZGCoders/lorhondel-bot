@@ -330,7 +330,18 @@ class HttpServer
 							['method' => 'delete', 'privileged' => true, 'privileged_endpoints' => []],
 						],
 					],
-					
+					'votes' => [
+						'part_name' => 'Lorhondel\Parts\Vote\Vote',
+						'part_name_short' => 'Vote',
+						'allowed_methods' => [
+							['method' => 'get', 'privileged' => false, 'privileged_endpoints' => [null, 'all', 'freshen']],
+							['method' => 'fresh', 'privileged' => false, 'privileged_endpoints' => []],
+							['method' => 'put', 'privileged' => true, 'privileged_endpoints' => []],
+							['method' => 'patch', 'privileged' => true, 'privileged_endpoints' => []],
+							['method' => 'post', 'privileged' => true, 'privileged_endpoints' => []],
+							['method' => 'delete', 'privileged' => true, 'privileged_endpoints' => []],
+						],
+					],
 				];
 
 				//$collection = false;

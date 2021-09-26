@@ -8,12 +8,8 @@
 
 namespace Lorhondel\Parts\Player;
 
-use Lorhondel\Builders\MessageBuilder;
 use Lorhondel\Endpoint;
-use Lorhondel\Parts\Channel\Channel;
 use Lorhondel\Parts\Part;
-use Lorhondel\Parts\Channel\Message;
-use React\Promise\ExtendedPromiseInterface;
 
 /**
  * A player is a general player that is not attached to a group.

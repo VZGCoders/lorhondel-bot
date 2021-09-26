@@ -8,11 +8,8 @@
 
 namespace Lorhondel\Parts\Battle;
 
-use Lorhondel\Builders\MessageBuilder;
 use Lorhondel\Endpoint;
-use Lorhondel\Parts\Channel\Channel;
 use Lorhondel\Parts\Part;
-use Lorhondel\Parts\Channel\Message;
 use React\Promise\ExtendedPromiseInterface;
 
 /**
@@ -72,16 +69,6 @@ class Battle extends Part
 			'turn' => $this->turn,
         ];
     }
-
-    /**
-     * Returns a timestamp for when a battle's account was created.
-     *
-     * @return float
-     */
-    public function createdTimestamp()
-    {
-        return \Lorhondel\getSnowflakeTimestamp($this->id);
-    }
 	
 
     /**
@@ -92,15 +79,5 @@ class Battle extends Part
         return [
             'battle_id' => $this->id,
         ];
-    }
-
-    /**
-     * Returns a formatted mention.
-     *
-     * @return string A formatted mention.
-     */
-    public function __toString()
-    {
-        return "<@{$this->user_id}>";
     }
 }

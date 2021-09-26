@@ -632,7 +632,7 @@ function setCurrentParty($lorhondel, $user_id)
 	include 'connect.php';
 	//
 }
-function getPlayerLocation()
+function getPlayerLocation($lorhondel)
 {
 	//
 }
@@ -1093,8 +1093,7 @@ Miscellaneous
 //Returns a random result from an array
 function GetRandomArrayIndex(array $array)
 {
-    if ((count($array)) != 1) return rand(0, count($array)-1);
-    else return 0;
+	return rand(0, count($array)-1);
 }
 
 //Removes a value from an array
