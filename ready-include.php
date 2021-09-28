@@ -8,14 +8,11 @@
 
 echo "[READY] Logged in as {$lorhondel->discord->user->username}#{$lorhondel->discord->user->discriminator} ({$lorhondel->discord->user->id})".PHP_EOL;
 
-include_once "custom_functions.php";
-
-$timestampSetup = time();
-echo "[timestampSetup]: ";
+echo "[DATE] ";
 $dt = new DateTime("now");  // convert UNIX timestamp to PHP DateTime
 echo $dt->format('d-m-Y H:i:s') . PHP_EOL; // output = 2017-01-01 00:00:00
 
-$lorhondel->discord->on('message', function ($message) use ($lorhondel, $discord, $loop, $token, $stats, /*$connector,*/ $browser) { //Handling of a message
+$lorhondel->discord->on('message', function ($message) use ($lorhondel, $loop, $token, $stats, /*$connector,*/ $browser) { //Handling of a message
 	include 'message-include.php';
 }); //end small function with content
 

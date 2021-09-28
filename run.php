@@ -52,6 +52,7 @@ $options = array(
 	'loadAllMembers' => false,
 	'server' => true,
 	'socket' => $socket,
+	'command_symbol' => ';',
 );
 $lorhondel = new Lorhondel\Lorhondel($options);
 
@@ -77,6 +78,7 @@ try {
 		$lorhondel->players->freshen();	//Import existing parts from SQL
 		$lorhondel->parties->freshen();	//Import existing parts from SQL
 		$lorhondel->battles->freshen();	//Import existing parts from SQL
+		$lorhondel->votes->freshen();	//Import existing parts from SQL
 	 });
 	$lorhondel->discord->run();
 }catch (Throwable $e) { //Restart the bot

@@ -15,6 +15,7 @@ use Lorhondel\Parts\Part;
 use Lorhondel\Repository\PlayerRepository;
 use Lorhondel\Repository\PartyRepository;
 use Lorhondel\Repository\BattleRepository;
+use Lorhondel\Repository\VoteRepository;
 use React\Promise\ExtendedPromiseInterface;
 
 /**
@@ -39,6 +40,7 @@ class Client extends Part
         'players' => PlayerRepository::class,
 		'parties' => PartyRepository::class,
 		'battles' => BattleRepository::class,
+		'votes' => VoteRepository::class,
     ];
 
 	/**
