@@ -262,6 +262,9 @@ class Lorhondel
 	
 	public $discord;
 	public $browser;
+	
+	public $server;
+	
 	public $command_symbol;
 	
 	protected $verbose = true;
@@ -319,6 +322,7 @@ class Lorhondel
 			}
 		}
 		
+		$this->server = $options['server'];
 		$this->command_symbol = $options['command_symbol'];
 
         $this->factory = new Factory($this, $this->http);
@@ -1105,7 +1109,7 @@ class Lorhondel
 		if ($this->verbose) $this->emit('[LORHONDEL] [RESOLVE OPTIONS]');
 		$options['loop'] = $options['loop'] ?? Factory::create();
 		$options['browser'] = $options['browser'] ?? new \React\Http\Browser($options['loop']);
-		$options['server'] = $options['loop'] ?? false;
+		$options['server'] = $options['server'] ?? false;
 		$options['command_symbol'] = $options['command_symbol'] ?? ';';
 		//Discord must be Discord or null
 		//Twitch must be Twitch or null
@@ -1142,6 +1146,7 @@ class Lorhondel
                 'storeMessages' => false,
                 'retrieveBans' => false,
                 'intents' => Intents::getDefaultIntents(),
+				'server' => false,
                 'socket_options' => [],
 				'command_symbol' => ';',
             ])
@@ -1154,6 +1159,7 @@ class Lorhondel
             ->setAllowedTypes('storeMessages', 'bool')
             ->setAllowedTypes('retrieveBans', 'bool')
             ->setAllowedTypes('intents', ['array', 'int'])
+			->setAllowedTypes('server', 'bool')
             ->setAllowedTypes('socket_options', 'array')
 			->setAllowedTypes('command_symbol', 'string');
 

@@ -21,10 +21,11 @@ use React\Promise\ExtendedPromiseInterface;
 /**
  * The client is the main interface for the client. Most calls on the main class are forwarded here.
  *
- * @property User|null                $user             The Discord user instance of the player.
+ * @property User|null                $user             The Discord user instance of the bot.
  * @property PlayerRepository         $players
  * @property PartyRepository          $parties
  * @property BattleRepository         $battles
+ * @property BattleRepository         $votes
  */
 class Client extends Part
 {

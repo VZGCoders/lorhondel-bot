@@ -8,7 +8,6 @@
  
 namespace Lorhondel;
 
-//echo '[MESSAGE]' . PHP_EOL;
 if (is_null($message) || empty($message)) return; //An invalid message object was passed
 if (is_null($message->content)) return; //Don't process messages without content
 if ($message["webhook_id"]) return; //Don't process webhooks
@@ -29,7 +28,6 @@ Load author data from message
 */
 
 $author	= $message->author; //Member OR User object
-//echo "Author class: " . get_class($author) . PHP_EOL;
 if (get_class($author) == "Discord\Parts\User\Member") {
 	$author_user = $author->user;
 	$author_member = $author;
@@ -64,10 +62,20 @@ $author_channel_id											= $author_channel->id;
 
 $author_member_roles = $author_member->roles;
 
+/*
+*********************
+*********************
+Process Lorhondel-related messages
+*********************
+*********************
+*/
 if ($author_guild_id != '887118559833112638') return;
 
 $creator = false;
 if ($author_id == 116927250145869826) $creator = true;
+
+echo '$lorhondel->server: ' . $lorhondel->server . PHP_EOL;
+if(! $lorhondel->server) return;
 if ($creator) { //Debug commands
 	switch($message_content_lower) {
 		case 'ping':
@@ -247,7 +255,25 @@ if ($creator) { //Debug commands
 				}
 			} else return $message->reply('No active players found!');
 			break;
+		default:
+			break;
 	}
 }
+
+echo '[LORHONDEL MESSAGE] ' . $author_id . PHP_EOL;
+if ($player = getCurrentPlayer($lorhondel, $author_id));
+	$party = getCurrentParty($lorhondel, $player->id);
+
+if ($message_content_lower == 'player') {
+	if ($player) return $message->channel->sendEmbed(playerEmbed($lorhondel, $player));
+	else return $message->sendMessage('No active player found! Try creating one with `;placeholder`');
+}
+
+if ($message_content_lower == 'party') {
+	if ($party) return $message->channel->sendEmbed(playerEmbed($lorhondel, $player));
+	else $message->reply('No active party found! Try joining one with `;placeholder`');
+}
+
+
 
 $documentation = '';
