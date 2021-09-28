@@ -125,9 +125,6 @@ class Party extends Part
 		} else return 0; //$message->reply('Invalid parameter! Expects Player or Player ID.');
 		if ($player->party_id != $this->id) return 0; //$message->reply('Player is not a member of this party!');
 		
-		$player->party_id = null;
-		$lorhondel->players->save($player);
-		
 		if ($this->player1 == $id) {
 			$this->player1 = null;
 			$return = 1;
@@ -145,10 +142,15 @@ class Party extends Part
 			$return = 5;
 		}
 		
-		if ($this->{$this->leader} == $this->{'player' . $return}) {
-			$this->leader = null;
-			$this->succession($lorhondel);
-		}
+		$player->party_id = null;
+		$lorhondel->players->save($player)->done(
+			function ($result) use ($lorhondel, $return) {
+				if ($this->{$this->leader} == $this->{'player' . $return}) {
+					$this->leader = null;
+					$this->succession($lorhondel);
+				}
+			}
+		);
 		
 		return $return;
 	}
