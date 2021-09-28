@@ -612,8 +612,15 @@ function setCurrentPlayer($lorhondel, $user_id, $id)
 function getCurrentParty($lorhondel, $id)
 {
 	if (count($collection = $lorhondel->parties->filter(fn($p) => $p->player1 == $id || p->player2 == $id || p->player3 == $id || p->player4 == $id || p->player5 == $id))>0) {
-		foreach ($collection as $party) //There should only be one
+		foreach ($collection as $party) { //There should only be one
+			if ($player = $lorhondel->players->offsetGet($id)) {
+				if ($player->party_id === null) {
+					$player->party_id = $party->id;
+					$lorhondel->players->save($player);
+				}
+			}
 			return $party;
+		}
 	}
 	
 	//No Party part for the Player was found, so check SQL to make sure

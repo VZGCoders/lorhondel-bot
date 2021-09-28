@@ -241,7 +241,7 @@ if ($creator) { //Debug commands
 										foreach ($collection as $party) { //There should only be one
 											$player->party_id = $party->id;
 											echo '[COLLECTION PLAYER]'; var_dump($player);
-											$lorhondel->players->save($player); //This is not saving the party_id and user_id
+											$lorhondel->players->save($player);
 											return $message->reply('Party created and assigned!');
 										}
 									} else return $message->reply('Unable to locate party part!');
@@ -262,17 +262,6 @@ if ($creator) { //Debug commands
 echo '[LORHONDEL MESSAGE] ' . $author_id . PHP_EOL;
 if ($player = getCurrentPlayer($lorhondel, $author_id))
 	$party = getCurrentParty($lorhondel, $player->id);
-
-if ($message_content_lower == 'player') {
-	if ($player) return $message->channel->sendEmbed(playerEmbed($lorhondel, $player));
-	else return $message->sendMessage('No active player found! Try creating one with `;placeholder`');
-}
-if ($message_content_lower == 'party') {
-	if ($party) return $message->channel->sendEmbed(playerEmbed($lorhondel, $player));
-	else $message->reply('No active party found! Try joining one with `;party join id`');
-}
-
-
 
 if (str_starts_with($message_content_lower, 'player')) {
 	$message_content_lower = trim(substr($message_content_lower, 6));
@@ -361,6 +350,8 @@ if (str_starts_with($message_content_lower, 'player')) {
 			}
 			$lorhondel->players->save($player);
 		} else return $message->reply('Please leave your current party before listing yourself as looking for a new one!');
+	} elseif (! $message_content_lower) {
+		return $message->channel->sendEmbed(playerEmbed($lorhondel, $player));
 	}
 }
 
@@ -381,7 +372,27 @@ if (str_starts_with($message_content_lower, 'party')) {
 	*********************
 	*/
 	if (! $player) return $message->reply('Please create a player or activate one first!');
-	if (str_starts_with($message_content_lower, 'join')) {
+	if (str_starts_with($message_content_lower, 'create')) {
+		if (! $party) {
+			if (property_exists($player, 'timer')) return $message->reply('Please wait for the previous task to finish!');
+			$lorhondel->parties->save($lorhondel->factory(\Lorhondel\Parts\Party\Party::class, ['player1' => $player->id]));
+			return $lorhondel->parties->freshen()->done(
+				function($result) use ($lorhondel, $message, $player) {
+					if (count($collection = $lorhondel->parties->filter(fn($p) => $p->player1 == $player->id))>0) {
+						foreach ($collection as $party) { //There should only be one
+							$player->party_id = $party->id;
+							$lorhondel->players->save($player)->done(
+								function ($result) use ($message, $party) {
+									return $message->reply('Created party `'. ($party->name ?? $party->id) . '`!');
+								}
+							);
+						}
+					} else return $message->reply('Something went wrong! Unable to locate the newly created party.');
+				}
+			);
+		} else return $message->reply('Please leave your current party before creating a new one!');
+	}
+	elseif (str_starts_with($message_content_lower, 'join')) {
 		$id = $message_content_lower = trim(substr($message_content_lower, 4));
 		foreach (['<@', '!', '>'] as $filter)
 			$id = str_replace($filter, '', $id);

@@ -57,7 +57,7 @@ class VoteRepository extends AbstractRepository
 		if ($this->offsetGet($part->id)) $method = 'patch';
 		else $method = 'post';
 		$url = Http::BASE_URL . "/votes/$method/{$part->id}/";
-		return $this->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
+		return $this->factory->lorhondel->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
 			function ($response) use ($part) {
 				echo '[SAVE RESPONSE] '; //var_dump($lorhondel->votes->offsetGet($part->id)); 
 				//var_dump($lorhondel->votes);
@@ -84,7 +84,7 @@ class VoteRepository extends AbstractRepository
         }
 		
 		$url = Http::BASE_URL . "/votes/delete/{$part->id}/";
-		return $this->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
+		return $this->factory->lorhondel->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
 			function ($response) use ($part) {
 				echo '[DELETE RESPONSE] '; //var_dump($lorhondel->votes->offsetUnset($part->id)); 
 				//var_dump($lorhondel->votes);
@@ -115,7 +115,7 @@ class VoteRepository extends AbstractRepository
         }
 
         $url = Http::BASE_URL . "/votes/fresh/{$part->id}/";
-		return $this->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
+		return $this->factory->lorhondel->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
 			function ($response) use ($lorhondel, $message, $part) {
 				echo '[FETCH RESPONSE] '; //var_dump($lorhondel->votes->offsetUnset($part->id)); 
 				//var_dump($lorhondel->votes);
@@ -148,7 +148,7 @@ class VoteRepository extends AbstractRepository
 
         $part = $this->factory->create($this->class, [$this->discrim => $id]);
         $url = Http::BASE_URL . "/votes/fetch/{$part->id}/";
-		return $this->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
+		return $this->factory->lorhondel->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
 			function ($response) use ($lorhondel, $message, $part) {
 				echo '[FETCH RESPONSE] '; //var_dump($lorhondel->votes->offsetUnset($part->id)); 
 				//var_dump($lorhondel->votes);
@@ -169,7 +169,7 @@ class VoteRepository extends AbstractRepository
     public function freshen()
     {
 		$url = Http::BASE_URL . "/votes/get/all/"; echo '[URL] ' . $url . PHP_EOL;
-		$this->factory->lorhondel->browser->get($url)->done( //Make this a function
+		return $this->factory->lorhondel->browser->get($url)->then( //Make this a function
 			function ($response) { //TODO: Not receiving response
 				echo '[FRESHEN RESPONSE] ' . PHP_EOL;
 				if (is_object(json_decode((string)$response->getBody()->getContents()))) echo '[VALID JSON]' . PHP_EOL;
