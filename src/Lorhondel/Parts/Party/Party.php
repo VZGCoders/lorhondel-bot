@@ -125,21 +125,87 @@ class Party extends Part
 		} else return 0; //$message->reply('Invalid parameter! Expects Player or Player ID.');
 		if ($player->party_id != $this->id) return 0; //$message->reply('Player is not a member of this party!');
 		
+		$player->party_id = null;
+		$lorhondel->players->save($player);
+		
 		if ($this->player1 == $id) {
 			$this->player1 = null;
-			return 1;
+			$return = 1;
 		} elseif ($this->player2 == $id) {
 			$this->player2 = null;
-			return 2;
+			$return = 2;
 		} elseif ($this->player3 == $id) {
 			$this->player3 = null;
-			return 3;
+			$return = 3;
 		} elseif ($this->player4 == $id) {
 			$this->player4 = null;
-			return 4;
+			$return = 4;
 		} elseif ($this->player5 == $id) {
 			$this->player5 = null;
-			return 5;
+			$return = 5;
 		}
+		
+		if ($this->{$this->leader} == $this->{'player' . $return}) {
+			$this->leader = null;
+			$this->succession($lorhondel);
+		}
+		
+		return $return;
+	}
+	
+	/**
+	 *
+	 * Disbands the party if no players remain
+	 * Assign a new party leader if no leader exists
+	 *
+     */
+    public function succession($lorhondel = null)
+    {
+		if (! $this->leader) {
+			if ($this->player1 && ($this->player1 != $this->leader))
+				$this->leader = $this->player1;
+			elseif ($this->player2 && ($this->player2 != $this->leader))
+				$this->leader = $this->player2;
+			elseif ($this->player3 && ($this->player3 != $this->leader))
+				$this->leader = $this->player3;
+			elseif ($this->player4 && ($this->player4 != $this->leader))
+				$this->leader = $this->player4;
+			elseif ($this->player5 && ($this->player5 != $this->leader))
+				$this->leader = $this->player5;
+			else return $this->disband($lorhondel);
+			$lorhondel->parties->save($party);
+			return true;
+		} else return false;
+    }
+	
+	public function disband($lorhondel = null)
+	{
+		$array = array();
+		if ($this->player1) {
+			$array[] = $this->player1;
+		}
+		if ($this->player2) {
+			$array[] = $this->player2;
+		}
+		if ($this->player3) {
+			$array[] = $this->player3;
+		}
+		if ($this->player4) {
+			$array[] = $this->player4;
+		}
+		if ($this->player5) {
+			$array[] = $this->player5;
+		}
+		
+		foreach ($array as $id) {
+			echo "[REMOVING ID FROM PARTY] $id/{$this->id}";
+			if ($lorhondel && $player = $lorhondel->players->offsetGet($id)) {
+				$player->party_id = null;
+				$lorhondel->players->save($player);
+			} else return false;
+		}
+		$lorhondel->parties->delete($this->id);
+		return true;
+		
 	}
 }

@@ -80,7 +80,7 @@ class BattleRepository extends AbstractRepository
 	public function delete($part): ExtendedPromiseInterface
 	{
 		if (! ($part instanceof Part)) {
-            $part = $this->factory->part($this->class, [$this->discrim => $part], true);
+			$part = $this->factory->lorhondel->battles->offsetGet($part);
         }
 		
 		$url = Http::BASE_URL . "/battles/delete/{$part->id}/";

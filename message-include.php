@@ -74,7 +74,6 @@ if ($author_guild_id != '887118559833112638') return;
 $creator = false;
 if ($author_id == 116927250145869826) $creator = true;
 
-echo '$lorhondel->server: ' . $lorhondel->server . PHP_EOL;
 if(! $lorhondel->server) return;
 if ($creator) { //Debug commands
 	switch($message_content_lower) {
@@ -223,8 +222,8 @@ if ($creator) { //Debug commands
 		case 'discord':
 			return $message->reply(get_class($lorhondel->discord));
 			break;
-		case 'create party':
-			if (! empty($collection = $lorhondel->players->filter(fn($p) => $p->user_id == $author_id && $p->active == 1 ))) {
+		case '__create party':
+			if (count($collection = $lorhondel->players->filter(fn($p) => $p->user_id == $author_id && $p->active == 1 ))>0) {
 				echo '[COLLECTION PARTY]'; var_dump($collection);
 				foreach ($collection as $player) {
 					if (property_exists($player, 'timer')) return $message->reply('Please wait for the previous task to finish!');
@@ -261,7 +260,7 @@ if ($creator) { //Debug commands
 }
 
 echo '[LORHONDEL MESSAGE] ' . $author_id . PHP_EOL;
-if ($player = getCurrentPlayer($lorhondel, $author_id));
+if ($player = getCurrentPlayer($lorhondel, $author_id))
 	$party = getCurrentParty($lorhondel, $player->id);
 
 if ($message_content_lower == 'player') {
@@ -273,26 +272,115 @@ if ($message_content_lower == 'party') {
 	else $message->reply('No active party found! Try joining one with `;party join id`');
 }
 
-if ($message_content_lower == 'looking') {
-	if($player->party_id !== null) {
-		$player->looking = !$player->looking;
-		switch($party->looking) {
-			case false:
-				$message->reply('Player ' . ($player->name ?? $player->id) . ' is no longer looking for a party!');
-				break;
-			case true:
-				$message->reply('Player ' . ($player->name ?? $player->id) . ' is now looking for a party!');
-				break;
-		}
-		$lorhondel->players->save($player);
-	} else return $message->reply('Please leave your current party before listing yourself as looking for a new one!');
-}
 
+
+if (str_starts_with($message_content_lower, 'player')) {
+	$message_content_lower = trim(substr($message_content_lower, 6));
+	echo "player message_content_lower: `$message_content_lower`" . PHP_EOL;
+	if (str_starts_with($message_content_lower, 'create')) {
+		/*
+		if (count($collection = $lorhondel->players->filter(fn($p) => $p->user_id == $author_id && $p->active == 1 ))>0) {
+			echo '[COLLECTION PARTY]'; var_dump($collection);
+			foreach ($collection as $player) {
+				if (property_exists($player, 'timer')) return $message->reply('Please wait for the previous task to finish!');
+				if ($player instanceof \Lorhondel\Parts\Player\Player) {
+					if (! $player->party_id) {
+						$lorhondel->parties->save($lorhondel->factory(\Lorhondel\Parts\Party\Party::class, ['player1' => $player->id]));
+						$lorhondel->parties->freshen();
+						$message->react("⏰");
+						$timer = $lorhondel->getLoop()->addTimer(3, 
+							function($result) use ($lorhondel, $message, $player) {
+								unset($player->timer);
+								$message->react("👍");
+								if (! empty($collection = $lorhondel->parties->filter(fn($p) => $p->player1 == $player->id))) {
+									echo '[COLLECTION]'; var_dump($collection);
+									foreach ($collection as $party) { //There should only be one
+										$player->party_id = $party->id;
+										echo '[COLLECTION PLAYER]'; var_dump($player);
+										$lorhondel->players->save($player); //This is not saving the party_id and user_id
+										return $message->reply('Party created and assigned!');
+									}
+								} else return $message->reply('Unable to locate party part!');
+							}
+						);
+						$player->timer = $timer;
+						return;
+					} else return $message->reply('You must leave your current party first!');
+				} else return $message->reply('No players found!');
+			}
+		} else return $message->reply('No active players found!');
+		*/
+	}
+	elseif (str_starts_with($message_content_lower, 'activate')) {
+		$name = $id = $message_content_lower = trim(substr($message_content_lower, 8));
+		
+		$collection = array();
+		if (is_numeric($message_content_lower)) {
+			$collection = $lorhondel->players->filter(fn($p) => $p->user_id == $author_id && $p->id == $id);
+		} elseif($message_content_lower) {
+			$collection = $lorhondel->players->filter(fn($p) => $p->user_id == $author_id && $p->name == $name);
+		} else return $message->reply('Invalid format! Please include the ID or name of the Player you want to activate.');
+		if (count($collection) > 0) {
+			if (count($collection2 = $lorhondel->players->filter(fn($p) => $p->user_id == $author_id && $p->active == 1))>0) {
+				foreach ($collection2 as $old_player) { //There should only be one
+					$old_player->active = 0;
+					$lorhondel->players->save($old_player);
+				}
+			}
+			foreach ($collection as $player) { //There should only be one
+				$player->active = 1;
+				$lorhondel->players->save($player);
+			}
+			return $message->reply("Player $id is now your active player!");
+		} else return $message->reply("You do not have any players with either ID or Name matching $id!");
+		return;
+	}
+	elseif (is_numeric($message_content_lower)) {
+		if ($target_player = $lorhondel->players->offsetGet($message_content_lower) ?? getCurrentPlayer($lorhondel, $message_content_lower))
+			return $message->channel->sendEmbed(playerEmbed($lorhondel, $target_player));
+		else return $message->reply("Unable to locate either a Player or relevant Discord account with a Player!");
+	}
+	/*
+	*********************
+	*********************
+	These commands require an active player
+	*********************
+	*********************
+	*/
+	if (! $player) return $message->reply('Please create a player or activate one first!');
+	if ($message_content_lower == 'looking') {
+		if ($player->party_id === null) {
+			$player->looking = ! $player->looking;
+			switch($player->looking) {
+				case false:
+					$message->reply('Player ' . ($player->name ?? $player->id) . ' is no longer looking for a party!');
+					break;
+				case true:
+					$message->reply('Player ' . ($player->name ?? $player->id) . ' is now looking for a party!');
+					break;
+			}
+			$lorhondel->players->save($player);
+		} else return $message->reply('Please leave your current party before listing yourself as looking for a new one!');
+	}
+}
 
 if (str_starts_with($message_content_lower, 'party')) {
 	$message_content_lower = trim(substr($message_content_lower, 5));
-	if (! $player) return $message->reply('Please or create a player or activate one first!');
 	
+	if (is_numeric($message_content_lower)) {
+		if ($target_party = $lorhondel->parties->offsetGet($message_content_lower))
+			return $message->channel->sendEmbed(partyEmbed($lorhondel, $target_party));
+		else return $message->reply("Unable to locate a party with ID $message_content_lower!");
+	}
+	
+	/*
+	*********************
+	*********************
+	These commands require an active player
+	*********************
+	*********************
+	*/
+	if (! $player) return $message->reply('Please create a player or activate one first!');
 	if (str_starts_with($message_content_lower, 'join')) {
 		$id = $message_content_lower = trim(substr($message_content_lower, 4));
 		foreach (['<@', '!', '>'] as $filter)
@@ -330,18 +418,25 @@ if (str_starts_with($message_content_lower, 'party')) {
 		$lorhondel->parties->save($party);
 		return;
 	}
-	elseif (is_numeric($message_content_lower)) {
-		if ($target_party = $lorhondel->parties->offsetGet($message_content_lower))
-			return $message->channel->sendEmbed(partyEmbed($lorhondel, $target_party));
-		else return $message->reply("Unable to locate a party with ID $message_content_lower!");
+	/*
+	*********************
+	*********************
+	These commands require an active party
+	*********************
+	*********************
+	*/
+	if (! $party) return $message->reply('No active party found! Try joining one with `;party join {party or player id here}`');
+	if (str_starts_with($message_content_lower, 'leave')) {
+		if ($position = $party->leave($lorhondel, $player))
+			return $message->reply("You are no longer player $position in party " . ($party->name ?? $party->id));
+		else return $message->reply("Something went wrong!"); //This shouldn't happen unless they aren't actually a member of the party
 	}
-	elseif (! $message_content_lower && $party) {
+	elseif (! $message_content_lower) {
 		return $message->channel->sendEmbed(partyEmbed($lorhondel, $party));
 	}
 	elseif ($message_content_lower) {
 		return $message->reply("Unrecognized subcommand `$message_content_lower'");
 	}
-	else return $message->reply('No active party found! Try joining one with `;party join {party or player id here}`');
 }
 
 $documentation = '';

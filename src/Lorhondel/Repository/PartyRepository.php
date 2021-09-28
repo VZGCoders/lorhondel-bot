@@ -82,13 +82,13 @@ class PartyRepository extends AbstractRepository
 	public function delete($part): ExtendedPromiseInterface
 	{
 		if (! ($part instanceof Part)) {
-            $part = $this->factory->part($this->class, [$this->discrim => $part], true);
+            $part = $this->factory->lorhondel->parties->offsetGet($part);
         }
 		
 		$url = Http::BASE_URL . "/parties/delete/{$part->id}/";
 		return $this->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
-			function ($response) use ($lorhondel, $message, $part) {
-				echo '[DELETE RESPONSE] '; var_dump($lorhondel->parties->offsetUnset($part->id)); 
+			function ($response) use ($part) {
+				echo '[DELETE RESPONSE] '; //var_dump($lorhondel->parties->offsetUnset($part->id)); 
 				//var_dump($lorhondel->parties);
 			},
 			function ($error) {
@@ -118,8 +118,8 @@ class PartyRepository extends AbstractRepository
 
         $url = Http::BASE_URL . "/parties/fresh/{$part->id}/";
 		return $this->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
-			function ($response) use ($lorhondel, $message, $part) {
-				echo '[FETCH RESPONSE] '; var_dump($lorhondel->parties->offsetUnset($part->id)); 
+			function ($response) use ($part) {
+				echo '[FETCH RESPONSE] '; //var_dump($lorhondel->parties->offsetUnset($part->id)); 
 				//var_dump($lorhondel->parties);
 			},
 			function ($error) {
@@ -151,8 +151,8 @@ class PartyRepository extends AbstractRepository
         $part = $this->factory->create($this->class, [$this->discrim => $id]);
         $url = Http::BASE_URL . "/parties/fetch/{$part->id}/";
 		return $this->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
-			function ($response) use ($lorhondel, $message, $part) {
-				echo '[FETCH RESPONSE] '; var_dump($lorhondel->parties->offsetUnset($part->id)); 
+			function ($response) use ($part) {
+				echo '[FETCH RESPONSE] '; //var_dump($lorhondel->parties->offsetUnset($part->id)); 
 				//var_dump($lorhondel->parties);
 			},
 			function ($error) {
@@ -299,7 +299,7 @@ class PartyRepository extends AbstractRepository
 		}
 		if (! $member) return false;
 
-		if ($succeed = $party->succession($party)) {
+		if ($succeed = $this->succession($party)) {
 			return $this->save($party);
 		} else return $succeed;
     }

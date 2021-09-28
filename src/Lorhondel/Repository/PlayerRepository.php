@@ -80,7 +80,7 @@ class PlayerRepository extends AbstractRepository
 	public function delete($part): ExtendedPromiseInterface
 	{
 		if (! ($part instanceof Part)) {
-            $part = $this->factory->part($this->class, [$this->discrim => $part], true);
+			$part = $this->factory->lorhondel->players->offsetGet($part);
         }
 		
 		$url = Http::BASE_URL . "/players/delete/{$part->id}/";
@@ -117,7 +117,7 @@ class PlayerRepository extends AbstractRepository
         $url = Http::BASE_URL . "/players/fresh/{$part->id}/";
 		return $this->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
 			function ($response) use ($lorhondel, $message, $part) {
-				echo '[FETCH RESPONSE] '; var_dump($lorhondel->players->offsetUnset($part->id)); 
+				echo '[FETCH RESPONSE] '; //var_dump($lorhondel->players->offsetUnset($part->id)); 
 				//var_dump($lorhondel->players);
 			},
 			function ($error) {
@@ -150,7 +150,7 @@ class PlayerRepository extends AbstractRepository
         $url = Http::BASE_URL . "/players/fetch/{$part->id}/";
 		return $this->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
 			function ($response) use ($lorhondel, $message, $part) {
-				echo '[FETCH RESPONSE] '; var_dump($lorhondel->players->offsetUnset($part->id)); 
+				echo '[FETCH RESPONSE] '; //var_dump($lorhondel->players->offsetUnset($part->id)); 
 				//var_dump($lorhondel->players);
 			},
 			function ($error) {

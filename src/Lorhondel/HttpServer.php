@@ -404,9 +404,16 @@ class HttpServer
 					//Remove any attributes that weren't provided in the part
 					$fillable_attributes = array();
 					foreach ($part->getFillableAttributes() as $attribute) {
-						if (property_exists($data, $attribute) && $data->$attribute !== null) {
+						if (property_exists($data, $attribute)/* && $data->$attribute !== null*/) {
 							echo '[DATA->ATTRIBUTE]'; var_dump($data->$attribute);
 							$fillable_attributes[] = $attribute;
+						}
+					}
+					foreach ($part->getFillableAttributes() as $attribute) {
+						if (!property_exists($data, $attribute)/* && $data->$attribute !== null*/) {
+							//Add the missing as null
+							$fillable_attributes[] = $attribute;
+							$attributes[$attribute] = null;
 						}
 					}
 					echo '[FILLABLE ATTRIBUTES]'; var_dump ($fillable_attributes);
