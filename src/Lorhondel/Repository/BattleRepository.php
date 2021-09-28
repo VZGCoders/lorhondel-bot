@@ -59,7 +59,7 @@ class BattleRepository extends AbstractRepository
 		$url = Http::BASE_URL . "/battles/$method/{$part->id}/";
 		return $this->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
 			function ($response) use ($part) {
-				echo '[SAVE RESPONSE] '; //var_dump($lorhondel->battles->offsetUnset($part->id)); 
+				echo '[SAVE RESPONSE] '; //var_dump($lorhondel->battles->offsetGet($part->id)); 
 				//var_dump($lorhondel->battles);
 			},
 			function ($error) {

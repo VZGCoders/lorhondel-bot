@@ -12,7 +12,8 @@ use Discord\Parts\Channel\Channel;
 use Discord\Parts\Channel\Message;
 use Discord\Parts\Guild\Role;
 use Lorhondel\Parts\Part;
-use Lorhondel\Parts\Player;
+use Lorhondel\Parts\Player\Player;
+use Lorhondel\Parts\Party\Party;
 use Discord\Parts\User\Member;
 use Discord\Parts\User\User;
 use Symfony\Component\OptionsResolver\Options;
@@ -633,6 +634,29 @@ function setCurrentParty($lorhondel, $user_id)
 function getPlayerLocation($lorhondel)
 {
 	//
+}
+/*
+Returns true if party exists and is not full
+Returns null if party is not found or an invalid parameter was passed
+Returns false if party is full
+*/
+function isPartyJoinable($lorhondel = null, $part)
+{
+	if ($part instanceof Party) {
+		$party = $part;
+		$id = $part->id;
+	}
+	elseif ($part instanceof Player)
+		if ($player->party_id !== null)
+			$id = $player->party_id;
+	elseif (is_numeric($part)) $id = $part;
+	else return null; //Internal function should not allow passing of invalid parameter
+	
+	if ($party = $party ?? $lorhondel->parties->offsetGet($id)) {
+		if (! $party->player1 || ! $party->player2 || ! $party->player3 || ! $party->player4 || ! $party->player5)
+			return true;
+		else return false;
+	} else return null;
 }
 
 function playerEmbed($lorhondel, $player)

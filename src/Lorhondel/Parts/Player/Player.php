@@ -19,6 +19,7 @@ use Lorhondel\Parts\Part;
  * @property int    $user_id       Discord user id.
  * @property int    $party_id      Current party id.
  * @property bool   $active        Whether the player is active.
+ * @property bool   $looking       Whether the player is looking for a party.
  *
  * @property string $name          The name of the player.
  * @property string $species       The species of the player.
