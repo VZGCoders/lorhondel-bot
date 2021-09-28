@@ -552,8 +552,8 @@ function partPusher($lorhondel, $repository, $part_name, $array)
 
 function getCurrentPlayer($lorhondel, $user_id)
 {
-	if ($collection = $lorhondel->players->filter(fn($p) => $p->user_id == $user_id && $p->active == 1 )) {
-		echo '[FOUND ACTIVE PLAYER]'; var_dump($collection);
+	if (count($collection = $lorhondel->players->filter(fn($p) => $p->user_id == $user_id && $p->active == 1 )) > 0) {
+		//echo '[FOUND ACTIVE CACHED PLAYER]'; //var_dump($collection);
 		foreach ($collection as $player) //There should only be one
 			return $player;
 	}
@@ -577,7 +577,7 @@ function getCurrentPlayer($lorhondel, $user_id)
 function setCurrentPlayer($lorhondel, $user_id, $id)
 {
 	$cached = false;
-	if ($collection = $lorhondel->players->filter(fn($p) => $p->user_id == $user_id && $p->active == 1 )) {
+	if (count($collection = $lorhondel->players->filter(fn($p) => $p->user_id == $user_id && $p->active == 1 )) > 0) {
 		foreach ($collection as $player) //There should only be one
 			$lorhondel->players->offsetGet($player->id)->active = 0;
 	}
@@ -611,8 +611,8 @@ function setCurrentPlayer($lorhondel, $user_id, $id)
 }
 function getCurrentParty($lorhondel, $id)
 {
-	if ($part = $lorhondel->parties->filter(fn($p) => $p->player1 == $id || p->player2 == $id || p->player3 == $id || p->player4 == $id || p->player5 == $id)) {
-		foreach ($part as $party) //There should only be one
+	if (count($collection = $lorhondel->parties->filter(fn($p) => $p->player1 == $id || p->player2 == $id || p->player3 == $id || p->player4 == $id || p->player5 == $id))>0) {
+		foreach ($collection as $party) //There should only be one
 			return $party;
 	}
 	

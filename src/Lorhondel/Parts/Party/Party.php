@@ -114,4 +114,32 @@ class Party extends Part
 			return 5;
 		} else return 0; //This could have been caught by isPartyJoinable
 	}
+
+	public function leave($lorhondel, $player): int
+	{
+		if ($player instanceof Player)
+			$id = $player->id;
+		elseif (is_numeric($player)) {
+			$id = $player;
+			$player = $lorhondel->players->offsetGet($id);
+		} else return 0; //$message->reply('Invalid parameter! Expects Player or Player ID.');
+		if ($player->party_id != $this->id) return 0; //$message->reply('Player is not a member of this party!');
+		
+		if ($this->player1 == $id) {
+			$this->player1 = null;
+			return 1;
+		} elseif ($this->player2 == $id) {
+			$this->player2 = null;
+			return 2;
+		} elseif ($this->player3 == $id) {
+			$this->player3 = null;
+			return 3;
+		} elseif ($this->player4 == $id) {
+			$this->player4 = null;
+			return 4;
+		} elseif ($this->player5 == $id) {
+			$this->player5 = null;
+			return 5;
+		}
+	}
 }
