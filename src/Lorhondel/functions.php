@@ -574,41 +574,6 @@ function getCurrentPlayer($lorhondel, $user_id)
 		return $part;
 	} else return null;
 }
-function setCurrentPlayer($lorhondel, $user_id, $id)
-{
-	$cached = false;
-	if (count($collection = $lorhondel->players->filter(fn($p) => $p->user_id == $user_id && $p->active == 1 )) > 0) {
-		foreach ($collection as $player) //There should only be one
-			$lorhondel->players->offsetGet($player->id)->active = 0;
-	}
-	if ($player = $lorhondel->players->offsetGet($id) && $player->user_id == $user_id) {
-		$player->active = 1;
-		$cached = true;
-	}
-	
-	include 'connect.php';
-	$deactivated = false;
-	$activated = false;
-	$part = null;
-	$sql = "UPDATE players SET active = 0 WHERE user_id = ?";
-	if ($stmt = $PDO->prepare($sql))
-		if ($stmt->execute([$id]))
-			if ($result = $stmt->fetchAll())
-				$deactivated = true; //echo "[DEACTIVATED] $user_id";
-	$sql = "UPDATE players SET active = 1 WHERE user_id = ? AND id = ?";
-	if ($stmt = $PDO->prepare($sql))
-		if ($stmt->execute([$user_id, $id]))
-			$activated = true; //echo "[ACTIVATED] $user_id/$id";
-	echo '[setCurrentPlayer]'; var_dump($result);
-	
-	if (! $cached && $activated) {
-		$get = json_validate(sqlGet(['*'], 'players', 'id', [$id], '', 1));
-		$part = partPusher($lorhondel, 'players', '\Lorhondel\Parts\Player\Player', $get);
-		echo '[setCurrentPlayer Part]'; var_dump($part);
-	}
-	
-	return $player ?? $part ?? $result;
-}
 function getCurrentParty($lorhondel, $id)
 {
 	if (count($collection = $lorhondel->parties->filter(fn($p) => $p->player1 == $id || $p->player2 == $id || $p->player3 == $id || $p->player4 == $id || $p->player5 == $id))>0) {
@@ -632,11 +597,6 @@ function getCurrentParty($lorhondel, $id)
 			if ($result = $stmt->fetchAll())
 				$part = partPusher($lorhondel, 'parties', '\Lorhondel\Parts\Party\Party', $result);
 	return $part ?? false;
-}
-function setCurrentParty($lorhondel, $user_id)
-{
-	include 'connect.php';
-	//
 }
 function getPlayerLocation($lorhondel)
 {

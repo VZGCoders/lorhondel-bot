@@ -263,6 +263,11 @@ echo '[LORHONDEL MESSAGE] ' . $author_id . PHP_EOL;
 if ($player = getCurrentPlayer($lorhondel, $author_id))
 	$party = getCurrentParty($lorhondel, $player->id);
 
+if (str_starts_with($message_content_lower, 'help')) {
+	$documentation = '';
+}
+
+
 if (str_starts_with($message_content_lower, 'player')) {
 	$name = $message_content = trim(substr($message_content, 6));
 	$id = $message_content_lower = trim(substr($message_content_lower, 6));
@@ -493,5 +498,3 @@ if (str_starts_with($message_content_lower, 'party')) {
 		return $message->reply("Unrecognized subcommand `$message_content_lower'");
 	}
 }
-
-$documentation = '';
