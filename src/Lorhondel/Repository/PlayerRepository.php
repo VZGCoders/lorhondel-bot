@@ -54,12 +54,12 @@ class PlayerRepository extends AbstractRepository
 
     public function save(Part $part)
     {
-		if ($this->offsetGet($part->id)) $method = 'patch';
+		if ($this->factory->lorhondel->players->offsetGet($part->id)) $method = 'patch';
 		else $method = 'post';
 		$url = Http::BASE_URL . "/players/$method/{$part->id}/";
 		return $this->factory->lorhondel->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
 			function ($response) use ($part) {
-				echo '[SAVE RESPONSE] '; //var_dump($lorhondel->players->offsetUnset($part->id)); 
+				echo '[SAVE RESPONSE] '; //var_dump($this->factory->lorhondel->players->offsetGet($part->id)); 
 				//var_dump($lorhondel->players);
 			},
 			function ($error) {

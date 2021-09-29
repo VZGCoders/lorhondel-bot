@@ -37,6 +37,8 @@ class Player extends Part
      * @inheritdoc
      */
     protected static $fillable = ['id', 'user_id', 'party_id', 'active', 'name', 'species', 'health', 'attack', 'defense', 'speed', 'skillpoints'];
+	
+	protected static $species_list = ['Elarian', 'Manthean', 'Noldarus', 'Veias', 'Jedoa'];
 
 	/**
      * Returns the fillable attributes.
@@ -52,6 +54,22 @@ class Player extends Part
 			}
 		}
 		return $fillable;
+	}
+
+	/**
+     * Returns the fillable species attributes.
+     *
+     * @return array
+     */
+    public static function getFillableSpeciesAttributes($context = '')
+	{
+		$species_list = array();
+		foreach (self::$species_list as $attr) {
+			if (! $context || in_array($context, self::$species_list)) {
+				$species_list[] = $attr;
+			}
+		}
+		return $species_list;
 	}
 
 	/**

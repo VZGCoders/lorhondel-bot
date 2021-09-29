@@ -54,7 +54,7 @@ class VoteRepository extends AbstractRepository
 
     public function save(Part $part)
     {
-		if ($this->offsetGet($part->id)) $method = 'patch';
+		if ($this->factory->lorhondel->votes->offsetGet($part->id)) $method = 'patch';
 		else $method = 'post';
 		$url = Http::BASE_URL . "/votes/$method/{$part->id}/";
 		return $this->factory->lorhondel->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function

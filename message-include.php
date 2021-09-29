@@ -273,11 +273,29 @@ if (str_starts_with($message_content_lower, 'player')) {
 		$message_content_lower = trim(substr($message_content_lower, 6));
 		if (! $message_content_lower) {
 			//Provide information about how to create a player
+			return $message->reply("Please use the semicolon-delimited format `player create name; species` where `name` is your player's name and `species` is any of the following:\nElarian, Manthean, Noldarus, Veias, Jedoa");
 		} else {
-			$array = explode(', ', $message_content);
-			/*
-			
-			*/
+			$array = explode(';', $message_content);
+			if (! $array[1]) return $message->reply("Please use the semicolon-delimited format `player create name; species` where `name` is your player's name and `species` is any of the following:\nElarian, Manthean, Noldarus, Veias, Jedoa");
+			$snowflake = generateSnowflake();
+			if ($part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
+				'id' => $snowflake,
+				'user_id' => $author_id,
+				'name' => trim($array[0]),
+				'species' => trim($array[1]), //Elarian, Manthean, Noldarus, Veias, Jedoa
+			])) {
+				if(in_array(trim($array[1]), $part::getFillableSpeciesAttributes())) {
+					echo '[CREATE PLAYER WITH PART]'; var_dump($part);
+					$lorhondel->players->save($part)->done(
+						function ($result) use ($lorhondel, $message, $part) {
+							if (count($collection = $lorhondel->players->filter(fn($p) => $p->user_id == $part->user_id && $p->id == $part->id))==1) {
+								foreach ($collection as $player) //There should only be one
+									return $message->reply("Created player `{$part->name}` with ID ``{$part->id}``. You can make this your active player by using the command `" . $lorhondel->command_symbol . "player activate {$part->id}`.");
+							} else return $message->reply("Created player `{$part->name}` with ID `{$part->id}`. You can make this your active player by using the command `" . $lorhondel->command_symbol . "player activate {$part->id}`.");
+						}
+					);
+				} else return $message->reply("Invalid species! Please use the semicolon-delimited format `player create name; species` where `name` is your player's name and `species` is any of the following:\nElarian, Manthean, Noldarus, Veias, Jedoa"); //
+			} else return $message->reply("Error building Player part!");
 		}
 	}
 	elseif (str_starts_with($message_content_lower, 'activate')) {
@@ -294,12 +312,20 @@ if (str_starts_with($message_content_lower, 'player')) {
 			if (count($collection2 = $lorhondel->players->filter(fn($p) => $p->user_id == $author_id && $p->active == 1))>0) {
 				foreach ($collection2 as $old_player) { //There should only be one
 					$old_player->active = 0;
-					$lorhondel->players->save($old_player);
+					$lorhondel->players->save($old_player)->done(
+						function ($result) use ($lorhondel, $collection) {
+							foreach ($collection as $player) { //There should only be one
+								$player->active = 1;
+								$lorhondel->players->save($player);
+							}
+						}
+					);
 				}
-			}
-			foreach ($collection as $player) { //There should only be one
-				$player->active = 1;
-				$lorhondel->players->save($player);
+			} else {
+				foreach ($collection as $player) { //There should only be one
+					$player->active = 1;
+					$lorhondel->players->save($player);
+				}
 			}
 			return $message->reply("Player $id is now your active player!");
 		} else return $message->reply("You do not have any players with either ID or Name matching `$id`!");

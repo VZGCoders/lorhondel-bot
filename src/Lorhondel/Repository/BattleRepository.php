@@ -54,10 +54,10 @@ class BattleRepository extends AbstractRepository
 
     public function save(Part $part)
     {
-		if ($this->offsetGet($part->id)) $method = 'patch';
+		if ($this->factory->lorhondel->battles->offsetGet($part->id)) $method = 'patch';
 		else $method = 'post';
 		$url = Http::BASE_URL . "/battles/$method/{$part->id}/";
-		return this->factory->lorhondel->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
+		return $this->factory->lorhondel->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
 			function ($response) use ($part) {
 				echo '[SAVE RESPONSE] '; //var_dump($lorhondel->battles->offsetGet($part->id)); 
 				//var_dump($lorhondel->battles);
