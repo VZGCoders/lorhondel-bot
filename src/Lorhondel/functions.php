@@ -535,6 +535,13 @@ function sqlDelete(string $table, string $wherecolumn = '', array $values = [], 
 	} else echo mysqli_stmt_error($stmt);
 	return false;
 }
+
+/**
+ * Creates a part from an array of data and add it to the relevant repository.
+ * Intended to be used in conjunction with another function that alters data in SQL.
+ *
+ * @return Part
+ */
 function partPusher($lorhondel, $repository, $part_name, $array)
 {
 	$part = null;
@@ -549,7 +556,6 @@ function partPusher($lorhondel, $repository, $part_name, $array)
 	}
 	return $part;
 }
-
 function getCurrentPlayer($lorhondel, $user_id)
 {
 	if (count($collection = $lorhondel->players->filter(fn($p) => $p->user_id == $user_id && $p->active == 1 )) > 0) {
