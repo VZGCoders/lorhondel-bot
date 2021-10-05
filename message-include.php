@@ -306,17 +306,14 @@ if (str_starts_with($message_content_lower, 'player')) {
 	elseif (str_starts_with($message_content_lower, 'activate')) {
 		$name = $message_content = trim(substr($message_content, 8));
 		$id = $message_content_lower = trim(substr($message_content_lower, 8));
-		if ($target_player = $lorhondel->players->offsetGet($id)/* && $target_player->user_id == $author_id*/) {
-			if ($result = $target_player->activate($lorhondel))
-				return $message->reply($result);
+		if ($target_player = $lorhondel->players->offsetGet($id)) {
+			if ($target_player->user_id == $author_id) {
+				if ($result = $target_player->activate($lorhondel)) {
+					return $message->reply($result);
+				} else return $message->reply("Something went wrong!"); //This shouldn't happen unless the class handler failed
+			} else return $message->reply("You can only activate players you own!");
 		} else return $message->reply("Something went wrong!"); //This shouldn't happen unless the class handler failed
 	}
-	elseif (str_starts_with($message_content_lower, 'deactivate')) {
-		if ($result = $player->deactivate($lorhondel)) {
-			return $message->reply($result);
-		} else return $message->reply("Something went wrong!"); //This shouldn't happen unless the class handler failed
-	}
-	
 	elseif (str_starts_with($message_content_lower, 'rename')) {
 		$name = $message_content = trim(substr($message_content, 6));
 		if ($result = $player->rename($lorhondel, $name))
@@ -349,7 +346,13 @@ if (str_starts_with($message_content_lower, 'player')) {
 			}
 			$lorhondel->players->save($player);
 		} else return $message->reply('Please leave your current party before listing yourself as looking for a new one!');
-	} elseif (! $message_content_lower) {
+	}
+	elseif (str_starts_with($message_content_lower, 'deactivate')) {
+		if ($result = $player->deactivate($lorhondel)) {
+			return $message->reply($result);
+		} else return $message->reply("Something went wrong!"); //This shouldn't happen unless the class handler failed
+	}
+	elseif (! $message_content_lower) {
 		return $message->channel->sendEmbed(playerEmbed($lorhondel, $player));
 	}
 }
