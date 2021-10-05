@@ -306,36 +306,17 @@ if (str_starts_with($message_content_lower, 'player')) {
 	elseif (str_starts_with($message_content_lower, 'activate')) {
 		$name = $message_content = trim(substr($message_content, 8));
 		$id = $message_content_lower = trim(substr($message_content_lower, 8));
-		
-		$collection = array();
-		if (is_numeric($id)) {
-			$collection = $lorhondel->players->filter(fn($p) => $p->user_id == $author_id && $p->id == $id);
-		} elseif($message_content_lower) {
-			$collection = $lorhondel->players->filter(fn($p) => $p->user_id == $author_id && $p->name == $name);
-		} else return $message->reply('Invalid format! Please include the ID or name of the Player you want to activate.');
-		if (count($collection) > 0) {
-			if (count($collection2 = $lorhondel->players->filter(fn($p) => $p->user_id == $author_id && $p->active == 1))>0) {
-				foreach ($collection2 as $old_player) { //There should only be one
-					$old_player->active = 0;
-					$lorhondel->players->save($old_player)->done(
-						function ($result) use ($lorhondel, $collection) {
-							foreach ($collection as $player) { //There should only be one
-								$player->active = 1;
-								$lorhondel->players->save($player);
-							}
-						}
-					);
-				}
-			} else {
-				foreach ($collection as $player) { //There should only be one
-					$player->active = 1;
-					$lorhondel->players->save($player);
-				}
-			}
-			return $message->reply("Player $id is now your active player!");
-		} else return $message->reply("You do not have any players with either ID or Name matching `$id`!");
-		return;
+		if ($target_player = $lorhondel->players->offsetGet($id)/* && $target_player->user_id == $author_id*/) {
+			if ($result = $target_player->activate($lorhondel))
+				return $message->reply($result);
+		} else return $message->reply("Something went wrong!"); //This shouldn't happen unless the class handler failed
 	}
+	elseif (str_starts_with($message_content_lower, 'deactivate')) {
+		if ($result = $player->deactivate($lorhondel)) {
+			return $message->reply($result);
+		} else return $message->reply("Something went wrong!"); //This shouldn't happen unless the class handler failed
+	}
+	
 	elseif (str_starts_with($message_content_lower, 'rename')) {
 		$name = $message_content = trim(substr($message_content, 6));
 		if ($result = $player->rename($lorhondel, $name))

@@ -113,6 +113,64 @@ class Player extends Part
         ];
     }
 	
+	public function activate($lorhondel)
+	{
+		$collection = $lorhondel->players->filter(fn($p) => $p->user_id == $this->user_id && $p->active == 1);
+		
+		$players = [];
+		foreach ($collection as $player) {
+			$player->active = 0;
+			$players[] = $player;
+		}
+		
+		$this->active = 1;
+		$lorhondel->players->save($this)->done(
+			function ($result) use ($lorhondel, $players) {
+				$promise = null;
+				$string = '';
+				$string1 = '$promise = $lorhondel->players->save(array_shift($players))->done(function () use ($lorhondel, $players, $i) {';
+				$string2 = '});';
+				for ($i = 0; $i < count($players); $i++) {
+				  $string .= $string1;
+				}
+				for ($i = 0; $i < count($players); $i++) {
+				  $string .= $string2;
+				}
+				eval($string); //I really hate this language sometimes
+			}
+		);
+		return 'Player `' . ($this->name ?? $this->id) . '` is now your active player! ';
+	}
+
+	public function deactivate($lorhondel)
+	{
+		$collection = $lorhondel->players->filter(fn($p) => $p->user_id == $this->user_id && $p->active == 1 && $p->id != $this->id);
+		
+		$players = [];
+		foreach ($collection as $player) {
+			$player->active = 0;
+			$players[] = $player;
+		}
+		
+		$this->active = 0;
+		$lorhondel->players->save($this)->done(
+			function ($result) use ($lorhondel, $players) {
+				$promise = null;
+				$string = '';
+				$string1 = '$promise = $lorhondel->players->save(array_shift($players))->done(function () use ($lorhondel, $players, $i) {';
+				$string2 = '});';
+				for ($i = 0; $i < count($players); $i++) {
+				  $string .= $string1;
+				}
+				for ($i = 0; $i < count($players); $i++) {
+				  $string .= $string2;
+				}
+				eval($string); //I really hate this language sometimes
+			}
+		);
+		return 'Player `' . ($this->name ?? $this->id) . '` is no longer your active player! ';
+	}
+
 	public function rename($lorhondel, $name)
 	{
 		if ($name) {
