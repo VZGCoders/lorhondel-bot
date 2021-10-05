@@ -269,6 +269,10 @@ class Lorhondel
 	
 	protected $verbose = true;
 	
+	public $workerID = 0;
+	public $processID = 0;
+	public $increment = 0;
+	
     /**
      * Creates a Lorhondel client instance.
      *
@@ -329,6 +333,8 @@ class Lorhondel
 		$this->client = $this->factory->create(Client::class, [], true);
 
         $this->connectWs();
+		
+		$this->processID = (int) getmypid();
 	}
 	
 	/**

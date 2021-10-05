@@ -248,8 +248,12 @@ function getSnowflakeTimestamp(string $snowflake)
  *
  * @return int
  */
-function generateSnowflake(int $time = 0, int $workerID = 0, int $processID = 0, int $increment = 0)
+function generateSnowflake(Lorhondel $lorhondel, $time = null, $workerID = null, $processID = null, $increment = null)
 {
+	$processID = $processID ?? $lorhondel->processID;
+	$workerID = $workerID ?? $lorhondel->workerID;
+	$increment = $increment ?? $lorhondel->increment;
+	$lorhondel->increment++;
 	if (! $time) $timeSinceEpoch = (time() . '000') - EPOCH;
 	else $timeSinceEpoch = ($time . '000') - EPOCH;
 	$snowflake = ($timeSinceEpoch << 22) | (($workerID & 0x1F) << 17) | (($processID & 0x1F) << 12) | ($increment & 0xFFF);

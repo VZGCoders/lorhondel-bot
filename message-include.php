@@ -81,7 +81,7 @@ if ($creator) { //Debug commands
 			return $message->reply('Pong!');
 			break;
 		case 'factory':
-			$snowflake = \Lorhondel\generateSnowflake(time(), 0, 0, count($lorhondel->players));
+			$snowflake = \Lorhondel\generateSnowflake($lorhondel, time(), 0, 0, count($lorhondel->players));
 			$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
 				'id' => $snowflake,
 				'user_id' => 116927250145869826,
@@ -172,7 +172,7 @@ if ($creator) { //Debug commands
 			break;
 		case 'post':
 			echo '[POST]' . PHP_EOL;
-			$snowflake = \Lorhondel\generateSnowflake(time(), 0, 0, count($lorhondel->players));
+			$snowflake = \Lorhondel\generateSnowflake($lorhondel, time(), 0, 0, count($lorhondel->players));
 			$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
 				'id' => $snowflake,
 				'user_id' => 116927250145869826,
@@ -282,7 +282,7 @@ if (str_starts_with($message_content_lower, 'player')) {
 		} else {
 			$array = explode(';', $message_content);
 			if (! $array[1]) return $message->reply("Please use the semicolon-delimited format `player create name; species` where `name` is your player's name and `species` is any of the following:\nElarian, Manthean, Noldarus, Veias, Jedoa");
-			$snowflake = generateSnowflake();
+			$snowflake = generateSnowflake($lorhondel);
 			if ($part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
 				'id' => $snowflake,
 				'user_id' => $author_id,
