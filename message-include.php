@@ -271,8 +271,25 @@ if (str_starts_with($message_content_lower, 'help')) {
 if (str_starts_with($message_content_lower, 'player')) {
 	$name = $message_content = trim(substr($message_content, 6));
 	$id = $message_content_lower = trim(substr($message_content_lower, 6));
-	foreach (['<@', '!', '>'] as $filter)
-		$id = str_replace($filter, '', $id);
+	foreach (['<@', '!', '>'] as $filter) {
+		$name = $message_content = str_replace($filter, '', $name);
+		$id = $message_content_lower = str_replace($filter, '', $id);
+	}
+		
+	$player_commands = ['rename', 'activate'];
+	foreach($player_commands as $command) {
+		if (str_starts_with(trim(substr(strtolower($message_content), strlen($command))), $command)) {
+			$message_content = trim(substr($message_content, strlen($command)));
+			$tokens = array_merge([$lorhondel], explode(' ', $message_content));
+			$reflection = new \ReflectionMethod('\Lorhondel\Parts\Player\Player', $command);
+			$num = $reflection->getNumberOfParameters();
+			$tokens = array_slice($tokens, 0, $num);
+			if (count($tokens) < $num) return $message->reply('Invalid number of parameters!'); //Add class function that returns a string
+			return $message->reply(call_user_func_array(array($player, $command), $tokens));
+		}
+	}
+	
+	
 	if (str_starts_with($message_content_lower, 'create')) {
 		$message_content = trim(substr($message_content, 6));
 		$message_content_lower = trim(substr($message_content_lower, 6));
@@ -343,8 +360,11 @@ if (str_starts_with($message_content_lower, 'player')) {
 if (str_starts_with($message_content_lower, 'party')) {
 	$name = $message_content = trim(substr($message_content, 5));
 	$id = $message_content_lower = trim(substr($message_content_lower, 5));
-	foreach (['<@', '!', '>'] as $filter)
+	foreach (['<@', '!', '>'] as $filter) {
+		$name = str_replace($filter, '', $name);
 		$id = str_replace($filter, '', $id);
+	}
+	
 	if (is_numeric($id)) {
 		if ($target_party = $lorhondel->parties->offsetGet($id))
 			return $message->channel->sendEmbed(partyEmbed($lorhondel, $target_party));
@@ -380,9 +400,7 @@ if (str_starts_with($message_content_lower, 'party')) {
 	if (! $player) return $message->reply('Please create a player or activate one first!');
 	if (str_starts_with($message_content_lower, 'create')) {
 		if (! $name = trim(substr($message_content, 6))) $name = null;
-		echo "name: `$name`" . PHP_EOL;
 		if (! $party) {
-			if (property_exists($player, 'timer')) return $message->reply('Please wait for the previous task to finish!');
 			if ($name) $lorhondel->parties->save($lorhondel->factory(\Lorhondel\Parts\Party\Party::class, ['player1' => $player->id, 'name' => $name]));
 			else $lorhondel->parties->save($lorhondel->factory(\Lorhondel\Parts\Party\Party::class, ['player1' => $player->id]));
 			return $lorhondel->parties->freshen()->done(
@@ -442,28 +460,17 @@ if (str_starts_with($message_content_lower, 'party')) {
 	*********************
 	*********************
 	*/
-	if (! $party) return $message->reply('No active party found! Try joining one with `;party join {party or player id here}`');
+	if (! $party) return $message->reply('No active party found! Try creating one with `;party create {party name here}` or joining one with `;party join {party or player id here}`');
 	elseif (str_starts_with($message_content_lower, 'rename')) {
 		if ($party->{$party->leader} != $player->id) return $message->reply("You are not the party leader!");
 		$name = $message_content = trim(substr($message_content, 6));
 		$message->reply($party->rename($lorhondel, $name));
-		
-		/*$party->name = (string) $name;
-		return $lorhondel->parties->save($party)->done(
-			function ($result) use ($message, $party) {
-				return $message->reply("Changed name of party `{$party->id}` to `{$party->name}`");
-			}
-		);*/
 	}
 	elseif (str_starts_with($message_content_lower, 'leave')) {
-		if ($leave = $party->leave($lorhondel, $player))
-			return $message->reply($leave);
-		else return $message->reply("Something went wrong!"); //This shouldn't happen unless the class handler failed
+		return $message->reply($party->leave($lorhondel, $player));
 	}
-	elseif (str_starts_with($message_content_lower, 'disband')) {
-		if ($disband = $party->disband($lorhondel))
-			return $message->reply($disband);
-		else return $message->reply("Something went wrong!"); //This shouldn't happen unless the class handler failed
+	elseif (str_starts_with($message_content_lower, 'disband')) {		
+		return $message->reply($party->disband($lorhondel));
 	}
 	elseif (str_starts_with($message_content_lower, 'invite')) {
 		if ($party->{$party->leader} != $player->id) return $message->reply("You are not the party leader!");
