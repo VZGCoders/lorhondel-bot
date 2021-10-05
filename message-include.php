@@ -298,15 +298,22 @@ if (str_starts_with($message_content_lower, 'player')) {
 			return $message->reply("Please use the semicolon-delimited format `player create name; species` where `name` is your player's name and `species` is any of the following:\nElarian, Manthean, Noldarus, Veias, Jedoa");
 		} else {
 			$array = explode(';', $message_content);
-			if (! $array[1]) return $message->reply("Please use the semicolon-delimited format `player create name; species` where `name` is your player's name and `species` is any of the following:\nElarian, Manthean, Noldarus, Veias, Jedoa");
 			$snowflake = generateSnowflake($lorhondel);
 			if ($part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
 				'id' => $snowflake,
 				'user_id' => $author_id,
-				'name' => trim($array[0]),
-				'species' => trim($array[1]), //Elarian, Manthean, Noldarus, Veias, Jedoa
+				'name' => trim($array[1] ?? null),
+				'species' => trim($array[0]),
 			])) {
-				if(in_array(trim($array[1]), $part::getFillableSpeciesAttributes())) {
+				if (! $array[0]) {
+					$return = 'Please tell us the species you want for your player in the following format: `' . $lorhondel->command_symbol . 'player create species` where `{species}` is any of the following:\n';
+					foreach ($part::getFillableSpeciesAttributes() as $choice) {
+						$return .= "$choice, ";
+					}
+					$return = substr($choice, 0, strlen($return-2));
+					return $message->reply($return);
+				}
+				if(in_array(trim($array[0]), $part::getFillableSpeciesAttributes())) {
 					echo '[CREATE PLAYER WITH PART]'; var_dump($part);
 					$lorhondel->players->save($part)->done(
 						function ($result) use ($lorhondel, $message, $part) {
