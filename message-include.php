@@ -120,7 +120,7 @@ if ($creator) { //Debug commands
 			$id = trim(str_replace('setcurrentplayer ', '', $message_content_lower));
 			if (is_numeric($id) && $player = $lorhondel->players->offsetGet($id))
 				return $message->reply('Result: ' . (setCurrentPlayer($lorhondel, $author_id, $id) ?? 'None'));
-			else return $message->reply('Invalid input!');
+			else return $message->reply('Invalid input! Numeric ID expected.');
 			break;
 		case 'playersfreshen':
 			return $lorhondel->players->freshen();
@@ -338,12 +338,9 @@ if (str_starts_with($message_content_lower, 'player')) {
 	}
 	elseif (str_starts_with($message_content_lower, 'rename')) {
 		$name = $message_content = trim(substr($message_content, 6));
-		$player->name = (string)$name;
-		return $lorhondel->players->save($player)->done(
-			function ($result) use ($message, $player) {
-				return $message->reply("Changed name of player `{$player->id}` to `{$player->name}`");
-			}
-		);
+		if ($result = $player->rename($lorhondel, $name))
+			$message->reply($result);
+		else return $message->reply("Something went wrong!"); //This shouldn't happen unless the class handler failed
 	}
 	elseif (is_numeric($id)) {
 		if ($target_player = $lorhondel->players->offsetGet($id) ?? getCurrentPlayer($lorhondel, $id))
@@ -415,9 +412,12 @@ if (str_starts_with($message_content_lower, 'party')) {
 	*/
 	if (! $player) return $message->reply('Please create a player or activate one first!');
 	if (str_starts_with($message_content_lower, 'create')) {
+		if (! $name = trim(substr($message_content, 6))) $name = null;
+		echo "name: `$name`" . PHP_EOL;
 		if (! $party) {
 			if (property_exists($player, 'timer')) return $message->reply('Please wait for the previous task to finish!');
-			$lorhondel->parties->save($lorhondel->factory(\Lorhondel\Parts\Party\Party::class, ['player1' => $player->id]));
+			if ($name) $lorhondel->parties->save($lorhondel->factory(\Lorhondel\Parts\Party\Party::class, ['player1' => $player->id, 'name' => $name]));
+			else $lorhondel->parties->save($lorhondel->factory(\Lorhondel\Parts\Party\Party::class, ['player1' => $player->id]));
 			return $lorhondel->parties->freshen()->done(
 				function($result) use ($lorhondel, $message, $player) {
 					if (count($collection = $lorhondel->parties->filter(fn($p) => $p->player1 == $player->id))>0) {
@@ -429,7 +429,7 @@ if (str_starts_with($message_content_lower, 'party')) {
 								}
 							);
 						}
-					} else return $message->reply('Something went wrong! Unable to locate the newly created party.');
+					} else return $message->reply('Your party is currently being created. You can retrieve it with `' . $lorhondel->command_symbol . 'party` in a few moments.');
 				}
 			);
 		} else return $message->reply('Please leave your current party before creating a new one!');
@@ -477,19 +477,42 @@ if (str_starts_with($message_content_lower, 'party')) {
 	*/
 	if (! $party) return $message->reply('No active party found! Try joining one with `;party join {party or player id here}`');
 	elseif (str_starts_with($message_content_lower, 'rename')) {
-		if ($party->{$party->leader} == $player->id) {
-			$name = $message_content = trim(substr($message_content, 6));
-			$party->name = (string)$name;
-			return $lorhondel->parties->save($party)->done(
-				function ($result) use ($message, $party) {
-					return $message->reply("Changed name of party `{$party->id}` to `{$party->name}`");
-				}
-			);
-		} else return $message->reply("You are not the party leader!");
-	} elseif (str_starts_with($message_content_lower, 'leave')) {
-		if ($position = $party->leave($lorhondel, $player))
-			return $message->reply("You are no longer player $position in party " . ($party->name ?? $party->id));
-		else return $message->reply("Something went wrong!"); //This shouldn't happen unless they aren't actually a member of the party
+		if ($party->{$party->leader} != $player->id) return $message->reply("You are not the party leader!");
+		$name = $message_content = trim(substr($message_content, 6));
+		if ($result = $party->rename($lorhondel, $name))
+			$message->reply($result);
+		else return $message->reply("Something went wrong!"); //This shouldn't happen unless the class handler failed
+		
+		/*$party->name = (string) $name;
+		return $lorhondel->parties->save($party)->done(
+			function ($result) use ($message, $party) {
+				return $message->reply("Changed name of party `{$party->id}` to `{$party->name}`");
+			}
+		);*/
+	}
+	elseif (str_starts_with($message_content_lower, 'leave')) {
+		if ($leave = $party->leave($lorhondel, $player))
+			return $message->reply($leave);
+		else return $message->reply("Something went wrong!"); //This shouldn't happen unless the class handler failed
+	}
+	elseif (str_starts_with($message_content_lower, 'disband')) {
+		if ($disband = $party->disband($lorhondel))
+			return $message->reply($disband);
+		else return $message->reply("Something went wrong!"); //This shouldn't happen unless the class handler failed
+	}
+	elseif (str_starts_with($message_content_lower, 'invite')) {
+		if ($party->{$party->leader} != $player->id) return $message->reply("You are not the party leader!");
+		$id = $message_content_lower = trim(substr($message_content_lower, 6));
+		if (! is_numeric($id))return $message->reply('Invalid input! Numeric ID expected.');
+		if (! $target_player = $lorhondel->players->offsetGet($id) ?? getCurrentPlayer($lorhondel, $id)) return $message->reply("Unable to locate either a Player or Discord account with a Player for ID `$id`!");
+		if ($result = $party->invite($lorhondel, $target_player)) return $message->reply($result);
+	}
+	elseif (str_starts_with($message_content_lower, 'uninvite')) {
+		if ($party->{$party->leader} != $player->id) return $message->reply("You are not the party leader!");
+		$id = $message_content_lower = trim(substr($message_content_lower, 8));
+		if (! is_numeric($id))return $message->reply('Invalid input! Numeric ID expected.');
+		if (! $target_player = $lorhondel->players->offsetGet($id) ?? getCurrentPlayer($lorhondel, $id)) return $message->reply("Unable to locate either a Player or Discord account with a Player for ID `$id`!");
+		if ($result = $party->uninvite($lorhondel, $target_player)) return $message->reply($result);
 	}
 	elseif (! $message_content_lower) {
 		return $message->channel->sendEmbed(partyEmbed($lorhondel, $party));

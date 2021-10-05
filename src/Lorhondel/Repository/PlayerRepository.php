@@ -172,7 +172,11 @@ class PlayerRepository extends AbstractRepository
 		return $this->factory->lorhondel->browser->get($url)->then( //Make this a function
 			function ($response) { //TODO: Not receiving response
 				echo '[FRESHEN RESPONSE] ' . PHP_EOL;
-				if (is_object(json_decode((string)$response->getBody()->getContents()))) echo '[VALID JSON]' . PHP_EOL;
+				$obj = json_decode((string)$response->getBody()->getContents());
+				if (is_object($obj)) {
+					echo '[VALID JSON]' . PHP_EOL;
+					var_dump($obj);
+				}
 				/*
 				$freshen = (string)$response->getBody()->getContents();
 				var_dump($freshen);

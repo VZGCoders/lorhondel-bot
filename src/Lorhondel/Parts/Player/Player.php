@@ -112,6 +112,20 @@ class Player extends Part
             'player_id' => $this->id,
         ];
     }
+	
+	public function rename($lorhondel, $name)
+	{
+		if ($name) {
+			if (strlen($name) > 64) return 'Player name cannot exceed 64 characters!';
+			$return = 'Changed name of Player `' . ($this->name ?? $this->id) . "` to `$name`!";
+			$this->name = $name;
+		} else {
+			$return = 'Player `' . ($this->name ?? $this->id) . '` has had its name removed! It is now known as Player `' . ($this->id) . '`!';
+			$this->name = null;
+		}
+		if ($lorhondel) $lorhondel->players->save($this);
+		return $return;
+	}
 
     /**
      * Returns a formatted mention.

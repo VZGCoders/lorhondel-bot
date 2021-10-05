@@ -647,7 +647,10 @@ function playerEmbed($lorhondel, $player)
 		->setURL('');
 	if ($player->name) $embed->addFieldValues('Name', $player->name, true);
 	$embed->addFieldValues('Species', $player->species, true);
-	if ($player->party_id) $embed->addFieldValues('Party ID', $player->party_id, false);
+	if ($player->party_id) $embed->addFieldValues('Party ID', $player->party_id, true);
+	if ($party = $lorhondel->parties->offsetGet($player->party_id))
+		if ($party->name) $embed->addFieldValues('Party Name', $party->name, true);
+	$embed->addFieldValues('ID', $player->id, false);
 	$embed	
 		->addFieldValues('Health', $player->health, true)
 		->addFieldValues('Attack', $player->attack, true)
@@ -677,8 +680,8 @@ function partyEmbed($lorhondel, $party)
 		->setTimestamp()
 		->setFooter('Lorhondel by ArtsyAxolotl#5128')                             					// Set a footer without icon
 		->setURL('');                             												// Set the URL
-	if ($party->name) $embed->addFieldValues('Name', $party->name, false);
-	$embed->addFieldValues('Party ID', $party->id, false);
+	if ($party->name) $embed->addFieldValues('Name', $party->name, true);
+	$embed->addFieldValues('ID', $party->id, true);
 	foreach ($players as $player) {
 		if ($player && $user = $lorhondel->discord->users->offsetGet($player->user_id)) {
 			$embed->setAuthor("{$user->username} ({$user->id})", $user->avatar); // Set an author with icon

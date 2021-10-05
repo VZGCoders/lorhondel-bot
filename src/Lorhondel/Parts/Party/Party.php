@@ -28,6 +28,7 @@ use Lorhondel\Parts\Player\Player;
  *
  * @property bool   $looking       Whether the party is looking for players.
  *
+ * @property array  $invites       Array of player IDs that have been invited to join the party.
  * @property int    $battle        The unique identifier of the active battle.
  
  */
@@ -38,6 +39,8 @@ class Party extends Part
      * @inheritdoc
      */
     protected static $fillable = ['id', 'name', 'leader', 'player1', 'player2', 'player3', 'player4', 'player5'];
+
+	public $invites = [];
 
 	/**
      * Returns the fillable attributes.
@@ -80,7 +83,56 @@ class Party extends Part
             'party_id' => $this->id,
         ];
     }
-	
+
+	public function rename($lorhondel, $name)
+	{
+		if ($name) {
+			if (strlen($name) > 64) return 'Party name cannot exceed 64 characters!';
+			$return = 'Changed name of Party `' . ($this->name ?? $this->id) . "` to `$name`!";
+			$this->name = $name;
+		} else {
+			$return = 'Party `' . ($this->name ?? $this->id) . '` has had its name removed! It is now known as Party `' . ($this->name ?? $this->id) . '`!';
+			$this->name = null;
+		}
+		if ($lorhondel) $lorhondel->parties->save($this);
+		return $return;
+	}
+
+	public function invite($lorhondel, $player)
+	{
+		if ($player instanceof Player)
+			$id = $player->id;
+		elseif (is_numeric($player)) {
+			$id = $player;
+			$player = $lorhondel->players->offsetGet($id);
+		} else return 'Invalid parameter! Expects Player or Player ID.';
+		
+		if ($this->player1 == $id || $this->player2 == $id || $this->player3 == $id || $this->player4 == $id || $this->player5 == $id)
+			return 'Cannot invite a player that is already a member of the party!';
+		
+		if (in_array($id, $this->invites))
+			return 'This player has already been invited to the party!';
+		
+		$this->invites[] = $id;
+		return ($player->name ?? $player->id) . ' has been invited to the party!';
+	}
+
+	public function uninvite($lorhondel, $player)
+	{
+		if ($player instanceof Player)
+			$id = $player->id;
+		elseif (is_numeric($player)) {
+			$id = $player;
+			$player = $lorhondel->players->offsetGet($id);
+		} else return 'Invalid parameter! Expects Player or Player ID.';
+		
+		if (!in_array($id, $this->invites))
+			return 'This player has not been invited to the party!';
+		
+		unset($this->invites[$id]);
+		return ($player->name ?? $player->id) . ' has been uninvited to the party!';
+	}
+
 	/*
 	
 	*/
@@ -97,6 +149,9 @@ class Party extends Part
 		//if (isPartyJoinable(null, $this) === false) return 0; //$message->reply('Party is full!');
 		//if ($isPartyJoinable === null) return null; //$message->reply('Unable to locate party!');	
 		
+		if (in_array($id, $this->invites))
+			unset($this->invites[$id]);
+			
 		if ($this->player1 === null) {
 			$this->player1 = $id;
 			return 1;
@@ -115,42 +170,43 @@ class Party extends Part
 		} else return 0; //This could have been caught by isPartyJoinable
 	}
 
-	public function leave($lorhondel, $player): int
+	public function leave($lorhondel, $player)
 	{
 		if ($player instanceof Player)
 			$id = $player->id;
 		elseif (is_numeric($player)) {
 			$id = $player;
 			$player = $lorhondel->players->offsetGet($id);
-		} else return 0; //$message->reply('Invalid parameter! Expects Player or Player ID.');
-		if ($player->party_id != $this->id) return 0; //$message->reply('Player is not a member of this party!');
+		} else return 'Invalid parameter! Expects Player or Player ID.'; //$message->reply('Invalid parameter! Expects Player or Player ID.');
+		if ($player->party_id != $this->id) return 'Player `' . ($player->name ?? $player->id) . '` is not a member of Party `' . ($this->name ?? $this->id) . '`! '; //$message->reply('Player is not a member of this party!');
 		
 		if ($this->player1 == $id) {
+			$position = 1;
 			$this->player1 = null;
-			$return = 1;
 		} elseif ($this->player2 == $id) {
+			$position = 2;
 			$this->player2 = null;
-			$return = 2;
 		} elseif ($this->player3 == $id) {
+			$position = 3;
 			$this->player3 = null;
-			$return = 3;
 		} elseif ($this->player4 == $id) {
+			$position = 4;
 			$this->player4 = null;
-			$return = 4;
 		} elseif ($this->player5 == $id) {
+			$position = 5;
 			$this->player5 = null;
-			$return = 5;
+		}
+		
+		$return = 'Player `' . ($player->name ?? $player->id) . "` is no longer Player `$position` of Party `" . ($this->name ?? $this->id) . '`! ';
+		
+		if ($this->{$this->leader} == $this->{'player' . $position}) {
+			$this->leader = null;
+			if ($succession = $this->succession($lorhondel))
+				$return .= $succession;
 		}
 		
 		$player->party_id = null;
-		$lorhondel->players->save($player)->done(
-			function ($result) use ($lorhondel, $return) {
-				if ($this->{$this->leader} == $this->{'player' . $return}) {
-					$this->leader = null;
-					$this->succession($lorhondel);
-				}
-			}
-		);
+		$lorhondel->players->save($player);
 		
 		return $return;
 	}
@@ -176,7 +232,10 @@ class Party extends Part
 				$this->leader = $this->player5;
 			else return $this->disband($lorhondel);
 			$lorhondel->parties->save($party);
-			return true;
+			if ($lorhondel && $player = $lorhondel->players->offsetGet($id)) {
+				$leader = $player->name ?? $player->id;
+			} else $leader = $this->leader;
+			return 'Player `' . $leader . '` is the new leader of `' . ($this->name ?? $this->party) . '`! `';
 		} else return false;
     }
 	
@@ -206,8 +265,7 @@ class Party extends Part
 				$lorhondel->players->save($player);
 			} else return false;
 		}
-		$lorhondel->parties->delete($this->id);
-		return true;
-		
+		if ($lorhondel) $lorhondel->parties->delete($this->id);
+		return 'Party ' . ($this->name ?? $this->id) . ' has been disbanded! ';
 	}
 }
