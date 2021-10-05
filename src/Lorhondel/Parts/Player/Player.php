@@ -36,7 +36,7 @@ class Player extends Part
     /**
      * @inheritdoc
      */
-    protected static $fillable = ['id', 'user_id', 'party_id', 'active', 'name', 'species', 'health', 'attack', 'defense', 'speed', 'skillpoints'];
+    protected static $fillable = ['id', 'user_id', 'party_id', 'active', 'looking', 'name', 'species', 'health', 'attack', 'defense', 'speed', 'skillpoints'];
 	
 	protected static $species_list = ['Elarian', 'Manthean', 'Noldarus', 'Veias', 'Jedoa'];
 
@@ -169,6 +169,28 @@ class Player extends Part
 			}
 		);
 		return 'Player `' . ($this->name ?? $this->id) . '` is no longer your active player! ';
+	}
+
+	public function looking($lorhondel)
+	{
+		if ($this->party_id === null) {
+			switch ($this->looking) {
+				case null:
+				case false:
+					$this->looking = true;
+					$return = 'Player ' . ($this->name ?? $this->id) . ' is now looking for a party!';
+					break;
+				case true:
+					$this->looking = false;
+					$return = 'Player ' . ($this->name ?? $this->id) . ' is no longer looking for a party!';
+					break;
+				default:
+					break;
+			}
+			$lorhondel->players->save($this);
+		} else $return = 'Please leave your current party before listing yourself as looking for a new one!';
+		return $return;
+		
 	}
 
 	public function rename($lorhondel, $name)
