@@ -269,78 +269,27 @@ if (str_starts_with($message_content_lower, 'help')) {
 
 
 if (str_starts_with($message_content_lower, 'player')) {
-	$name = $message_content = trim(substr($message_content, 6));
-	$id = $message_content_lower = trim(substr($message_content_lower, 6));
+	$name = $message_content = trim(substr($message_content, 6)); echo "[NAME] $name" . PHP_EOL;
+	$id = $message_content_lower = trim(substr($message_content_lower, 6)); echo "[ID] $id" . PHP_EOL;
 	foreach (['<@', '!', '>'] as $filter) {
 		$name = $message_content = str_replace($filter, '', $name);
 		$id = $message_content_lower = str_replace($filter, '', $id);
 	}
 		
-	$player_commands = ['rename', 'activate'];
-	foreach($player_commands as $command) {
-		if (str_starts_with(trim(substr(strtolower($message_content), strlen($command))), $command)) {
+	$player_repository_commands = ['new', 'activate'];
+	foreach($player_repository_commands as $command) {
+		if (str_starts_with($message_content_lower, $command)) {
+			echo "[PLAYER REPOSITORY REFLECTION COMMAND] $command" . PHP_EOL;
 			$message_content = trim(substr($message_content, strlen($command)));
-			$tokens = array_merge([$lorhondel], explode(' ', $message_content));
-			$reflection = new \ReflectionMethod('\Lorhondel\Parts\Player\Player', $command);
+			$tokens = array_merge([$author_id], explode(' ', $message_content));
+			$reflection = new \ReflectionMethod('\Lorhondel\Repository\PlayerRepository', $command);
 			$num = $reflection->getNumberOfParameters();
 			$tokens = array_slice($tokens, 0, $num);
-			if (count($tokens) < $num) return $message->reply('Invalid number of parameters!'); //Add class function that returns a string
-			return $message->reply(call_user_func_array(array($player, $command), $tokens));
+			//if (count($tokens) < $num) return $message->reply('Invalid number of parameters!'); //Add class function that returns a string
+			return $message->reply(call_user_func_array(array($lorhondel->players, $command), $tokens));
 		}
 	}
-	
-	
-	if (str_starts_with($message_content_lower, 'create')) {
-		$message_content = trim(substr($message_content, 6));
-		$message_content_lower = trim(substr($message_content_lower, 6));
-		if (! $message_content_lower) {
-			//Provide information about how to create a player
-			return $message->reply("Please use the semicolon-delimited format `player create name; species` where `name` is your player's name and `species` is any of the following:\nElarian, Manthean, Noldarus, Veias, Jedoa");
-		} else {
-			$array = explode(';', $message_content);
-			$snowflake = generateSnowflake($lorhondel);
-			if ($part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
-				'id' => $snowflake,
-				'user_id' => $author_id,
-				'name' => trim($array[1] ?? null),
-				'species' => trim($array[0]),
-			])) {
-				if (! $array[0]) {
-					$return = 'Please tell us the species you want for your player in the following format: `' . $lorhondel->command_symbol . 'player create species` where `{species}` is any of the following:\n';
-					foreach ($part::getFillableSpeciesAttributes() as $choice) {
-						$return .= "$choice, ";
-					}
-					$return = substr($choice, 0, strlen($return-2));
-					return $message->reply($return);
-				}
-				if(in_array(trim($array[0]), $part::getFillableSpeciesAttributes())) {
-					echo '[CREATE PLAYER WITH PART]'; var_dump($part);
-					$lorhondel->players->save($part)->done(
-						function ($result) use ($lorhondel, $message, $part) {
-							if (count($collection = $lorhondel->players->filter(fn($p) => $p->user_id == $part->user_id && $p->id == $part->id))==1) {
-								foreach ($collection as $player) //There should only be one
-									return $message->reply("Created player `{$part->name}` with ID ``{$part->id}``. You can make this your active player by using the command `" . $lorhondel->command_symbol . "player activate {$part->id}`.");
-							} else return $message->reply("Created player `{$part->name}` with ID `{$part->id}`. You can make this your active player by using the command `" . $lorhondel->command_symbol . "player activate {$part->id}`.");
-						}
-					);
-				} else return $message->reply("Invalid species! Please use the semicolon-delimited format `player create name; species` where `name` is your player's name and `species` is any of the following:\nElarian, Manthean, Noldarus, Veias, Jedoa"); //
-			} else return $message->reply("Error building Player part!");
-		}
-	}
-	elseif (str_starts_with($message_content_lower, 'activate')) {
-		$name = $message_content = trim(substr($message_content, 8));
-		$id = $message_content_lower = trim(substr($message_content_lower, 8));
-		if ($target_player = $lorhondel->players->offsetGet($id)) {
-			if ($target_player->user_id == $author_id) {
-				return $message->reply($target_player->activate($lorhondel));
-			} else return $message->reply("You can only activate players you own!");
-		} else return $message->reply("Something went wrong!"); //This shouldn't happen unless the class handler failed
-	}
-	elseif (str_starts_with($message_content_lower, 'rename')) {
-		$name = $message_content = trim(substr($message_content, 6));
-		$message->reply($player->rename($lorhondel, $name));
-	}
-	elseif (is_numeric($id)) {
+	if (is_numeric($id)) {
 		if ($target_player = $lorhondel->players->offsetGet($id) ?? getCurrentPlayer($lorhondel, $id))
 			return $message->channel->sendEmbed(playerEmbed($lorhondel, $target_player));
 		else return $message->reply("Unable to locate either a Player or Discord account with a Player for ID `$id`!");
@@ -353,13 +302,20 @@ if (str_starts_with($message_content_lower, 'player')) {
 	*********************
 	*/
 	if (! $player) return $message->reply('Please create a player or activate one first!');
-	if ($message_content_lower == 'looking') {
-		return $message->reply($player->looking($lorhondel));
+	$player_commands = ['rename', 'looking', 'deactivate'];
+	foreach($player_commands as $command) {
+		if (str_starts_with($message_content_lower, $command)) {
+			echo "[PLAYER PART REFLECTION COMMAND] $command" . PHP_EOL;
+			$message_content = trim(substr($message_content, strlen($command)));
+			$tokens = array_merge([$lorhondel], explode(' ', $message_content));
+			$reflection = new \ReflectionMethod('\Lorhondel\Parts\Player\Player', $command);
+			$num = $reflection->getNumberOfParameters();
+			$tokens = array_slice($tokens, 0, $num);
+			if (count($tokens) < $num) return $message->reply('Invalid number of parameters!'); //Add class function that returns a string
+			return $message->reply(call_user_func_array(array($player, $command), $tokens));
+		}
 	}
-	elseif (str_starts_with($message_content_lower, 'deactivate')) {
-		return $message->reply($player->deactivate($lorhondel));
-	}
-	elseif (! $message_content_lower) {
+	if (! $message_content_lower) {
 		return $message->channel->sendEmbed(playerEmbed($lorhondel, $player));
 	}
 }

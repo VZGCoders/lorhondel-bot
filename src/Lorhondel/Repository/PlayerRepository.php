@@ -200,4 +200,63 @@ class PlayerRepository extends AbstractRepository
 			}
 		);
     }
+
+	/**
+     * Creates a new Player for the repository and saves it to the Lorhondel servers.
+	 * This function is designed to take data from users.
+     *
+     * @param string $species    The species of the player.
+     * @param string $name       The name of the player.
+     *
+     * @return string
+     */
+    public function new($author_id = null, $species = null, $name = null, $class = null): string
+    {
+		echo "[author_id] $author_id" . PHP_EOL;
+		echo "[species] $species" . PHP_EOL;
+		echo "[name] $name" . PHP_EOL;
+		echo "[class] $class" . PHP_EOL;
+		$snowflake = \Lorhondel\generateSnowflake($this->factory->lorhondel);
+		if ($part = $this->factory->lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
+			'id' => $snowflake,
+			'user_id' => $author_id,
+			'name' => $name,
+			'species' => $species,
+		])) {
+			if (! $species || ! in_array(trim($species), $part::getFillableSpeciesAttributes())) {
+				$return = 'Please tell us the species you want for your player in the following format: `' . $this->factory->lorhondel->command_symbol . 'player create {species}` where `{species}` is any of the following:' . PHP_EOL;
+				foreach ($part::getFillableSpeciesAttributes() as $choice) {
+					$return .= "$choice, ";
+				}
+				$return = substr($return, 0, strlen($return)-2);
+				return $return;
+			}		
+			echo '[CREATE PLAYER WITH PART]'; var_dump($part);
+			$this->save($part);
+			return 'Created player `' . $part->name . ' ` with ID `' . $part->id . '`. You can make this your active player by using the command `' . $this->factory->lorhondel->command_symbol . 'player activate ' . $part->id . '`.';				
+		} else return 'Error building Player part!';
+	}
+
+	/**
+     * Creates a new Player for the repository and saves it to the Lorhondel servers.
+	 * This function is designed to take data from users.
+     *
+     * @param string $species    The species of the player.
+     * @param string $name       The name of the player.
+     *
+     * @return string
+     */
+    public function activate($author_id = null, $id = null): string
+    {
+		if (! ($id instanceof Player)) {
+			if (! is_numeric($id)) return "You must include the numeric ID of the player you want to activate! You can check `{$this->factory->lorhondel->command_symbol}players` if you need a list of your IDs.";
+			if (! $part = $this->factory->lorhondel->players->offsetGet($id)) return "Unable to locate a Player with ID `$id`";
+		} else {
+			$part = $id;
+			$id = $id->id;
+		}
+		
+		if ($part->user_id == $author_id) return $part->activate($this->factory->lorhondel);
+		return 'You can only activate players that you own!';
+	}
 }
