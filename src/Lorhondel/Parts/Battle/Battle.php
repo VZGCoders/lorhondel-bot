@@ -17,12 +17,12 @@ use React\Promise\ExtendedPromiseInterface;
  *
 
  * @property int    $id            The unique identifier of the battle.
- * @property int    $party_id      Participating party id.
+ * @property int    $party_id      Participating Party id.
  * @property bool   $active        Whether the battle is active.
  * @property string $status        Placeholder.
  * @property int    $turn          Turn number.
  *
- * @property Enemy  $enemy1        The Enemy the party is fighting.
+ * @property Enemy  $enemy1        The Enemy the Party is fighting.
  *
  * @property        $player1act    The action that will be taken by player1 on their turn.
  * @property        $player2act    The action that will be taken by player2 on their turn.

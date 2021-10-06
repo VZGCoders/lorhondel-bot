@@ -15,7 +15,7 @@ use Lorhondel\Parts\Part;
 use React\Promise\ExtendedPromiseInterface;
 
 /**
- * Contains all players in Lorhondel.
+ * Contains all Players in Lorhondel.
  *
  * @see \Lorhondel\Parts\Player\Player
  *
@@ -54,13 +54,13 @@ class PlayerRepository extends AbstractRepository
 
     public function save(Part $part)
     {
-		if ($this->factory->lorhondel->players->offsetGet($part->id)) $method = 'patch';
+		if ($this->offsetGet($part->id)) $method = 'patch';
 		else $method = 'post';
 		$url = Http::BASE_URL . "/players/$method/{$part->id}/";
 		return $this->factory->lorhondel->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
 			function ($response) use ($part) {
-				echo '[SAVE RESPONSE] '; //var_dump($this->factory->lorhondel->players->offsetGet($part->id)); 
-				//var_dump($lorhondel->players);
+				echo '[SAVE RESPONSE] '; //var_dump($this->offsetGet($part->id)); 
+				//var_dump($this);
 			},
 			function ($error) {
 				echo '[SAVE ERROR]' . PHP_EOL;
@@ -80,14 +80,14 @@ class PlayerRepository extends AbstractRepository
 	public function delete($part): ExtendedPromiseInterface
 	{
 		if (! ($part instanceof Part)) {
-			$part = $this->factory->lorhondel->players->offsetGet($part);
+			$part = $this->offsetGet($part);
         }
 		
 		$url = Http::BASE_URL . "/players/delete/{$part->id}/";
 		return $this->factory->lorhondel->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
 			function ($response) use ($part) {
-				echo '[DELETE RESPONSE] '; //var_dump($lorhondel->players->offsetUnset($part->id)); 
-				//var_dump($lorhondel->players);
+				echo '[DELETE RESPONSE] '; //var_dump($this->offsetUnset($part->id)); 
+				//var_dump($this);
 			},
 			function ($error) {
 				echo '[DELETE ERROR]' . PHP_EOL;
@@ -117,8 +117,8 @@ class PlayerRepository extends AbstractRepository
         $url = Http::BASE_URL . "/players/fresh/{$part->id}/";
 		return $this->factory->lorhondel->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
 			function ($response) use ($lorhondel, $message, $part) {
-				echo '[FETCH RESPONSE] '; //var_dump($lorhondel->players->offsetUnset($part->id)); 
-				//var_dump($lorhondel->players);
+				echo '[FETCH RESPONSE] '; //var_dump($this->offsetUnset($part->id)); 
+				//var_dump($this);
 			},
 			function ($error) {
 				echo '[FRESH ERROR]' . PHP_EOL;
@@ -150,8 +150,8 @@ class PlayerRepository extends AbstractRepository
         $url = Http::BASE_URL . "/players/fetch/{$part->id}/";
 		return $this->factory->lorhondel->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
 			function ($response) use ($lorhondel, $message, $part) {
-				echo '[FETCH RESPONSE] '; //var_dump($lorhondel->players->offsetUnset($part->id)); 
-				//var_dump($lorhondel->players);
+				echo '[FETCH RESPONSE] '; //var_dump($this->offsetUnset($part->id)); 
+				//var_dump($this);
 			},
 			function ($error) {
 				echo '[FETCH ERROR]' . PHP_EOL;
@@ -191,7 +191,7 @@ class PlayerRepository extends AbstractRepository
 				*/
 				
 				//echo '[PLAYERS REPOSITORY]' . PHP_EOL;
-				//var_dump($that->factory->lorhondel->players);
+				//var_dump($this);
 				return $this;
 			},
 			function ($error) {
@@ -225,7 +225,7 @@ class PlayerRepository extends AbstractRepository
 			'species' => $species,
 		])) {
 			if (! $species || ! in_array(trim($species), $part::getFillableSpeciesAttributes())) {
-				$return = 'Please tell us the species you want for your player in the following format: `' . $this->factory->lorhondel->command_symbol . 'player create {species}` where `{species}` is any of the following:' . PHP_EOL;
+				$return = 'Please tell us the species you want for your Player in the following format: `' . $this->factory->lorhondel->command_symbol . 'player create {species}` where `{species}` is any of the following:' . PHP_EOL;
 				foreach ($part::getFillableSpeciesAttributes() as $choice) {
 					$return .= "$choice, ";
 				}
@@ -234,7 +234,7 @@ class PlayerRepository extends AbstractRepository
 			}		
 			echo '[CREATE PLAYER WITH PART]'; var_dump($part);
 			$this->save($part);
-			return 'Created player `' . $part->name . ' ` with ID `' . $part->id . '`. You can make this your active player by using the command `' . $this->factory->lorhondel->command_symbol . 'player activate ' . $part->id . '`.';				
+			return 'Created player `' . $part->name . ' ` with ID `' . $part->id . '`. You can make this your active Player by using the command `' . $this->factory->lorhondel->command_symbol . 'player activate ' . $part->id . '`.';				
 		} else return 'Error building Player part!';
 	}
 
@@ -250,8 +250,8 @@ class PlayerRepository extends AbstractRepository
     public function activate($author_id = null, $id = null): string
     {
 		if (! ($id instanceof Player)) {
-			if (! is_numeric($id)) return "You must include the numeric ID of the player you want to activate! You can check `{$this->factory->lorhondel->command_symbol}players` if you need a list of your IDs.";
-			if (! $part = $this->factory->lorhondel->players->offsetGet($id)) return "Unable to locate a Player with ID `$id`";
+			if (! is_numeric($id)) return "You must include the numeric ID of the Player you want to activate! You can check `{$this->factory->lorhondel->command_symbol}players` if you need a list of your IDs!";
+			if (! $part = $this->offsetGet($id)) return "Unable to locate a Player with ID `$id`!";
 		} else {
 			$part = $id;
 			$id = $id->id;
@@ -259,6 +259,6 @@ class PlayerRepository extends AbstractRepository
 		
 		if (! $author_id) return $part->activate($this->factory->lorhondel);
 		if ($part->user_id == $author_id) return $part->activate($this->factory->lorhondel);
-		return 'You can only activate players that you own!';
+		return 'You can only activate a Player that you own!';
 	}
 }

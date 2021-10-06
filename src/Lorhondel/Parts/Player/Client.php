@@ -73,7 +73,7 @@ class Client extends Part
     }
 
     /**
-     * Gets the player attribute.
+     * Gets the Player attribute.
      *
      * @return Player
      */

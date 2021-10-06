@@ -278,9 +278,9 @@ if (str_starts_with($message_content_lower, 'player')) {
 	/*
 	*********************
 	*********************
-	Repository commands
+	Player Repository commands
 	These commands take a Discord ID to check for Player permissions.
-	NOTE: Permission is assumed to be allowed if no Discord ID is passed!
+	NOTE: Permission is assumed to be allowed if the relevant data is not passed!
 	*********************
 	*********************
 	*/	
@@ -305,12 +305,12 @@ if (str_starts_with($message_content_lower, 'player')) {
 	/*
 	*********************
 	*********************
-	Part commands
+	Player Part commands
 	These commands require an active player
 	*********************
 	*********************
 	*/
-	if (! $player) return $message->reply('Please create a player or activate one first!');
+	if (! $player) return $message->reply('Please create a Player or activate one first!');
 	$player_commands = ['rename', 'looking', 'deactivate'];
 	foreach($player_commands as $command) {
 		if (str_starts_with($message_content_lower, $command)) {
@@ -326,6 +326,9 @@ if (str_starts_with($message_content_lower, 'player')) {
 	}
 	if (! $message_content_lower) {
 		return $message->channel->sendEmbed(playerEmbed($lorhondel, $player));
+	}
+	elseif ($message_content_lower) {
+		return $message->reply("Unrecognized subcommand `$message_content_lower'");
 	}
 }
 
@@ -365,100 +368,50 @@ if (str_starts_with($message_content_lower, 'party')) {
 	/*
 	*********************
 	*********************
-	These commands require an active player
+	Party Repository Commands
+	These commands take both a Player and Party to check for permissions.
+	NOTE: Permission is assumed to be allowed if the relevant data is not passed!
 	*********************
 	*********************
 	*/
-	if (! $player) return $message->reply('Please create a player or activate one first!');
-	if (str_starts_with($message_content_lower, 'create')) {
-		if (! $name = trim(substr($message_content, 6))) $name = null;
-		if (! $party) {
-			if ($name) $lorhondel->parties->save($lorhondel->factory(\Lorhondel\Parts\Party\Party::class, ['player1' => $player->id, 'name' => $name]));
-			else $lorhondel->parties->save($lorhondel->factory(\Lorhondel\Parts\Party\Party::class, ['player1' => $player->id]));
-			return $lorhondel->parties->freshen()->done(
-				function($result) use ($lorhondel, $message, $player) {
-					if (count($collection = $lorhondel->parties->filter(fn($p) => $p->player1 == $player->id))>0) {
-						foreach ($collection as $party) { //There should only be one
-							$player->party_id = $party->id;
-							$lorhondel->players->save($player)->done(
-								function ($result) use ($message, $party) {
-									return $message->reply('Created party `'. ($party->name ?? $party->id) . '`!');
-								}
-							);
-						}
-					} else return $message->reply('Your party is currently being created. You can retrieve it with `' . $lorhondel->command_symbol . 'party` in a few moments.');
-				}
-			);
-		} else return $message->reply('Please leave your current party before creating a new one!');
-	}
-	elseif (str_starts_with($message_content_lower, 'join')) {
-		$id = $message_content_lower = trim(substr($message_content_lower, 4));
-		if(! is_numeric($id)) return $message->reply('Invalid format! Please include the ID of either the Discord account, player, or party you wish to join.');
-		
-		if (! $player) return $message->reply('You do not currently have an active player!');
-		//Turn this into a function
-		if (! $party = $lorhondel->parties->offsetGet($id)) {
-			if ($target_player = getCurrentPlayer($lorhondel, $id) ?? $lorhondel->players->offsetGet($id)) {
-				if (! $party = getCurrentParty($lorhondel, $target_player->id)) return $message->reply('Player is not in a party!');
-			} else return $message->reply('No Party or Player found!');
+	if (! $player) return $message->reply('Please create a Player or activate one first!');
+	$party_repository_commands = ['new', 'join'];
+	foreach($party_repository_commands as $command) {
+		if (str_starts_with($message_content_lower, $command)) {
+			echo "[PARTY REPOSITORY REFLECTION COMMAND] $command" . PHP_EOL;
+			$message_content = trim(substr($message_content, strlen($command)));
+			$tokens = array_merge([$player, $party], explode(' ', $message_content));
+			$reflection = new \ReflectionMethod('\Lorhondel\Repository\PartyRepository', $command);
+			$num = $reflection->getNumberOfParameters();
+			$tokens = array_slice($tokens, 0, $num);
+			//if (count($tokens) < $num) return $message->reply('Invalid number of parameters!'); //Add class function that returns a string
+			return $message->reply(call_user_func_array(array($lorhondel->parties, $command), $tokens));
 		}
-		
-		switch ($player->party_id) {
-			case ($party->id):
-				return $message->reply('You are already in the party!');
-			case is_numeric($player->party_id):
-				return $message->reply('You must leave your current party first!');
-		}
-		
-		if (! $party->looking) return $message->reply('Party is not currently looking for players!');
-		
-		if (! $position = $party->join($lorhondel, $player)) return $message->reply('Party is full!');
-		else $message->reply('Player ' . ($player->name ?? $player->id) . ' has joined Party ' . ($party->name ?? $party->id) . " in position $position!");
-		
-		if (! isPartyJoinable($lorhondel, $party)) {
-			$party->looking = false;
-		}
-		$player->party_id = $party->id;
-		$player->looking = false;
-		
-		$lorhondel->players->save($player);
-		$lorhondel->parties->save($party);
-		return;
 	}
 	/*
 	*********************
 	*********************
-	These commands require an active party
+	Party Part Commands
+	These commands require an active Party and Player to check for permissions.
+	NOTE: Permission is assumed to be allowed if the relevant data is not passed!
 	*********************
 	*********************
 	*/
-	if (! $party) return $message->reply('No active party found! Try creating one with `;party create {party name here}` or joining one with `;party join {party or player id here}`');
-	elseif (str_starts_with($message_content_lower, 'rename')) {
-		if ($party->{$party->leader} != $player->id) return $message->reply("You are not the party leader!");
-		$name = $message_content = trim(substr($message_content, 6));
-		$message->reply($party->rename($lorhondel, $name));
+	if (! $party) return $message->reply('No active party found! Try creating one with `;party create {party name here}` or joining one with `;party join {party or Player id here}`');
+	$party_commands = ['rename', 'leave', 'disband', 'invite', 'uninvite'];
+	foreach($party_commands as $command) {
+		if (str_starts_with($message_content_lower, $command)) {
+			echo "[PARTY PART REFLECTION COMMAND] $command" . PHP_EOL;
+			$message_content = trim(substr($message_content, strlen($command)));
+			$tokens = array_merge([$lorhondel, $player], explode(' ', $message_content));
+			$reflection = new \ReflectionMethod('\Lorhondel\Parts\Party\Party', $command);
+			$num = $reflection->getNumberOfParameters();
+			$tokens = array_slice($tokens, 0, $num);
+			if (count($tokens) < $num) return $message->reply('Invalid number of parameters!'); //Add class function that returns a string
+			return $message->reply(call_user_func_array(array($party, $command), $tokens));
+		}
 	}
-	elseif (str_starts_with($message_content_lower, 'leave')) {
-		return $message->reply($party->leave($lorhondel, $player));
-	}
-	elseif (str_starts_with($message_content_lower, 'disband')) {		
-		return $message->reply($party->disband($lorhondel));
-	}
-	elseif (str_starts_with($message_content_lower, 'invite')) {
-		if ($party->{$party->leader} != $player->id) return $message->reply("You are not the party leader!");
-		$id = $message_content_lower = trim(substr($message_content_lower, 6));
-		if (! is_numeric($id))return $message->reply('Invalid input! Numeric ID expected.');
-		if (! $target_player = $lorhondel->players->offsetGet($id) ?? getCurrentPlayer($lorhondel, $id)) return $message->reply("Unable to locate either a Player or Discord account with a Player for ID `$id`!");
-		return $message->reply($party->invite($lorhondel, $target_player));
-	}
-	elseif (str_starts_with($message_content_lower, 'uninvite')) {
-		if ($party->{$party->leader} != $player->id) return $message->reply("You are not the party leader!");
-		$id = $message_content_lower = trim(substr($message_content_lower, 8));
-		if (! is_numeric($id))return $message->reply('Invalid input! Numeric ID expected.');
-		if (! $target_player = $lorhondel->players->offsetGet($id) ?? getCurrentPlayer($lorhondel, $id)) return $message->reply("Unable to locate either a Player or Discord account with a Player for ID `$id`!");
-		return $message->reply($party->uninvite($lorhondel, $target_player));
-	}
-	elseif (! $message_content_lower) {
+	if (! $message_content_lower) {
 		return $message->channel->sendEmbed(partyEmbed($lorhondel, $party));
 	}
 	elseif ($message_content_lower) {

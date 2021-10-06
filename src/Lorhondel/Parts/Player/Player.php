@@ -12,17 +12,17 @@ use Lorhondel\Endpoint;
 use Lorhondel\Parts\Part;
 
 /**
- * A player is a general player that is not attached to a group.
+ * A Player is a general Player that is not attached to a group.
  *
 
- * @property int    $id            The unique identifier of the player.
+ * @property int    $id            The unique identifier of the Player.
  * @property int    $user_id       Discord user id.
- * @property int    $party_id      Current party id.
- * @property bool   $active        Whether the player is active.
- * @property bool   $looking       Whether the player is looking for a party.
+ * @property int    $party_id      Current Party id.
+ * @property bool   $active        Whether the Player is active.
+ * @property bool   $looking       Whether the Player is looking for a Party.
  *
- * @property string $name          The name of the player.
- * @property string $species       The species of the player.
+ * @property string $name          The name of the Player.
+ * @property string $species       The species of the Player.
  * @property int    $health        Health, obviously.
  * @property int    $attack        How much damage you output.
  * @property int    $defense       How much damage you block.
@@ -93,7 +93,7 @@ class Player extends Part
     }
 
     /**
-     * Returns a timestamp for when a player's account was created.
+     * Returns a timestamp for when a Player's account was created.
      *
      * @return float
      */
@@ -131,6 +131,7 @@ class Player extends Part
 		$this->active = 1;
 		$lorhondel->players->save($this)->done(
 			function ($result) use ($lorhondel, $players) {
+				if (count($players) == 0) return;
 				$promise = null;
 				$string = '';
 				$string1 = '$promise = $lorhondel->players->save(array_shift($players))->done(function () use ($lorhondel, $players, $i) {';
@@ -144,7 +145,7 @@ class Player extends Part
 				eval($string); //I really hate this language sometimes
 			}
 		);
-		return 'Player `' . ($this->name ?? $this->id) . '` is now your active player! ';
+		return 'Player `' . ($this->name ?? $this->id) . '` is now your active Player! ';
 	}
 
 	public function deactivate($lorhondel): string
@@ -173,7 +174,7 @@ class Player extends Part
 				eval($string); //I really hate this language sometimes
 			}
 		);
-		return 'Player `' . ($this->name ?? $this->id) . '` is no longer your active player! ';
+		return 'Player `' . ($this->name ?? $this->id) . '` is no longer your active Player! ';
 	}
 
 	public function looking($lorhondel): string
@@ -183,17 +184,17 @@ class Player extends Part
 				case null:
 				case false:
 					$this->looking = true;
-					$return = 'Player ' . ($this->name ?? $this->id) . ' is now looking for a party!';
+					$return = 'Player ' . ($this->name ?? $this->id) . ' is now looking for a Party!';
 					break;
 				case true:
 					$this->looking = false;
-					$return = 'Player ' . ($this->name ?? $this->id) . ' is no longer looking for a party!';
+					$return = 'Player ' . ($this->name ?? $this->id) . ' is no longer looking for a Party!';
 					break;
 				default:
 					break;
 			}
 			$lorhondel->players->save($this);
-		} else $return = 'Please leave your current party before listing yourself as looking for a new one!';
+		} else $return = 'Please leave your current Party before listing yourself as looking for a new one!';
 		return $return;
 		
 	}

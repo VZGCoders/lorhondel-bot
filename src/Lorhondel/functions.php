@@ -382,7 +382,7 @@ function sqlGet(array $columns = [], string $table = '', string $wherecolumn = '
 {
 	//sqlGet(['*'], $repository, '', [], '', 500); //get all
 	if (empty($columns)) return [];
-	if (!$table) return [];
+	if (! $table) return [];
 	include 'connect.php'; //$mysqli and $pdo
 	$array = array();
 	
@@ -407,7 +407,7 @@ function sqlGet(array $columns = [], string $table = '', string $wherecolumn = '
 	$value_string = substr($value_string, 0, strlen($value_string)-2) . ')';
 	echo $value_string . PHP_EOL;
 	
-	if (!$wherecolumn) {
+	if (! $wherecolumn) {
 		$stmt = mysqli_prepare($mysqli, $sql); //Select all values in the column
 		$stmt->execute();
 		if ($result = $stmt->get_result()) {
@@ -487,7 +487,7 @@ function sqlUpdate(array $columns = [], array $values = [], string $table, strin
 	echo '[UPDATE VALUES]'; var_dump($values);
 	
 	if (empty($columns)) return false;
-	if (!$table) return false;
+	if (! $table) return false;
 	if (count($columns) != count($values)) return false;
 	include 'connect.php';
 	
@@ -613,11 +613,11 @@ function getPlayerLocation($lorhondel)
 	//
 }
 /*
-Returns true if party exists and is not full
-Returns null if party is not found or an invalid parameter was passed
-Returns false if party is full
+Returns true if Party exists and is not full
+Returns null if Party is not found or an invalid parameter was passed
+Returns false if Party is full
 */
-function isPartyJoinable($lorhondel = null, $part)
+function isPartyJoinable($part, $lorhondel = null): bool
 {
 	if ($part instanceof Party) {
 		$party = $part;
@@ -627,13 +627,14 @@ function isPartyJoinable($lorhondel = null, $part)
 		if ($player->party_id !== null)
 			$id = $player->party_id;
 	elseif (is_numeric($part)) $id = $part;
-	else return null; //Internal function should not allow passing of invalid parameter
+	//else return null; //Internal function should not allow passing of invalid parameter
 	
 	if ($party = $party ?? $lorhondel->parties->offsetGet($id)) {
 		if (! $party->player1 || ! $party->player2 || ! $party->player3 || ! $party->player4 || ! $party->player5)
 			return true;
 		else return false;
-	} else return null;
+	}// else return null;  //Internal function should not allow passing of invalid parameter
+	return false;
 }
 
 function playerEmbed($lorhondel, $player)
@@ -686,18 +687,21 @@ function partyEmbed($lorhondel, $party)
 		if ($player && $user = $lorhondel->discord->users->offsetGet($player->user_id)) {
 			$embed->setAuthor("{$user->username} ({$user->id})", $user->avatar); // Set an author with icon
 			if ($player->id == $party->{$party->leader}) {
-				$embed->addFieldValues('Leader', $player->name ?? $player->id, true);
+			if ($player->name) $leader_string = "{$player->name} ({$player->id})";
+			else $leader_string = "{$player->id}";
+				$embed->addFieldValues('Leader', $leader_string, true);
 				$embed->setThumbnail("{$user->avatar}"); // Set a thumbnail (the image in the top right corner)
 			}
 		}
 	}
 	$inline = false;
-	for ($x=0; $x<=count($players); $x++) {
+	for ($x=0; $x<count($players); $x++) {
 		if ($players[$x]) {
-			$embed->addFieldValues('Player ' . $x+1, $players[$x]->name ?? $players[$x]->id, $inline);
+			if ($players[$x]->name) $player_string = "{$players[$x]->name} ({$players[$x]->id})";
+			else $player_string = "{$players[$x]->id}";
+			$embed->addFieldValues('Player ' . $x+1, $player_string, $inline);
 			$inline = true;
 		}
-		$x++;
 	}
 	return $embed;
 }
@@ -897,25 +901,25 @@ function TimeCompareMem($author_id, $variable)
 function TimeLimitCheck($time, $y, $m, $d, $h, $i, $s)
 {
     //echo "time['s']: " . $time['s'] . PHP_EOL;
-    if (!$time) {
+    if (! $time) {
         return true;
     } //Nothing to check, assume true
-    if (!$y) {
+    if (! $y) {
         $y = 0;
     }//echo '$y: ' . $s . PHP_EOL;
-    if (!$m) {
+    if (! $m) {
         $m = 0;
     }//echo '$m: ' . $s . PHP_EOL;
-    if (!$d) {
+    if (! $d) {
         $d = 0;
     }//echo '$d: ' . $s . PHP_EOL;
-    if (!$h) {
+    if (! $h) {
         $h = 0;
     }//echo '$h: ' . $s . PHP_EOL;
-    if (!$i) {
+    if (! $i) {
         $i = 0;
     }//echo '$i: ' . $s . PHP_EOL;
-    if (!$s) {
+    if (! $s) {
         $s = 0;
     }//echo '$s: ' . $s . PHP_EOL;
     //echo "time['y'] " . $time['y'] . PHP_EOL;
@@ -954,22 +958,22 @@ function TimeLimitCheck($time, $y, $m, $d, $h, $i, $s)
 
 function PassedTimeCheck($y, $m, $d, $h, $i, $s)
 {
-    if (!$y) {
+    if (! $y) {
         $y = 0;
     }//echo '$y: ' . $s . PHP_EOL;
-    if (!$m) {
+    if (! $m) {
         $m = 0;
     }//echo '$m: ' . $s . PHP_EOL;
-    if (!$d) {
+    if (! $d) {
         $d = 0;
     }//echo '$d: ' . $s . PHP_EOL;
-    if (!$h) {
+    if (! $h) {
         $h = 0;
     }//echo '$h: ' . $s . PHP_EOL;
-    if (!$i) {
+    if (! $i) {
         $i = 0;
     }//echo '$i: ' . $s . PHP_EOL;
-    if (!$s) {
+    if (! $s) {
         $s = 0;
     }//echo '$s: ' . $s . PHP_EOL;
     //Calculate total number of seconds passed.

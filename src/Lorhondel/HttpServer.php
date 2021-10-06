@@ -113,24 +113,24 @@ class HttpServer
 				
 				switch ($repository) { //gateway
 					case 'oauth2':
-						if (!$method == 'bot') break;
-						if (!$id2 == '@me') break;
+						if ($method != 'bot') break;
+						if ($id2 != '@me') break;
 						$return = array();
 						return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
+						break;
 					case 'gateway':
-						if ($method == 'bot') {
-							$return = array();
-							$return['url'] = 'https://lorhondel.valzargaming.com/gateway/';
-							$return['shards'] = 1;
-							$return['session_start_limit'] = [
-							"total" => 1000, //	The total number of session starts the current user is allowed
-							"remaining" => 999, //	The remaining number of session starts the current user is allowed
-							"reset_after" => 14400000, // The number of milliseconds after which the limit resets
-							"max_concurrency" => 1 // The number of identify requests allowed per 5 seconds
-							];
-							return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
-						}
+						if ($method != 'bot') break;
+						$return = array();
+						$return['url'] = 'https://lorhondel.valzargaming.com/gateway/';
+						$return['shards'] = 1;
+						$return['session_start_limit'] = [
+						"total" => 1000, //	The total number of session starts the current user is allowed
+						"remaining" => 999, //	The remaining number of session starts the current user is allowed
+						"reset_after" => 14400000, // The number of milliseconds after which the limit resets
+						"max_concurrency" => 1 // The number of identify requests allowed per 5 seconds
+						];
 						return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
+						break;
 				}
 				switch ($sub) {
 					case 'ping':
@@ -145,67 +145,67 @@ class HttpServer
 						} else return webapiFail('stats', $stats);
 						break;*/
 					case 'channel':
-						if (!$id || !webapiSnow($id) || !$return = $lorhondel->discord->getChannel($id))
+						if (! $id || !webapiSnow($id) || ! $return = $lorhondel->discord->getChannel($id))
 							return webapiFail('channel_id', $id);
 						break;
 
 					case 'guild':
-						if (!$id || !webapiSnow($id) || !$return = $lorhondel->discord->guilds->offsetGet($id))
+						if (! $id || !webapiSnow($id) || ! $return = $lorhondel->discord->guilds->offsetGet($id))
 							return webapiFail('guild_id', $id);
 						break;
 						
 					case 'bans':
-						if (!$id || !webapiSnow($id) || !$guild = $lorhondel->discord->guilds->offsetGet($id))
+						if (! $id || !webapiSnow($id) || ! $guild = $lorhondel->discord->guilds->offsetGet($id))
 							return webapiFail('guild_id', $id);
 						$return = $guild->bans;
 						break;
 						
 					case 'channels':
-						if (!$id || !webapiSnow($id) || !$guild = $lorhondel->discord->guilds->offsetGet($id))
+						if (! $id || !webapiSnow($id) || ! $guild = $lorhondel->discord->guilds->offsetGet($id))
 							return webapiFail('guild_id', $id);
 						$return = $guild->channels;
 						break;
 						
 					case 'members':
-						if (!$id || !webapiSnow($id) || !$guild = $lorhondel->discord->guilds->offsetGet($id))
+						if (! $id || !webapiSnow($id) || ! $guild = $lorhondel->discord->guilds->offsetGet($id))
 							return webapiFail('guild_id', $id);
 						$return = $guild->members;
 						break;
 						
 					case 'emojis':
-						if (!$id || !webapiSnow($id) || !$guild = $lorhondel->discord->guilds->offsetGet($id))
+						if (! $id || !webapiSnow($id) || ! $guild = $lorhondel->discord->guilds->offsetGet($id))
 							return webapiFail('guild_id', $id);
 						$return = $guild->emojis;
 						break;
 					
 					case 'invites':
-						if (!$id || !webapiSnow($id) || !$guild = $lorhondel->discord->guilds->offsetGet($id))
+						if (! $id || !webapiSnow($id) || ! $guild = $lorhondel->discord->guilds->offsetGet($id))
 							return webapiFail('guild_id', $id);
 						$return = $guild->invites;
 						break;
 					
 					case 'roles':
-						if (!$id || !webapiSnow($id) || !$guild = $lorhondel->discord->guilds->offsetGet($id))
+						if (! $id || !webapiSnow($id) || ! $guild = $lorhondel->discord->guilds->offsetGet($id))
 							return webapiFail('guild_id', $id);
 						$return = $guild->roles;
 						break;
 
 					case 'guildMember':
 					case 'member':
-						if (!$id || !webapiSnow($id) || !$guild = $lorhondel->discord->guilds->offsetGet($id))
+						if (! $id || !webapiSnow($id) || ! $guild = $lorhondel->discord->guilds->offsetGet($id))
 							return webapiFail('guild_id', $id);
-						if (!$id2 || !webapiSnow($id2) || !$return = $guild->members->offsetGet($id2))
+						if (! $id2 || !webapiSnow($id2) || ! $return = $guild->members->offsetGet($id2))
 							return webapiFail('user_id', $id2);
 						break;
 
 					case 'user':
-						if (!$id || !webapiSnow($id) || !$return = $lorhondel->discord->users->offsetGet($id)) {
+						if (! $id || !webapiSnow($id) || ! $return = $lorhondel->discord->users->offsetGet($id)) {
 							return webapiFail('user_id', $id);
 						}
 						break;
 
 					case 'userName':
-						if (!$id || !$return = $lorhondel->discord->users->get('name', $id))
+						if (! $id || ! $return = $lorhondel->discord->users->get('name', $id))
 							return webapiFail('user_name', $id);
 						break;
 
@@ -225,7 +225,7 @@ class HttpServer
 							echo '[REJECT]' . $request->getServerParams()['REMOTE_ADDR'] . PHP_EOL;
 							return new \GuzzleHttp\Psr7\Response(501, ['Content-Type' => 'text/plain'], 'Reject'.PHP_EOL);
 						}
-						if (!$id || !webapiSnow($id) || !$return = $lorhondel->discord->user->fetch($id))
+						if (! $id || !webapiSnow($id) || ! $return = $lorhondel->discord->user->fetch($id))
 							return webapiFail('user_id', $id);
 						break;
 
@@ -234,7 +234,7 @@ class HttpServer
 							echo '[REJECT]' . $request->getServerParams()['REMOTE_ADDR'] . PHP_EOL;
 							return new \GuzzleHttp\Psr7\Response(501, ['Content-Type' => 'text/plain'], 'Reject'.PHP_EOL);
 						}
-						if (!$id || !webapiSnow($id))
+						if (! $id || !webapiSnow($id))
 							return webapiFail('user_id', $id);
 						$return = false;
 						if ($user = $lorhondel->discord->users->offsetGet($id)) { //Search all guilds the bot is in and check if the user id exists as a guild owner
@@ -248,10 +248,10 @@ class HttpServer
 						break;
 						
 					case 'avatar':
-						if (!$id || !webapiSnow($id)) {
+						if (! $id || !webapiSnow($id)) {
 							return webapiFail('user_id', $id);
 						}
-						if (!$user = $lorhondel->discord->users->offsetGet($id)) {
+						if (! $user = $lorhondel->discord->users->offsetGet($id)) {
 							$lorhondel->discord->users->fetch($id)->done(
 								function ($user) {
 									$return = $user->avatar;
@@ -264,7 +264,7 @@ class HttpServer
 						} else {
 							$return = $user->avatar;
 						}
-						//if (!$return) return new \GuzzleHttp\Psr7\Response(($id ? 404 : 400), ['Content-Type' => 'text/plain'], ('').PHP_EOL);
+						//if (! $return) return new \GuzzleHttp\Psr7\Response(($id ? 404 : 400), ['Content-Type' => 'text/plain'], ('').PHP_EOL);
 						break;
 						
 					case 'avatars':
@@ -356,7 +356,7 @@ class HttpServer
 						$part_name = $repositories[$key]['part_name'];
 						foreach($repositories[$key]['allowed_methods'] as $methods) {
 							if ($method == $methods['method']) {
-								if ($whitelisted || !$methods['privileged'] || in_array($id2, $methods['privileged_endpoints'])) {
+								if ($whitelisted || ! $methods['privileged'] || in_array($id2, $methods['privileged_endpoints'])) {
 									echo "[ALLOWED METHOD/ENDPOINT] $method/$id2" . PHP_EOL; 
 									$target_method = $method;
 									$target_id2 = $id2;
@@ -365,7 +365,7 @@ class HttpServer
 						}
 					}
 				}
-				if (!$target_method) return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400));
+				if (! $target_method) return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400));
 				
 				$requires_part = ['put', 'patch', 'post'];
 				$has_part = false;
@@ -444,7 +444,7 @@ class HttpServer
 									foreach ($get as $array) {
 										$part = $lorhondel->factory($part_name, $array);
 										if ($part->id) {
-											if (!$lorhondel->$repository->offsetGet($part->id))
+											if (! $lorhondel->$repository->offsetGet($part->id))
 												$lorhondel->$repository->push($part);
 											else echo '[EXISTS] ' . $data->id . PHP_EOL;
 										}
@@ -468,7 +468,7 @@ class HttpServer
 								//NYI
 								return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($return ?? $_200));
 							}
-						} elseif (!$partial) {
+						} elseif (! $partial) {
 							if (!empty($array = sqlGet(['*'], $repository, 'id', [$id2], '', 1))) {
 								foreach ($array as $data) //Create all into parts and push
 								if ($attributes = json_decode(json_encode(json_validate($array)), true)) {
