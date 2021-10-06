@@ -113,7 +113,12 @@ class Player extends Part
         ];
     }
 	
-	public function activate($lorhondel)
+	public function help(): string
+	{
+		return '';
+	}
+	
+	public function activate($lorhondel): string
 	{
 		$collection = $lorhondel->players->filter(fn($p) => $p->user_id == $this->user_id && $p->active == 1);
 		
@@ -142,7 +147,7 @@ class Player extends Part
 		return 'Player `' . ($this->name ?? $this->id) . '` is now your active player! ';
 	}
 
-	public function deactivate($lorhondel)
+	public function deactivate($lorhondel): string
 	{
 		$collection = $lorhondel->players->filter(fn($p) => $p->user_id == $this->user_id && $p->active == 1 && $p->id != $this->id);
 		
@@ -171,7 +176,7 @@ class Player extends Part
 		return 'Player `' . ($this->name ?? $this->id) . '` is no longer your active player! ';
 	}
 
-	public function looking($lorhondel)
+	public function looking($lorhondel): string
 	{
 		if ($this->party_id === null) {
 			switch ($this->looking) {
@@ -193,7 +198,7 @@ class Player extends Part
 		
 	}
 
-	public function rename($lorhondel, $name)
+	public function rename($lorhondel, $name): string
 	{
 		if ($name) {
 			if (strlen($name) > 64) return 'Player name cannot exceed 64 characters!';

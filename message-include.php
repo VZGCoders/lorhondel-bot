@@ -275,7 +275,15 @@ if (str_starts_with($message_content_lower, 'player')) {
 		$name = $message_content = str_replace($filter, '', $name);
 		$id = $message_content_lower = str_replace($filter, '', $id);
 	}
-		
+	/*
+	*********************
+	*********************
+	Repository commands
+	These commands take a Discord ID to check for Player permissions.
+	NOTE: Permission is assumed to be allowed if no Discord ID is passed!
+	*********************
+	*********************
+	*/	
 	$player_repository_commands = ['new', 'activate'];
 	foreach($player_repository_commands as $command) {
 		if (str_starts_with($message_content_lower, $command)) {
@@ -297,6 +305,7 @@ if (str_starts_with($message_content_lower, 'player')) {
 	/*
 	*********************
 	*********************
+	Part commands
 	These commands require an active player
 	*********************
 	*********************

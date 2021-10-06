@@ -201,6 +201,11 @@ class PlayerRepository extends AbstractRepository
 		);
     }
 
+	public function help(): string
+	{
+		return '';
+	}
+
 	/**
      * Creates a new Player for the repository and saves it to the Lorhondel servers.
 	 * This function is designed to take data from users.
@@ -212,10 +217,6 @@ class PlayerRepository extends AbstractRepository
      */
     public function new($author_id = null, $species = null, $name = null, $class = null): string
     {
-		echo "[author_id] $author_id" . PHP_EOL;
-		echo "[species] $species" . PHP_EOL;
-		echo "[name] $name" . PHP_EOL;
-		echo "[class] $class" . PHP_EOL;
 		$snowflake = \Lorhondel\generateSnowflake($this->factory->lorhondel);
 		if ($part = $this->factory->lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
 			'id' => $snowflake,
@@ -256,6 +257,7 @@ class PlayerRepository extends AbstractRepository
 			$id = $id->id;
 		}
 		
+		if (! $author_id) return $part->activate($this->factory->lorhondel);
 		if ($part->user_id == $author_id) return $part->activate($this->factory->lorhondel);
 		return 'You can only activate players that you own!';
 	}

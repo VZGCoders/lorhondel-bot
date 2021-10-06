@@ -204,6 +204,11 @@ class PartyRepository extends AbstractRepository
 		);
     }
 
+	public function help(): string
+	{
+		return '';
+	}
+
 	/**
      * Causes the player to join a party.
      *

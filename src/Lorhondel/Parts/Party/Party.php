@@ -84,6 +84,11 @@ class Party extends Part
         ];
     }
 
+	public function help(): string
+	{
+		return '';
+	}
+
 	public function rename($lorhondel, $name)
 	{
 		if ($name) {
