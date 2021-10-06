@@ -196,7 +196,6 @@ class Player extends Part
 			$lorhondel->players->save($this);
 		} else $return = 'Please leave your current Party before listing yourself as looking for a new one!';
 		return $return;
-		
 	}
 
 	public function rename($lorhondel, $name): string

@@ -398,7 +398,7 @@ if (str_starts_with($message_content_lower, 'party')) {
 	*********************
 	*/
 	if (! $party) return $message->reply('No active party found! Try creating one with `;party create {party name here}` or joining one with `;party join {party or Player id here}`');
-	$party_commands = ['rename', 'leave', 'disband', 'invite', 'uninvite'];
+	$party_commands = ['rename', 'leave', 'disband', 'invite', 'uninvite', 'looking'];
 	foreach($party_commands as $command) {
 		if (str_starts_with($message_content_lower, $command)) {
 			echo "[PARTY PART REFLECTION COMMAND] $command" . PHP_EOL;

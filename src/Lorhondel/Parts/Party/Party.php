@@ -38,7 +38,7 @@ class Party extends Part
     /**
      * @inheritdoc
      */
-    protected static $fillable = ['id', 'name', 'leader', 'player1', 'player2', 'player3', 'player4', 'player5'];
+    protected static $fillable = ['id', 'name', 'leader', 'player1', 'player2', 'player3', 'player4', 'player5', 'looking'];
 
 	public $invites = [];
 
@@ -87,6 +87,29 @@ class Party extends Part
 	public function help(): string
 	{
 		return '';
+	}
+	
+	public function looking($lorhondel = null, $player = null): string
+	{
+		if ($player instanceof Player) {
+			if ($player && $this->{$this->leader} != $player->id) return 'Player `' . ($player->name ?? $player->id) . '` is not the Party leader!';
+		}
+		if (\Lorhondel\isPartyFull($this, null)) $return = 'Party cannot be full!';
+		switch ($this->looking) {
+			case null:
+			case false:
+				$this->looking = true;
+				$return = 'Party `' . ($this->name ?? $this->id) . '` is now looking for Players!';
+				break;
+			case true:
+				$this->looking = false;
+				$return = 'Party `' . ($this->name ?? $this->id) . '` is no longer looking for Players!';
+				break;
+			default:
+				break;
+		}
+		$lorhondel->parties->save($this);
+		return $return;
 	}
 
 	public function rename($lorhondel = null, $player = null, $name = null)
@@ -160,7 +183,7 @@ class Party extends Part
 			$player = $lorhondel->players->offsetGet($id);
 		} else return 'Invalid parameter! Expects Player or Player ID.';
 		if ($player->party_id) return 'Player is already in a Party!';
-		if (\Lorhondel\isPartyJoinable($this, null) === false) return 'Party is full!';
+		if (\Lorhondel\isPartyFull($this, null) === false) return 'Party is full!';
 		
 		if (in_array($id, $this->invites))
 			unset($this->invites[$id]);
@@ -182,7 +205,7 @@ class Party extends Part
 			$this->player5 = $id;
 			$position = 5;
 		}
-		if ($position == 5) $this->looking = false;
+		if (! \Lorhondel\isPartyFull($this, null)) $this->looking = false;
 		$lorhondel->parties->save($this);
 		$player->looking = false;
 		$lorhondel->players->save($player);

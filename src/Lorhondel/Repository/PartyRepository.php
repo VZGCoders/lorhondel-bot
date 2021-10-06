@@ -252,7 +252,7 @@ class PartyRepository extends AbstractRepository
 		if (! $party && ! $id) return 'Invalid format! Please include the ID of the Party you want your Player to join.';
 		if (! $party && $id) { //Probably called by a user who needs to have been invited
 			if (! $party = $this->offsetGet($id)) return "Party with id `$id` does not exist!";
-			if (! in_array($player->id, $party->invites)) return 'You were not invited to join this Party!';
+			if (! $party->looking && ! in_array($player->id, $party->invites)) return 'You were not invited to join this Party!';
 		}
 		return $party->join($this->factory->lorhondel, $player);
 	}

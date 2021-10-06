@@ -113,8 +113,8 @@ class HttpServer
 				
 				switch ($repository) { //gateway
 					case 'oauth2':
-						if ($method != 'bot') break;
-						if ($id2 != '@me') break;
+						//if ($method != 'bot') break;
+						//if ($id2 != '@me') break;
 						$return = array();
 						return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
 						break;

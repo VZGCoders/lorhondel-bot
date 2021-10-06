@@ -617,7 +617,7 @@ Returns true if Party exists and is not full
 Returns null if Party is not found or an invalid parameter was passed
 Returns false if Party is full
 */
-function isPartyJoinable($part, $lorhondel = null): bool
+function isPartyFull($part, $lorhondel = null): bool
 {
 	if ($part instanceof Party) {
 		$party = $part;
@@ -703,6 +703,7 @@ function partyEmbed($lorhondel, $party)
 			$inline = true;
 		}
 	}
+	if ($party->looking) $embed->addFieldValues('Looking', 'This Party is looking for Players!', true);
 	return $embed;
 }
 
