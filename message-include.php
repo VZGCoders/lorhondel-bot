@@ -311,7 +311,7 @@ if (str_starts_with($message_content_lower, 'player')) {
 	*********************
 	*/
 	if (! $player) return $message->reply('Please create a Player or activate one first!');
-	$player_commands = ['rename', 'looking', 'deactivate'];
+	$player_commands = ['deactivate', 'rename', 'looking'];
 	foreach($player_commands as $command) {
 		if (str_starts_with($message_content_lower, $command)) {
 			echo "[PLAYER PART REFLECTION COMMAND] $command" . PHP_EOL;
@@ -328,7 +328,17 @@ if (str_starts_with($message_content_lower, 'player')) {
 		return $message->channel->sendEmbed(playerEmbed($lorhondel, $player));
 	}
 	elseif ($message_content_lower) {
-		return $message->reply("Unrecognized subcommand `$message_content_lower'");
+		$help = '';
+		if (! str_starts_with($message_content_lower, 'help')) $help .= "Unrecognized Party subcommand `$message_content_lower`. ";
+		$help .= 'Current available Player subcommands are: ';
+		foreach ($player_repository_commands as $command) {
+			$help .= "`$command`, ";
+		}
+		foreach ($player_commands as $command) {
+			$help .= "`$command`, ";
+		}
+		$help = substr($help, 0, strlen($help)-2) . '.';
+		return $message->reply($help);
 	}
 }
 
@@ -398,7 +408,7 @@ if (str_starts_with($message_content_lower, 'party')) {
 	*********************
 	*/
 	if (! $party) return $message->reply('No active party found! Try creating one with `;party create {party name here}` or joining one with `;party join {party or Player id here}`');
-	$party_commands = ['rename', 'leave', 'disband', 'invite', 'uninvite', 'looking'];
+	$party_commands = ['leave', 'disband', 'invite', 'uninvite', 'rename', 'looking'];
 	foreach($party_commands as $command) {
 		if (str_starts_with($message_content_lower, $command)) {
 			echo "[PARTY PART REFLECTION COMMAND] $command" . PHP_EOL;
@@ -415,6 +425,16 @@ if (str_starts_with($message_content_lower, 'party')) {
 		return $message->channel->sendEmbed(partyEmbed($lorhondel, $party));
 	}
 	elseif ($message_content_lower) {
-		return $message->reply("Unrecognized subcommand `$message_content_lower'");
+		$help = '';
+		if (! str_starts_with($message_content_lower, 'help')) $help .= "Unrecognized Party subcommand `$message_content_lower`. ";
+		$help .= 'Current available Party subcommands are: ';
+		foreach ($party_repository_commands as $command) {
+			$help .= "`$command`, ";
+		}
+		foreach ($party_commands as $command) {
+			$help .= "`$command`, ";
+		}
+		$help = substr($help, 0, strlen($help)-2) . '.';
+		return $message->reply($help);
 	}
 }

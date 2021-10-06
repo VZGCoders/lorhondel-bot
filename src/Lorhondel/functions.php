@@ -666,7 +666,6 @@ function playerEmbed($lorhondel, $player)
 }
 function partyEmbed($lorhondel, $party)
 {
-	echo '[CLASS]' . get_class($lorhondel->discord) . PHP_EOL;;
 	$players = array();
 	$players[] = $player1 = $lorhondel->players->offsetGet($party->player1);
 	$players[] = $player2 = $lorhondel->players->offsetGet($party->player2);
