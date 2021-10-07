@@ -55,7 +55,7 @@ class PartyRepository extends AbstractRepository
      * @throws \Exception
      */
 
-    public function save(Part $part)
+    public function save(Part $part): ExtendedPromiseInterface
     {
 		if ($this->factory->lorhondel->parties->offsetGet($part->id)) $method = 'patch';
 		else $method = 'post';
@@ -169,7 +169,7 @@ class PartyRepository extends AbstractRepository
      * @return ExtendedPromiseInterface
      * @throws \Exception
      */
-    public function freshen()
+    public function freshen(): ExtendedPromiseInterface
     {
 		$url = Http::BASE_URL . "/parties/get/all/"; echo '[URL] ' . $url . PHP_EOL;
 		return $this->factory->lorhondel->browser->get($url)->then( //Make this a function
@@ -261,10 +261,8 @@ class PartyRepository extends AbstractRepository
      * Causes the Player to join a Party.
      *
      * @param Party|int $party
-     *
-     * @return ExtendedPromiseInterface
      */
-    public function induct($player = null, $party = null)
+    public function induct($player = null, $party = null): bool
     {
 		if (! ($party instanceof Party)) {
             if ($party = $this->offsetGet($party)) {
@@ -292,7 +290,8 @@ class PartyRepository extends AbstractRepository
 			} else return false;
 			$player->party_id = $party->id;
 			$this->factory->lorhondel->players->save($player);
-			return $this->save($party);
+			$this->save($party);
+			return true;
 		} else return false;
     }
 	
@@ -301,10 +300,8 @@ class PartyRepository extends AbstractRepository
      *
 	 * @param Player|int $player The Player to remove
      * @param Party|int $party The Party to remove from
-     *
-     * @return ExtendedPromiseInterface
      */
-    public function kick($party, $player)
+    public function kick($party, $player): string|bool
     {
         if (! $party instanceof Party) {
             if ($party = $this->offsetGet($party)) {
@@ -328,18 +325,18 @@ class PartyRepository extends AbstractRepository
 		if (! $member) return false;
 
 		if ($succeed = $this->succession($party)) {
-			return $this->save($party);
-		} else return $succeed;
+			$this->save($party);
+			return $succeed;
+		}
+		return true;
     }
 	
 	/**
      * Kicks a member. Alias for `$players->expel($party, $player)`.
      *
      * @param Player|string $player
-     *
-     * @return ExtendedPromiseInterface
      */
-    public function expel($party, $player)
+    public function expel($party, $player): string|bool
     {
         return $this->kick($party, $player);
     }
@@ -348,10 +345,8 @@ class PartyRepository extends AbstractRepository
      * Transfers ownership of the Party to another Player.
      *
      * @param Player|int $player The member to transfer ownership to.
-     *
-     * @return ExtendedPromiseInterface
      */
-    public function transferOwnership($party, $player): ExtendedPromiseInterface
+    public function transferOwnership($party, $player): bool
     {
 		if (! $party instanceof Party) {
             if (! $party = $this->offsetGet($party)) {
@@ -369,13 +364,13 @@ class PartyRepository extends AbstractRepository
 			$party->leader = $player->id;
 			$this->save($party);
 		}
+		
+		return true;
     }
 
 	/**
-	 *
 	 * Disbands the Party if no players remain
 	 * Assign a new Party leader if no leader exists
-	 *
      */
     public function succession($party)
     {
@@ -395,11 +390,12 @@ class PartyRepository extends AbstractRepository
 			elseif ($party->player5 && ($party->player5 != $party->leader))
 				$party->leader = $party->player5;
 			else return $party->disband();
-			return $this->save($party);
+			$this->save($party);
+			return true;
 		} else return false;
     }
 	
-	public function disband($party)
+	public function disband($party): bool
 	{
 		//
 		if ($party instanceof Party || $party = $this->offsetGet($party)) {
@@ -426,9 +422,7 @@ class PartyRepository extends AbstractRepository
 			$player->party_id = null;
 			$this->factory->lorhondel->players->save($player);
 		}
-		
-		return $this->delete($party);
+		$this->delete($party);
+		return true;
 	}
-	
-
 }

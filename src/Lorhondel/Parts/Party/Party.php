@@ -47,7 +47,7 @@ class Party extends Part
      *
      * @return array
      */
-    public static function getFillableAttributes($context = '')
+    public static function getFillableAttributes($context = ''): array
 	{
 		$fillable = array();
 		foreach (self::$fillable as $attr) {
@@ -112,7 +112,7 @@ class Party extends Part
 		return $return;
 	}
 
-	public function rename($lorhondel = null, $player = null, $name = null)
+	public function rename($lorhondel = null, $player = null, $name = null): string
 	{
 		if ($player && $this->{$this->leader} != $player->id) return 'Player `' . ($player->name ?? $player->id) . '` is not the Party leader!';
 		if ($name) {
@@ -127,7 +127,7 @@ class Party extends Part
 		return $return;
 	}
 
-	public function invite($lorhondel = null, $player = null, $id = null)
+	public function invite($lorhondel = null, $player = null, $id = null): string
 	{
 		if ($player instanceof Player) {
 			if ($player && $this->{$this->leader} != $player->id) return 'Player `' . ($player->name ?? $player->id) . '` is not the Party leader!';
@@ -137,7 +137,7 @@ class Party extends Part
 		}
 		elseif (is_numeric($id)) {
 			$target_player = $lorhondel->players->offsetGet($id);
-		} else return 'Invalid parameter! Expects Player or Player ID.';
+		} else return 'Invalid parameters! Expects Player or Player ID.';
 		
 		echo 'target_player->id' . $target_player->id . PHP_EOL;
 		echo 'id' . $id . PHP_EOL;
@@ -151,7 +151,7 @@ class Party extends Part
 		return ($target_player->name ?? $target_player->id) . ' has been invited to the Party!';
 	}
 
-	public function uninvite($lorhondel = null, $player = null, $id = null)
+	public function uninvite($lorhondel = null, $player = null, $id = null): string
 	{
 		if ($player instanceof Player) {
 			if ($player && $this->{$this->leader} != $player->id) return 'Player `' . ($player->name ?? $player->id) . '` is not the Party leader!';
@@ -213,7 +213,7 @@ class Party extends Part
 		return 'Player ' . ($player->name ?? $player->id) . ' has joined Party ' . ($this->name ?? $this->id) . " in position $position!";
 	}
 
-	public function leave($lorhondel, $player)
+	public function leave($lorhondel, $player): string
 	{
 		if ($player instanceof Player)
 			$id = $player->id;
@@ -262,7 +262,7 @@ class Party extends Part
 	 * Assign a new Party leader if no leader exists
 	 *
      */
-    public function succession($lorhondel = null)
+    public function succession($lorhondel = null) : string|bool
     {
 		if (! $this->leader) {
 			if ($this->player1 && ($this->player1 != $this->leader))
@@ -284,7 +284,7 @@ class Party extends Part
 		} else return false;
     }
 	
-	public function disband($lorhondel = null, $player = null)
+	public function disband($lorhondel = null, $player = null): string
 	{
 		if ($player && $player instanceof Player) {
 			if ($player && $this->{$this->leader} != $player->id) return 'Player `' . ($player->name ?? $player->id) . '` is not the Party leader!';
@@ -321,6 +321,6 @@ class Party extends Part
 				eval($string); //I really hate this language sometimes
 			}
 		);
-		return 'Party ' . ($this->name ?? $this->id) . ' has been disbanded! ';
+		return 'Party `' . ($this->name ?? $this->id) . '` has been disbanded! ';
 	}
 }

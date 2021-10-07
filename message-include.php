@@ -107,13 +107,13 @@ if ($creator) { //Debug commands
 		case 'getcurrentplayer':
 			$player = getCurrentPlayer($lorhondel, $author_id);
 			if ($player) return $message->channel->sendEmbed(playerEmbed($lorhondel, getCurrentPlayer($lorhondel, $author_id)));
-			else return $message->reply('No players found!');
+			else return $message->reply('No Players found!');
 			break;
 		case 'getcurrentparty':
 			if (! $player = getCurrentPlayer($lorhondel, $author_id))
-				return $message->reply('No players found!');
+				return $message->reply('No Players found!');
 			if (! $party = getCurrentParty($lorhondel, $player->id))
-				return $message->reply('No party found!');
+				return $message->reply('No Party found!');
 			return $message->channel->sendEmbed(partyEmbed($lorhondel, $party));
 			break;
 		case str_contains($message_content_lower, 'setcurrentplayer '):
@@ -244,12 +244,12 @@ if ($creator) { //Debug commands
 											$lorhondel->players->save($player);
 											return $message->reply('Party created and assigned!');
 										}
-									} else return $message->reply('Unable to locate party part!');
+									} else return $message->reply('Unable to locate Party part!');
 								}
 							);
 							$player->timer = $timer;
 							return;
-						} else return $message->reply('You must leave your current party first!');
+						} else return $message->reply('You must leave your current Party first!');
 					} else return $message->reply('No players found!');
 				}
 			} else return $message->reply('No active players found!');
@@ -287,14 +287,10 @@ if (str_starts_with($message_content_lower, 'player')) {
 	$player_repository_commands = ['new', 'activate'];
 	foreach($player_repository_commands as $command) {
 		if (str_starts_with($message_content_lower, $command)) {
-			echo "[PLAYER REPOSITORY REFLECTION COMMAND] $command" . PHP_EOL;
 			$message_content = trim(substr($message_content, strlen($command)));
-			$tokens = array_merge([$author_id], explode(' ', $message_content));
-			$reflection = new \ReflectionMethod('\Lorhondel\Repository\PlayerRepository', $command);
-			$num = $reflection->getNumberOfParameters();
-			$tokens = array_slice($tokens, 0, $num);
-			//if (count($tokens) < $num) return $message->reply('Invalid number of parameters!'); //Add class function that returns a string
-			return $message->reply(call_user_func_array(array($lorhondel->players, $command), $tokens));
+			$string = reflectionMachine($lorhondel->players, [$author_id], $message_content, $command);
+			if (is_string($string)) return $message->reply($string);
+			return;
 		}
 	}
 	if (is_numeric($id)) {
@@ -314,14 +310,10 @@ if (str_starts_with($message_content_lower, 'player')) {
 	$player_commands = ['deactivate', 'rename', 'looking'];
 	foreach($player_commands as $command) {
 		if (str_starts_with($message_content_lower, $command)) {
-			echo "[PLAYER PART REFLECTION COMMAND] $command" . PHP_EOL;
 			$message_content = trim(substr($message_content, strlen($command)));
-			$tokens = array_merge([$lorhondel], explode(' ', $message_content));
-			$reflection = new \ReflectionMethod('\Lorhondel\Parts\Player\Player', $command);
-			$num = $reflection->getNumberOfParameters();
-			$tokens = array_slice($tokens, 0, $num);
-			if (count($tokens) < $num) return $message->reply('Invalid number of parameters!'); //Add class function that returns a string
-			return $message->reply(call_user_func_array(array($player, $command), $tokens));
+			$string = reflectionMachine($player, [$lorhondel], $message_content, $command);
+			if (is_string($string)) return $message->reply($string);
+			return;
 		}
 	}
 	if (! $message_content_lower) {
@@ -388,14 +380,10 @@ if (str_starts_with($message_content_lower, 'party')) {
 	$party_repository_commands = ['new', 'join'];
 	foreach($party_repository_commands as $command) {
 		if (str_starts_with($message_content_lower, $command)) {
-			echo "[PARTY REPOSITORY REFLECTION COMMAND] $command" . PHP_EOL;
 			$message_content = trim(substr($message_content, strlen($command)));
-			$tokens = array_merge([$player, $party], explode(' ', $message_content));
-			$reflection = new \ReflectionMethod('\Lorhondel\Repository\PartyRepository', $command);
-			$num = $reflection->getNumberOfParameters();
-			$tokens = array_slice($tokens, 0, $num);
-			//if (count($tokens) < $num) return $message->reply('Invalid number of parameters!'); //Add class function that returns a string
-			return $message->reply(call_user_func_array(array($lorhondel->parties, $command), $tokens));
+			$string = reflectionMachine($lorhondel->parties, [$player, $party], $message_content, $command);
+			if (is_string($string)) return $message->reply($string);
+			return;
 		}
 	}
 	/*
@@ -407,18 +395,14 @@ if (str_starts_with($message_content_lower, 'party')) {
 	*********************
 	*********************
 	*/
-	if (! $party) return $message->reply('No active party found! Try creating one with `;party create {party name here}` or joining one with `;party join {party or Player id here}`');
+	if (! $party) return $message->reply('No active Party found! Try creating one with `;party new {Party name here}` or joining one with `;party join {Party or Player id here}`');
 	$party_commands = ['leave', 'disband', 'invite', 'uninvite', 'rename', 'looking'];
 	foreach($party_commands as $command) {
 		if (str_starts_with($message_content_lower, $command)) {
-			echo "[PARTY PART REFLECTION COMMAND] $command" . PHP_EOL;
 			$message_content = trim(substr($message_content, strlen($command)));
-			$tokens = array_merge([$lorhondel, $player], explode(' ', $message_content));
-			$reflection = new \ReflectionMethod('\Lorhondel\Parts\Party\Party', $command);
-			$num = $reflection->getNumberOfParameters();
-			$tokens = array_slice($tokens, 0, $num);
-			if (count($tokens) < $num) return $message->reply('Invalid number of parameters!'); //Add class function that returns a string
-			return $message->reply(call_user_func_array(array($party, $command), $tokens));
+			$string = reflectionMachine($party, [$lorhondel, $player], $message_content, $command);
+			if (is_string($string)) return $message->reply($string);
+			return;
 		}
 	}
 	if (! $message_content_lower) {
