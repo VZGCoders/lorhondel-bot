@@ -343,8 +343,10 @@ class PartyRepository extends AbstractRepository
 
 	/**
      * Transfers ownership of the Party to another Player.
-     *
-     * @param Player|int $player The member to transfer ownership to.
+     * This is an internal server function and should not be callable by Players
+	 *
+	 * @param Player|int $player The Party to transfer ownership of.
+     * @param Player|int $player The Player to transfer ownership to.
      */
     public function transferOwnership($party, $player): bool
     {
@@ -360,14 +362,25 @@ class PartyRepository extends AbstractRepository
 			}
 		}
 		
-		if (in_array($player->id, (array) $party)) {
-			$party->leader = $player->id;
-			$this->save($party);
-		}
-		
+		if ($party->player1 == $player->id) $party->leader = 'player1';
+		elseif ($party->player2 == $player->id) $party->leader = 'player2';
+		elseif ($party->player3 == $player->id) $party->leader = 'player3';
+		elseif ($party->player4 == $player->id) $party->leader = 'player4';
+		elseif ($party->player5 == $player->id) $party->leader = 'player5';
+		else return false;
+		$this->save($party);
 		return true;
     }
-
+	
+	/*
+	* Alias for transferOwnership
+	* This is an internal server function and should not be callable by Players
+	*/
+	public function transfer($party, $target_player): string|bool
+	{
+		if ($this->transferOwnership($party, $target_player)) return false;
+		return 'Player `' . ($target_player->name ?? $target_player->id) . '` is the new leader of `' . ($this->name ?? $this->party) . '`! `';;
+	}
 	/**
 	 * Disbands the Party if no players remain
 	 * Assign a new Party leader if no leader exists
@@ -380,15 +393,15 @@ class PartyRepository extends AbstractRepository
 		
 		if (! $party->leader) {
 			if ($party->player1 && ($party->player1 != $party->leader))
-				$party->leader = $party->player1;
+				$party->leader = 'player1';
 			elseif ($party->player2 && ($party->player2 != $party->leader))
-				$party->leader = $party->player2;
+				$party->leader = 'player2';
 			elseif ($party->player3 && ($party->player3 != $party->leader))
-				$party->leader = $party->player3;
+				$party->leader = 'player3';
 			elseif ($party->player4 && ($party->player4 != $party->leader))
-				$party->leader = $party->player4;
+				$party->leader = 'player4';
 			elseif ($party->player5 && ($party->player5 != $party->leader))
-				$party->leader = $party->player5;
+				$party->leader = 'player5';
 			else return $party->disband();
 			$this->save($party);
 			return true;

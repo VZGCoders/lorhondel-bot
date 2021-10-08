@@ -276,7 +276,7 @@ class Lorhondel
 	public $locations = [
 		'start' => [
 			'world1' => [
-				'place1' => [
+				'tundra' => [
 					'building1a',
 					'building1b',
 				],

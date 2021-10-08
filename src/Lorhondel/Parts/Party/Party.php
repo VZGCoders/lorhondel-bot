@@ -84,6 +84,18 @@ class Party extends Part
         ];
     }
 
+	public function isLeader($player): bool
+	{
+		if ($player instanceof Player) {
+			$id = $player->id;
+		} elseif (is_numeric($player)) {
+			$id = $player;
+		} else return false;
+		
+		if ($this->{$this->leader} == $id) return true;
+		return false;
+	}
+
 	public function help(): string
 	{
 		return '';
@@ -92,7 +104,7 @@ class Party extends Part
 	public function looking($lorhondel = null, $player = null): string
 	{
 		if ($player instanceof Player) {
-			if ($player && $this->{$this->leader} != $player->id) return 'Player `' . ($player->name ?? $player->id) . '` is not the Party leader!';
+			if (! $this->isLeader($player)) return 'Player `' . ($player->name ?? $player->id) . '` is not the Party leader!';
 		}
 		if (\Lorhondel\isPartyFull($this, null)) $return = 'Party cannot be full!';
 		switch ($this->looking) {
@@ -114,7 +126,9 @@ class Party extends Part
 
 	public function rename($lorhondel = null, $player = null, $name = null): string
 	{
-		if ($player && $this->{$this->leader} != $player->id) return 'Player `' . ($player->name ?? $player->id) . '` is not the Party leader!';
+		if ($player instanceof Player) {
+			if (! $this->isLeader($player)) return 'Player `' . ($player->name ?? $player->id) . '` is not the Party leader!';
+		}
 		if ($name) {
 			if (strlen($name) > 64) return 'Party name cannot exceed 64 characters!';
 			$return = 'Changed name of Party `' . ($this->name ?? $this->id) . "` to `$name`!";
@@ -130,17 +144,14 @@ class Party extends Part
 	public function invite($lorhondel = null, $player = null, $id = null): string
 	{
 		if ($player instanceof Player) {
-			if ($player && $this->{$this->leader} != $player->id) return 'Player `' . ($player->name ?? $player->id) . '` is not the Party leader!';
+			if (! $this->isLeader($player)) return 'Player `' . ($player->name ?? $player->id) . '` is not the Party leader!';
 		}
 		if ($id instanceof Player) {
 			$id = $id->id;
 		}
-		elseif (is_numeric($id)) {
-			$target_player = $lorhondel->players->offsetGet($id);
-		} else return 'Invalid parameters! Expects Player or Player ID.';
+		elseif (! is_numeric($id)) return 'Invalid parameters! Expects Player or Player ID.';
+		$target_player = $lorhondel->players->offsetGet($id);
 		
-		echo 'target_player->id' . $target_player->id . PHP_EOL;
-		echo 'id' . $id . PHP_EOL;
 		if ($this->player1 == $id || $this->player2 == $id || $this->player3 == $id || $this->player4 == $id || $this->player5 == $id)
 			return 'Cannot invite a Player that is already a member of the Party!';
 		
@@ -154,7 +165,7 @@ class Party extends Part
 	public function uninvite($lorhondel = null, $player = null, $id = null): string
 	{
 		if ($player instanceof Player) {
-			if ($player && $this->{$this->leader} != $player->id) return 'Player `' . ($player->name ?? $player->id) . '` is not the Party leader!';
+			if (! $this->isLeader($player)) return 'Player `' . ($player->name ?? $player->id) . '` is not the Party leader!';
 		}
 		if ($id instanceof Player) {
 			$target_player = $id;
@@ -210,7 +221,7 @@ class Party extends Part
 		$player->looking = false;
 		$lorhondel->players->save($player);
 		
-		return 'Player ' . ($player->name ?? $player->id) . ' has joined Party ' . ($this->name ?? $this->id) . " in position $position!";
+		return 'Player `' . ($player->name ?? $player->id) . '` has joined Party `' . ($this->name ?? $this->id) . "` as Player `$position`!";
 	}
 
 	public function leave($lorhondel, $player): string
@@ -220,7 +231,7 @@ class Party extends Part
 		elseif (is_numeric($player)) {
 			$id = $player;
 			$player = $lorhondel->players->offsetGet($id);
-		} else return 'Invalid parameter! Expects Player or Player ID.'; //$message->reply('Invalid parameter! Expects Player or Player ID.');
+		} else return 'Invalid parameter! Expects Player or Player ID.';
 		if ($player->party_id != $this->id) return 'Player `' . ($player->name ?? $player->id) . '` is not a member of Party `' . ($this->name ?? $this->id) . '`! '; //$message->reply('Player is not a member of this Party!');
 		
 		if ($this->player1 == $id) {
@@ -256,38 +267,78 @@ class Party extends Part
 		return $return;
 	}
 	
+	/*
+	* Alias for kick
+	*/
+	public function kick($lorhondel, $player = null, $id = null): string
+	{
+		if ($player instanceof Player) {
+			if (! $this->isLeader($player)) return 'Player `' . ($player->name ?? $player->id) . '` is not the Party leader!';
+		}
+		if ($id instanceof Player) {
+			$target_player = $id;
+			$id = $id->id;
+		} elseif (! is_numeric($id)) return 'Invalid parameters! Expects Player or Player ID.';
+		if ($target_player != $lorhondel->players->offsetGet($id)) return "Unable to locate a Player with ID `$id`!";
+		
+		if ($this->player1 != $id && $this->player2 != $id && $this->player3 != $id && $this->player4 != $id && $this->player5 != $id)
+			return 'Cannot kick a Player that is not already a member of the Party!';
+		if ($id == $this->{$this->leader}) return 'The Party leader cannot be kicked from their own Party!';
+		return $this->leave($target_player);
+	}
+
+	public function transfer($lorhondel = null, $player = null, $id = null): string
+	{
+		if ($player instanceof Player) {
+			if (! $this->isLeader($player)) return 'Player `' . ($player->name ?? $player->id) . '` is not the Party leader!';
+		}
+		if ($id instanceof Player) {
+			$id = $id->id;
+		} elseif (! is_numeric($id)) return 'Invalid parameters! Expects Player or Player ID.';
+		
+		if ($this->player1 == $id) $this->leader = 'player1';
+		elseif ($this->player2 == $id) $this->leader = 'player2';
+		elseif ($this->player3 == $id) $this->leader = 'player3';
+		elseif ($this->player4 == $id) $this->leader = 'player4';
+		elseif ($this->player5 == $id) $this->leader = 'player5';
+		else return 'Player is not already in the Party!';
+		$lorhondel->parties->save($this);
+		$leader = $lorhondel->players->offsetGet($this->{$this->leader});
+		return 'Player `' . ($leader->name ?? $leader->id) . '` is the new leader of `' . ($this->name ?? $this->id) . '`!';;
+	}
+
 	/**
 	 *
 	 * Disbands the Party if no players remain
 	 * Assign a new Party leader if no leader exists
 	 *
      */
-    public function succession($lorhondel = null) : string|bool
+    public function succession($lorhondel = null, ?bool $force = false): string|bool
     {
-		if (! $this->leader) {
+		if ($force || ! $this->leader) {
 			if ($this->player1 && ($this->player1 != $this->leader))
-				$this->leader = $this->player1;
+				$this->leader = 'player1';
 			elseif ($this->player2 && ($this->player2 != $this->leader))
-				$this->leader = $this->player2;
+				$this->leader = 'player2';
 			elseif ($this->player3 && ($this->player3 != $this->leader))
-				$this->leader = $this->player3;
+				$this->leader = 'player3';
 			elseif ($this->player4 && ($this->player4 != $this->leader))
-				$this->leader = $this->player4;
+				$this->leader = 'player4';
 			elseif ($this->player5 && ($this->player5 != $this->leader))
-				$this->leader = $this->player5;
+				$this->leader = 'player5';
 			else return $this->disband($lorhondel);
 			$lorhondel->parties->save($party);
 			if ($lorhondel && $player = $lorhondel->players->offsetGet($id)) {
 				$leader = $player->name ?? $player->id;
-			} else $leader = $this->leader;
-			return 'Player `' . $leader . '` is the new leader of `' . ($this->name ?? $this->party) . '`! `';
+			} else $leader = $this->{$leader};
+			return 'Player `' . $leader . '` is the new leader of `' . ($this->name ?? $this->id) . '`! `';
 		} else return false;
     }
 	
 	public function disband($lorhondel = null, $player = null): string
 	{
-		if ($player && $player instanceof Player) {
-			if ($player && $this->{$this->leader} != $player->id) return 'Player `' . ($player->name ?? $player->id) . '` is not the Party leader!';
+		if ($player instanceof Player) {
+			if (! $this->isLeader($player)) return 'Player `' . ($player->name ?? $player->id) . '` is not the Party leader!';
 		}
 		
 		$player_ids = array();

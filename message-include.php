@@ -269,11 +269,11 @@ if (str_starts_with($message_content_lower, 'help')) {
 
 
 if (str_starts_with($message_content_lower, 'player')) {
-	$name = $message_content = trim(substr($message_content, 6)); echo "[NAME] $name" . PHP_EOL;
-	$id = $message_content_lower = trim(substr($message_content_lower, 6)); echo "[ID] $id" . PHP_EOL;
+	$message_content = trim(substr($message_content, 6)); echo "[NAME] $name" . PHP_EOL;
+	$message_content_lower = trim(substr($message_content_lower, 6)); echo "[ID] $id" . PHP_EOL;
 	foreach (['<@', '!', '>'] as $filter) {
-		$name = $message_content = str_replace($filter, '', $name);
-		$id = $message_content_lower = str_replace($filter, '', $id);
+		$message_content_clean = $name = $message_content = str_replace($filter, '', $message_content);
+		$id = $message_content_lower = str_replace($filter, '', $message_content_lower);
 	}
 	/*
 	*********************
@@ -287,8 +287,8 @@ if (str_starts_with($message_content_lower, 'player')) {
 	$player_repository_commands = ['new', 'activate'];
 	foreach($player_repository_commands as $command) {
 		if (str_starts_with($message_content_lower, $command)) {
-			$message_content = trim(substr($message_content, strlen($command)));
-			$string = reflectionMachine($lorhondel->players, [$author_id], $message_content, $command);
+			$message_content_clean = trim(substr($message_content_clean, strlen($command)));
+			$string = reflectionMachine($lorhondel->players, [$author_id], $message_content_clean, $command);
 			if (is_string($string)) return $message->reply($string);
 			return;
 		}
@@ -310,8 +310,8 @@ if (str_starts_with($message_content_lower, 'player')) {
 	$player_commands = ['deactivate', 'rename', 'looking'];
 	foreach($player_commands as $command) {
 		if (str_starts_with($message_content_lower, $command)) {
-			$message_content = trim(substr($message_content, strlen($command)));
-			$string = reflectionMachine($player, [$lorhondel], $message_content, $command);
+			$message_content_clean = trim(substr($message_content_clean, strlen($command)));
+			$string = reflectionMachine($player, [$lorhondel], $message_content_clean, $command);
 			if (is_string($string)) return $message->reply($string);
 			return;
 		}
@@ -338,7 +338,7 @@ if (str_starts_with($message_content_lower, 'party')) {
 	$name = $message_content = trim(substr($message_content, 5));
 	$id = $message_content_lower = trim(substr($message_content_lower, 5));
 	foreach (['<@', '!', '>'] as $filter) {
-		$name = str_replace($filter, '', $name);
+		$message_content_clean = $name = str_replace($filter, '', $name);
 		$id = str_replace($filter, '', $id);
 	}
 	
@@ -380,8 +380,8 @@ if (str_starts_with($message_content_lower, 'party')) {
 	$party_repository_commands = ['new', 'join'];
 	foreach($party_repository_commands as $command) {
 		if (str_starts_with($message_content_lower, $command)) {
-			$message_content = trim(substr($message_content, strlen($command)));
-			$string = reflectionMachine($lorhondel->parties, [$player, $party], $message_content, $command);
+			$message_content_clean = trim(substr($message_content_clean, strlen($command)));
+			$string = reflectionMachine($lorhondel->parties, [$player, $party], $message_content_clean, $command);
 			if (is_string($string)) return $message->reply($string);
 			return;
 		}
@@ -396,11 +396,11 @@ if (str_starts_with($message_content_lower, 'party')) {
 	*********************
 	*/
 	if (! $party) return $message->reply('No active Party found! Try creating one with `;party new {Party name here}` or joining one with `;party join {Party or Player id here}`');
-	$party_commands = ['leave', 'disband', 'invite', 'uninvite', 'rename', 'looking'];
+	$party_commands = ['leave', 'invite', 'uninvite', 'kick', 'disband', 'transfer', 'rename', 'looking'];
 	foreach($party_commands as $command) {
 		if (str_starts_with($message_content_lower, $command)) {
-			$message_content = trim(substr($message_content, strlen($command)));
-			$string = reflectionMachine($party, [$lorhondel, $player], $message_content, $command);
+			$message_content_clean = trim(substr($message_content_clean, strlen($command)));
+			$string = reflectionMachine($party, [$lorhondel, $player], $message_content_clean, $command);
 			if (is_string($string)) return $message->reply($string);
 			return;
 		}
