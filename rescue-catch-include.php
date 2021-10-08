@@ -36,5 +36,5 @@ $discord = null;
 $restart_cmd = 'cmd /c "'. __DIR__  . '\run.bat"'; //echo $restart_cmd . PHP_EOL;
 //system($restart_cmd);
 execInBackground($restart_cmd);
-exit();
+die();
 ?>

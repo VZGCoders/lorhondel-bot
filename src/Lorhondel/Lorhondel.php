@@ -273,6 +273,33 @@ class Lorhondel
 	public $processID = 0;
 	public $increment = 0;
 	
+	public $locations = [
+		'start' => [
+			'world1' => [
+				'place1' => [
+					'building1a',
+					'building1b',
+				],
+				'place2' => [
+					'building2a',
+					'building2b' => [
+						'room2b1',
+					],
+				],
+			],
+			'world2' => [
+				'place3' => [
+					'building3a',
+					'building3b',
+				],
+				'place4' => [
+					'building4a',
+					'building4b',
+				],
+			],
+		],
+	];
+	
     /**
      * Creates a Lorhondel client instance.
      *
