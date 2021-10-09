@@ -269,8 +269,8 @@ if (str_starts_with($message_content_lower, 'help')) {
 
 
 if (str_starts_with($message_content_lower, 'player')) {
-	$message_content = trim(substr($message_content, 6)); echo "[NAME] $name" . PHP_EOL;
-	$message_content_lower = trim(substr($message_content_lower, 6)); echo "[ID] $id" . PHP_EOL;
+	$message_content = trim(substr($message_content, 6));
+	$message_content_lower = trim(substr($message_content_lower, 6));
 	foreach (['<@', '!', '>'] as $filter) {
 		$message_content_clean = $name = $message_content = str_replace($filter, '', $message_content);
 		$id = $message_content_lower = str_replace($filter, '', $message_content_lower);

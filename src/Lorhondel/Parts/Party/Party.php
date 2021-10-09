@@ -320,22 +320,20 @@ class Party extends Part
     public function succession($lorhondel = null, ?bool $force = false): string|bool
     {
 		if ($force || ! $this->leader) {
-			if ($this->player1 && ('player1' != $this->leader))
-				$this->leader = 'player1';
-			elseif ($this->player2 && ('player2' != $this->leader))
-				$this->leader = 'player2';
-			elseif ($this->player3 && ('player3' != $this->leader))
-				$this->leader = 'player3';
-			elseif ($this->player4 && ('player4' != $this->leader))
-				$this->leader = 'player4';
-			elseif ($this->player5 && ('player5' != $this->leader))
-				$this->leader = 'player5';
-			else return $this->disband($lorhondel);
-			$lorhondel->parties->save($party);
-			if ($lorhondel && $player = $lorhondel->players->offsetGet($id)) {
+			$positions = [];
+			if ($this->player1 && $this->leader != 'player1') $positions[] = 'player1';
+			if ($this->player2 && $this->leader != 'player2') $positions[] = 'player2';
+			if ($this->player3 && $this->leader != 'player3') $positions[] = 'player3';
+			if ($this->player4 && $this->leader != 'player4') $positions[] = 'player4';
+			if ($this->player5 && $this->leader != 'player5') $positions[] = 'player5';
+			if (count($positions) == 0) return $this->disband($lorhondel);
+			$this->leader = $positions['0'];
+			$lorhondel->parties->save($this);
+			
+			if ($lorhondel && $player = $lorhondel->players->offsetGet($this->{$this->leader})) {
 				$leader = $player->name ?? $player->id;
 			} else $leader = $this->{$leader};
-			return 'Player `' . $leader . '` is the new leader of `' . ($this->name ?? $this->id) . '`! `';
+			return 'Player `' . $leader . '` is the new leader of `' . ($this->name ?? $this->id) . '`!';
 		} else return false;
     }
 	
