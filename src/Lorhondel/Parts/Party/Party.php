@@ -13,7 +13,7 @@ use Lorhondel\Parts\Part;
 use Lorhondel\Parts\Player\Player;
 
 /**
- * A party is a reference to a group of Players.
+ * A Party is a reference to a group of Players.
  *
 
  * @property int    $id            The unique identifier of the Player.
@@ -183,7 +183,7 @@ class Party extends Part
 	}
 
 	/*
-	
+	* Add a Player to the Party.
 	*/
 	public function join($lorhondel, $player): string
 	{
@@ -224,6 +224,9 @@ class Party extends Part
 		return 'Player `' . ($player->name ?? $player->id) . '` has joined Party `' . ($this->name ?? $this->id) . "` as Player `$position`!";
 	}
 
+	/*
+	* Remove a Player from the Party.
+	*/
 	public function leave($lorhondel, $player): string
 	{
 		if ($player instanceof Player)
@@ -268,7 +271,7 @@ class Party extends Part
 	}
 	
 	/*
-	* Alias for kick
+	* Forcefully remove a Player from the Party.
 	*/
 	public function kick($lorhondel, $player = null, $id = null): string
 	{
@@ -287,6 +290,9 @@ class Party extends Part
 		return $this->leave($target_player);
 	}
 
+	/*
+	* Transfer ownership of the Party to a Player.
+	*/
 	public function transfer($lorhondel = null, $player = null, $id = null): string
 	{
 		if ($player instanceof Player) {
@@ -308,10 +314,8 @@ class Party extends Part
 	}
 
 	/**
-	 *
 	 * Disbands the Party if no players remain
 	 * Assign a new Party leader if no leader exists
-	 *
      */
     public function succession($lorhondel = null, ?bool $force = false): string|bool
     {
