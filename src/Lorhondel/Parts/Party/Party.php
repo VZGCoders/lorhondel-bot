@@ -320,15 +320,15 @@ class Party extends Part
     public function succession($lorhondel = null, ?bool $force = false): string|bool
     {
 		if ($force || ! $this->leader) {
-			if ($this->player1 && ($this->player1 != $this->leader))
+			if ($this->player1 && ('player1' != $this->leader))
 				$this->leader = 'player1';
-			elseif ($this->player2 && ($this->player2 != $this->leader))
+			elseif ($this->player2 && ('player2' != $this->leader))
 				$this->leader = 'player2';
-			elseif ($this->player3 && ($this->player3 != $this->leader))
+			elseif ($this->player3 && ('player3' != $this->leader))
 				$this->leader = 'player3';
-			elseif ($this->player4 && ($this->player4 != $this->leader))
+			elseif ($this->player4 && ('player4' != $this->leader))
 				$this->leader = 'player4';
-			elseif ($this->player5 && ($this->player5 != $this->leader))
+			elseif ($this->player5 && ('player5' != $this->leader))
 				$this->leader = 'player5';
 			else return $this->disband($lorhondel);
 			$lorhondel->parties->save($party);
