@@ -72,18 +72,13 @@ class Pet extends Part
      */
     public function getCreatableAttributes(): array
     {
-        return [
+        return [ //'id', 'user_id', 'name', 'species', 'variant', 'affection'];
             'id' => $this->id,
             'user_id' => $this->user_id,
-			'party_id' => $this->party_id,
-			'active' => $this->active,
 			'name' => $this->name,
             'species' => $this->species,
-            'health' => $this->health,
-            'attack' => $this->attack,
-            'defense' => $this->defense,
-            'speed' => $this->speed,
-            'skillpoints' => $this->skillpoints,
+            'variant' => $this->variant,
+			'affection' => $this->affection',
         ];
     }
 
