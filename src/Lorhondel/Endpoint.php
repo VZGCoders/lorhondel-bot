@@ -189,13 +189,26 @@ class Endpoint
     // GET
     public const PET = 'pets/get/:pet_id';
 	// PUT
-    //public const PLAYER_PUT = 'pets/put/:pet_id';
+    //public const PET_PUT = 'pets/put/:pet_id';
 	// POST
     public const PET_POST = 'pets/post/:pet_id';
 	// PATCH
 	public const PET_PATCH = 'pets/patch/:pet_id';
 	// DELETE
 	public const PET_DELETE = 'pets/delete/:pet_id';
+	
+	// GET, PATCH
+    public const NPC_CURRENT = 'npcs/:npc_id';
+    // GET
+    public const NPC = 'npcs/get/:npc_id';
+	// PUT
+    //public const NPC_PUT = 'npcs/put/:npc_id';
+	// POST
+    public const NPC_POST = 'npcs/post/:npc_id';
+	// PATCH
+	public const NPC_PATCH = 'npcs/patch/:npc_id';
+	// DELETE
+	public const NPC_DELETE = 'npcs/delete/:npc_id';
 	
 	// 
     public const PLAYER_CURRENT_PARTY = self::PLAYER_CURRENT.'/parties/:party_id';

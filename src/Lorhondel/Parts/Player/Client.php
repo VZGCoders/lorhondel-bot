@@ -41,6 +41,7 @@ class Client extends Part
     protected $repositories = [
         'players' => PlayerRepository::class,
 		'pets' => PetRepository::class,
+		'npcs' => NPCRepository::class,
 		'parties' => PartyRepository::class,
 		'battles' => BattleRepository::class,
 		'votes' => VoteRepository::class,
