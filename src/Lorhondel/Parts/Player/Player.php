@@ -27,7 +27,8 @@ use Lorhondel\Parts\Part;
  * @property int    $attack        How much damage you output.
  * @property int    $defense       How much damage you block.
  * @property int    $speed         Evasiveness; Higher speed means a higher chance to evade an attack.
- * @property int    $skillpoints   Skill Points.
+ * @property int    $skillpoints   Skill Points; Acquired through completing certain quests or defeating enemy monsters.
+ * @property int    $reputation    Reputation; Acquired by exploring a region and interacting with its inhabitants.
 
  */
 class Player extends Part
@@ -38,7 +39,7 @@ class Player extends Part
      */
     protected static $fillable = ['id', 'user_id', 'party_id', 'active', 'looking', 'name', 'species', 'health', 'attack', 'defense', 'speed', 'skillpoints'];
 	
-	protected static $species_list = ['Elarian', 'Manthean', 'Noldarus', 'Veias', 'Jedoa'];
+	protected static $species_list = ['Elarian', 'Jedoa', 'Manthean', 'Noldarus', 'Veias'];
 
 	/**
      * Returns the fillable attributes.

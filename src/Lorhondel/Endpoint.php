@@ -184,6 +184,19 @@ class Endpoint
     // GET (NYI)
     //public const PLAYER_CURRENT_CONNECTIONS = self::PLAYER_CURRENT.'/connections';
 	
+	// GET, PATCH
+    public const PET_CURRENT = 'pets/:pet_id';
+    // GET
+    public const PET = 'pets/get/:pet_id';
+	// PUT
+    //public const PLAYER_PUT = 'pets/put/:pet_id';
+	// POST
+    public const PET_POST = 'pets/post/:pet_id';
+	// PATCH
+	public const PET_PATCH = 'pets/patch/:pet_id';
+	// DELETE
+	public const PET_DELETE = 'pets/delete/:pet_id';
+	
 	// 
     public const PLAYER_CURRENT_PARTY = self::PLAYER_CURRENT.'/parties/:party_id';
 	 // GET

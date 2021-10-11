@@ -306,6 +306,18 @@ class HttpServer
 							['method' => 'delete', 'privileged' => true, 'privileged_endpoints' => []],
 						],
 					],
+					'pets' => [
+						'part_name' => '\Lorhondel\Parts\Pet\Pet',
+						'part_name_short' => 'Pet',
+						'allowed_methods' => [
+							['method' => 'get', 'privileged' => false, 'privileged_endpoints' => [null, 'all', 'freshen']],
+							['method' => 'fresh', 'privileged' => false, 'privileged_endpoints' => []],
+							['method' => 'put', 'privileged' => true, 'privileged_endpoints' => []],
+							['method' => 'patch', 'privileged' => true, 'privileged_endpoints' => []],
+							['method' => 'post', 'privileged' => true, 'privileged_endpoints' => []],
+							['method' => 'delete', 'privileged' => true, 'privileged_endpoints' => []],
+						],
+					],
 					'parties' => [
 						'part_name' => '\Lorhondel\Parts\Party\Party',
 						'part_name_short' => 'Party',

@@ -13,6 +13,7 @@ use Lorhondel\Endpoint;
 use Lorhondel\Parts\OAuth\Application;
 use Lorhondel\Parts\Part;
 use Lorhondel\Repository\PlayerRepository;
+use Lorhondel\Repository\PetRepository;
 use Lorhondel\Repository\PartyRepository;
 use Lorhondel\Repository\BattleRepository;
 use Lorhondel\Repository\VoteRepository;
@@ -39,6 +40,7 @@ class Client extends Part
      */
     protected $repositories = [
         'players' => PlayerRepository::class,
+		'pets' => PetRepository::class,
 		'parties' => PartyRepository::class,
 		'battles' => BattleRepository::class,
 		'votes' => VoteRepository::class,
