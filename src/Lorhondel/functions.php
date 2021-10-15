@@ -712,8 +712,8 @@ Functions will handle what should happen if the wrong data types are passed
 function reflectionMachine($part = null, ?array $array_merge = [], ?string $message = '', ?string $command = '')//: string
 {
 	$tokens = array_merge($array_merge, explode(' ', $message));
-	$reflection = new \ReflectionMethod('\\'.get_class($part), $command);
-	$num = $reflection->getNumberOfParameters();
+	$method = new \ReflectionMethod('\\'.get_class($part), $command);
+	$num = $method->getNumberOfParameters();
 	$tokens = array_slice($tokens, 0, $num);
 	if ($part instanceof Part && count($tokens) < $num) { //Too few parameters passed to function
 		echo "num: $num" . PHP_EOL; echo 'token count: ' . count($tokens) . PHP_EOL;
