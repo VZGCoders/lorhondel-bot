@@ -438,4 +438,58 @@ class PartyRepository extends AbstractRepository
 		$this->delete($party);
 		return true;
 	}
+	
+	/*
+	* Creates an Embed for a Party.
+	*
+	* @param string|int|Party $id    The Party to generate the Embed for.
+	*
+	* @return string|Discord\Parts\Embed\Embed
+	*/
+	function partyEmbed($id)
+	{
+		if (! ($id instanceof Party)) {
+			if (! is_numeric($id)) return "You must include the numeric ID of the Party! You can check `players` if you need a list of your IDs!";
+			if (! $party = $this->offsetGet($id)) return "Unable to locate a Party with ID `$id`!";
+		} else $party = $id;
+		
+		$players = array();
+		$players[] = $player1 = $this->factory->lorhondel->players->offsetGet($party->player1);
+		$players[] = $player2 = $this->factory->lorhondel->players->offsetGet($party->player2);
+		$players[] = $player3 = $this->factory->lorhondel->players->offsetGet($party->player3);
+		$players[] = $player4 = $this->factory->lorhondel->players->offsetGet($party->player4);
+		$players[] = $player5 = $this->factory->lorhondel->players->offsetGet($party->player5);
+		
+		$embed = $this->factory->lorhondel->discord->factory(\Discord\Parts\Embed\Embed::class);
+		$embed->setColor(0xe1452d)
+		//	->setDescription('$author_guild_name') // Set a description (below title, above fields)
+		//	->setImage('https://avatars1.githubusercontent.com/u/4529744?s=460&v=4') // Set an image (below everything except footer)
+			->setTimestamp()
+			->setFooter('Lorhondel by ArtsyAxolotl#5128')                             					// Set a footer without icon
+			->setURL('');                             												// Set the URL
+		if ($party->name) $embed->addFieldValues('Name', $party->name, true);
+		$embed->addFieldValues('ID', $party->id, true);
+		foreach ($players as $player) {
+			if ($player && $user = $this->factory->lorhondel->discord->users->offsetGet($player->user_id)) {
+				$embed->setAuthor("{$user->username} ({$user->id})", $user->avatar); // Set an author with icon
+				if ($player->id == $party->{$party->leader}) {
+				if ($player->name) $leader_string = "{$player->name} ({$player->id})";
+				else $leader_string = "{$player->id}";
+					$embed->addFieldValues('Leader', $leader_string, true);
+					$embed->setThumbnail("{$user->avatar}"); // Set a thumbnail (the image in the top right corner)
+				}
+			}
+		}
+		$inline = false;
+		for ($x=0; $x<count($players); $x++) {
+			if ($players[$x]) {
+				if ($players[$x]->name) $player_string = "{$players[$x]->name} ({$players[$x]->id})";
+				else $player_string = "{$players[$x]->id}";
+				$embed->addFieldValues('Player ' . $x+1, $player_string, $inline);
+				$inline = true;
+			}
+		}
+		if ($party->looking) $embed->addFieldValues('Looking', 'This Party is looking for Players!', true);
+		return $embed;
+	}
 }

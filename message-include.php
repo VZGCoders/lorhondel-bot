@@ -12,12 +12,27 @@ if (is_null($message) || empty($message)) return; //An invalid message object wa
 if (is_null($message->content)) return; //Don't process messages without content
 if ($message["webhook_id"]) return; //Don't process webhooks
 
+$called = false;
 $message_content = $message->content;
-$message_id = $message->id;
 $message_content_lower = strtolower($message_content);
-if (!str_starts_with($message_content_lower, $lorhondel->command_symbol)) return;
-$message_content = substr($message_content, strlen($lorhondel->command_symbol));
-$message_content_lower = substr($message_content_lower, strlen($lorhondel->command_symbol));
+$message_content_original = $message_content;
+$message_content_lower_original = $message_content_lower;
+$message_id = $message->id;
+
+if (str_starts_with($message_content_lower,  "<@!".$lorhondel->discord->id."> ")) { //Allow calling commands by <@user_id>
+	$message_content = trim(substr($message_content, (4+strlen($lorhondel->discord->id))));
+	$message_content_lower = trim(substr($message_content_lower, (4+strlen($lorhondel->discord->id))));
+	$called = true;
+} elseif (str_starts_with($message_content_lower,  "<@".$lorhondel->discord->id."> ")) { //Allow calling commands by <@user_id>
+	$message_content = trim(substr($message_content, (3+strlen($lorhondel->discord->id))));
+	$message_content_lower = trim(substr($message_content_lower, (3+strlen($lorhondel->discord->id))));
+	$called = true;
+} elseif (str_starts_with($message_content_lower, $lorhondel->command_symbol)) { //Allow calling comamnds by command symbol (This will be deprecated by April 2022)
+	$message_content = trim(substr($message_content, strlen($lorhondel->command_symbol)));
+	$message_content_lower = trim(substr($message_content_lower, strlen($lorhondel->command_symbol)));
+	$called = true;
+}
+if (!$called) return;
 
 /*
 *********************
@@ -106,7 +121,11 @@ if ($creator) { //Debug commands
 			break;
 		case 'getcurrentplayer':
 			$player = getCurrentPlayer($lorhondel, $author_id);
-			if ($player) return $message->channel->sendEmbed(playerEmbed($lorhondel, getCurrentPlayer($lorhondel, $author_id)));
+			if ($player) {
+				$embed = $lorhondel->players->playerEmbed(getCurrentPlayer($lorhondel, $author_id));
+				if (is_string($embed)) return $message->channel->sendMessage($embed);
+				return $message->channel->sendEmbed($embed);
+			}
 			else return $message->reply('No Players found!');
 			break;
 		case 'getcurrentparty':
@@ -114,7 +133,9 @@ if ($creator) { //Debug commands
 				return $message->reply('No Players found!');
 			if (! $party = getCurrentParty($lorhondel, $player->id))
 				return $message->reply('No Party found!');
-			return $message->channel->sendEmbed(partyEmbed($lorhondel, $party));
+			$embed = $lorhondel->parties->partyEmbed($party);
+			if (is_string($embed)) return $message->channel->sendMessage($embed);
+			return $message->channel->sendEmbed($embed);
 			break;
 		case str_contains($message_content_lower, 'setcurrentplayer '):
 			$id = trim(str_replace('setcurrentplayer ', '', $message_content_lower));
@@ -294,9 +315,12 @@ if (str_starts_with($message_content_lower, 'player')) {
 		}
 	}
 	if (is_numeric($id)) {
-		if ($target_player = $lorhondel->players->offsetGet($id) ?? getCurrentPlayer($lorhondel, $id))
-			return $message->channel->sendEmbed(playerEmbed($lorhondel, $target_player));
-		else return $message->reply("Unable to locate either a Player or Discord account with a Player for ID `$id`!");
+		if ($target_player = $lorhondel->players->offsetGet($id) ?? getCurrentPlayer($lorhondel, $id)) {
+			$embed = $lorhondel->players->playerEmbed($target_player);
+			if (is_string($embed)) return $message->channel->sendMessage($embed);
+			return $message->channel->sendEmbed($embed);
+		}
+		return $message->reply("Unable to locate either a Player or Discord account with a Player for ID `$id`!");
 	}
 	/*
 	*********************
@@ -317,7 +341,9 @@ if (str_starts_with($message_content_lower, 'player')) {
 		}
 	}
 	if (! $message_content_lower) {
-		return $message->channel->sendEmbed(playerEmbed($lorhondel, $player));
+		$embed = $lorhondel->players->playerEmbed($player);
+		if (is_string($embed)) return $message->channel->sendMessage($embed);
+		return $message->channel->sendEmbed($embed);
 	}
 	elseif ($message_content_lower) {
 		$help = '';
@@ -343,21 +369,31 @@ if (str_starts_with($message_content_lower, 'party')) {
 	}
 	
 	if (is_numeric($id)) {
-		if ($target_party = $lorhondel->parties->offsetGet($id))
-			return $message->channel->sendEmbed(partyEmbed($lorhondel, $target_party));
+		if ($target_party = $lorhondel->parties->offsetGet($id)) {
+			$embed = $lorhondel->parties->partyEmbed($target_party);
+			if (is_string($embed)) return $message->channel->sendMessage($embed);
+			return $message->channel->sendEmbed($embed);
+		}
 		elseif ($target_player = getCurrentPlayer($lorhondel, $id) ?? $lorhondel->players->offsetGet($id)) {
 			if ($target_party = getCurrentParty($lorhondel, $target_player->id)) {
-				return $message->channel->sendEmbed(partyEmbed($lorhondel, $target_party));
+				$embed = $lorhondel->parties->partyEmbed($target_party);
+				if (is_string($embed)) return $message->channel->sendMessage($embed);
+				return $message->channel->sendEmbed($embed);
 			} else return $message->reply("Unable to locate a party for Player with ID `$id`!");
 		} else return $message->reply("Unable to locate a party with ID `$id`!");
 	}/* else { //Search by name (Unreliable, not unique, and conflicts with commands. Best not to use this..)
 		if (count($collection = $lorhondel->parties->filter(fn($p) => $p->name == $name))== 1) {
 			foreach ($collection as $party) 
-			if ($target_party = $lorhondel->parties->offsetGet($id))
-				return $message->channel->sendEmbed(partyEmbed($lorhondel, $target_party));
+			if ($target_party = $lorhondel->parties->offsetGet($id)) {
+				$embed = $lorhondel->parties->partyEmbed($target_party);
+			if (is_string($embed)) return $message->channel->sendMessage($embed);
+			return $message->channel->sendEmbed($embed);
+			}
 			elseif ($target_player = getCurrentPlayer($lorhondel, $id) ?? $lorhondel->players->offsetGet($id)) {
 				if ($target_party = getCurrentParty($lorhondel, $target_player->id)) {
-					return $message->channel->sendEmbed(partyEmbed($lorhondel, $target_party));
+					$embed = $lorhondel->parties->partyEmbed($target_party);
+					if (is_string($embed)) return $message->channel->sendMessage($embed);
+					return $message->channel->sendEmbed($embed);
 				} else return $message->reply("Unable to locate a party for Player with ID `$id`!");
 			} else return $message->reply("Unable to locate a party with ID `$id`!");
 		} elseif (count($collection = $lorhondel->parties->filter(fn($p) => $p->name == $name))> 1) {
@@ -406,7 +442,9 @@ if (str_starts_with($message_content_lower, 'party')) {
 		}
 	}
 	if (! $message_content_lower) {
-		return $message->channel->sendEmbed(partyEmbed($lorhondel, $party));
+		$embed = $lorhondel->parties->partyEmbed($party);
+		if (is_string($embed)) return $message->channel->sendMessage($embed);
+		return $message->channel->sendEmbed($embed);
 	}
 	elseif ($message_content_lower) {
 		$help = '';

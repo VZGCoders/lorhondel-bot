@@ -261,4 +261,44 @@ class PlayerRepository extends AbstractRepository
 		if ($part->user_id == $author_id) return $part->activate($this->factory->lorhondel);
 		return 'You can only activate a Player that you own!';
 	}
+	
+	/*
+	* Creates an Embed for a Player.
+	*
+	* @param string|int|Player $id    The Player to generate the Embed for.
+	*
+	* @return string|Discord\Parts\Embed\Embed
+	*/
+	function playerEmbed($id)
+	{
+		if (! ($id instanceof Player)) {
+			if (! is_numeric($id)) return "You must include the numeric ID of the Player! You can check `players` if you need a list of your IDs!";
+			if (! $player = $this->offsetGet($id)) return "Unable to locate a Player with ID `$id`!";
+		} else $player = $id;
+		
+		$embed = $this->factory->lorhondel->discord->factory(\Discord\Parts\Embed\Embed::class);
+		$embed->setColor(0xe1452d)
+		//	->setDescription('$author_guild_name') // Set a description (below title, above fields)
+		//	->setImage('https://avatars1.githubusercontent.com/u/4529744?s=460&v=4') // Set an image (below everything except footer)
+			->setTimestamp()
+			->setFooter('Lonhondel by ArtsyAxolotl#5128')
+			->setURL('');
+		if ($player->name) $embed->addFieldValues('Name', $player->name, true);
+		$embed->addFieldValues('Species', $player->species, true);
+		if ($player->party_id) $embed->addFieldValues('Party ID', $player->party_id, true);
+		if ($party = $this->factory->lorhondel->parties->offsetGet($player->party_id))
+			if ($party->name) $embed->addFieldValues('Party Name', $party->name, true);
+		$embed->addFieldValues('ID', $player->id, false);
+		$embed	
+			->addFieldValues('Health', $player->health, true)
+			->addFieldValues('Attack', $player->attack, true)
+			->addFieldValues('Defense', $player->defense, true)
+			->addFieldValues('Speed', $player->speed, true)
+			->addFieldValues('Skill Points', $player->skillpoints, true);
+		if ($user = $this->factory->lorhondel->discord->users->offsetGet($player->user_id)) {
+			$embed->setAuthor("{$user->username} ({$user->id})", $user->avatar); // Set an author with icon
+			$embed->setThumbnail("{$user->avatar}"); // Set a thumbnail (the image in the top right corner)
+		}
+		return $embed;
+	}
 }
