@@ -244,6 +244,15 @@ class PartyRepository extends AbstractRepository
 		return 'Your Party is currently being created. You can retrieve it with `' . $this->factory->lorhondel->command_symbol . 'party` in a few moments.';
 	}
 
+	/**
+	* Causes the Player to join a Party
+	*
+	* @param Player   $player   Player wanting to join a Party
+	* @param Party    $party    Party the Player is currently in
+	* @param id       $id       ID of the Party the Player wants to join
+	*
+	* @return string
+	*/
 	public function join($player = null, $party = null, $id = null): string
 	{
 		if (! $player) return 'Please create a Player or activate one first!';
@@ -258,62 +267,74 @@ class PartyRepository extends AbstractRepository
 	}
 
 	/**
-     * Causes the Player to join a Party.
-     *
-     * @param Party|int $party
-     */
-    public function induct($player = null, $party = null): bool
-    {
-		if (! ($party instanceof Party)) {
-            if ($party = $this->offsetGet($party)) {
-				return false;
-			}
-		}
-
-        if (! ($player instanceof Player)) {
-            if (! $player = $this->factory->lorhondel->players->offsetGet($player)) {
-				return false;
-			}
-		}
-
-		if (! $player->party_id && ! in_array($player->id, (array) $party)) {
-			if (! $party->player1) {
-				$party->player1 = $player->id;
-			} elseif (! $party->player2) {
-				$party->player2 = $player->id;
-			} elseif (! $party->player3) {
-				$party->player3 = $player->id;
-			} elseif (! $party->player4) {
-				$party->player4 = $player->id;
-			} elseif (! $party->player5) {
-				$party->player5 = $player->id;
-			} else return false;
-			$player->party_id = $party->id;
-			$this->factory->lorhondel->players->save($player);
-			$this->save($party);
-			return true;
+	* This is an internal server function and should not be callable by Players
+	*
+	* Causes a Player to join a Party
+	* Returns true if the Player is added to the Party
+	* Returns null if Party is not found or an invalid parameter was passed
+	* Returns false if the Player is not found or is already in a party
+	*
+	* @param Player|int         $player   Placeholder
+	* @param Party|Player|int   $party    Placeholder
+	*
+	* @return null|bool
+	*/
+	public function induct($player_part = null, $party_part = null): null|bool
+	{		
+		if ($party_part instanceof Party) {
+			$party = $party_part;
+		} elseif ($party_part instanceof Player) {
+			if (! $party_part->party_id) return null;
+			if (! $party = $this->offsetGet($party_part->party_id)) return null;
+		} elseif (is_numeric($party_part)) {
+			if (! $party = $this->offsetGet($party_part)) return null;
+		} else return null;
+		
+		if ($player_part instanceof Player) {
+			$player = $player_part;
+		} elseif (is_numeric($player_part)) {
+			if (! $player = $this->factory->lorhondel->players->offsetGet($player_part)) return false;
 		} else return false;
+		if ($player->party_id) return false;
+		
+		if (! $party->player1) {
+			$party->player1 = $player->id;
+		} elseif (! $party->player2) {
+			$party->player2 = $player->id;
+		} elseif (! $party->player3) {
+			$party->player3 = $player->id;
+		} elseif (! $party->player4) {
+			$party->player4 = $player->id;
+		} elseif (! $party->player5) {
+			$party->player5 = $player->id;
+		} else return false;
+		$player->party_id = $party->id;
+		$this->factory->lorhondel->players->save($player);
+		$this->save($party);
+		return true;
     }
 	
-	/**
-     * Causes the Player to leave a Party.
-     *
-	 * @param Player|int $player The Player to remove
-     * @param Party|int $party The Party to remove from
-     */
-    public function kick($party, $player): string|bool
+    /**
+	* This is an internal server function and should not be callable by Players
+	*
+    * Removes a Player from their Party.
+    *
+    * @param Player|int   $player   The Player to remove
+	*
+	* @return null|bool
+    */
+    public function kick($player_part): null|bool
     {
-        if (! $party instanceof Party) {
-            if ($party = $this->offsetGet($party)) {
-				return false;
-			}
+        if ($player_part instanceof Player) {
+			$player = $player_part;
+			if (! $player->party_id) return null;
+			if (! $party = $this->offsetGet($player->party_id)) return null;
 		}
-
-		if (! $player instanceof Player) {
-            if (! $player = $this->factory->lorhondel->players->offsetGet($player)) {
-				return false;
-			}
-		}
+		elseif (is_numeric($player_part)) {
+			if (! $player = $this->factory->lorhondel->players->offsetGet($player_part)) return null;
+			if (! $player->party_id) return null;
+			if (! $party = $this->offsetGet($player->party_id)) return null;
+		} else return null;
 
 		$member = false;
 		foreach ($party as $key => $value) {
@@ -331,36 +352,45 @@ class PartyRepository extends AbstractRepository
 		return true;
     }
 	
-	/**
-     * Kicks a member. Alias for `$players->expel($party, $player)`.
-     *
-     * @param Player|string $player
-     */
-    public function expel($party, $player): string|bool
+    /**
+    * Alias for kick.
+    * Removes a Player from the Party.
+    *
+    * @param Player|string $player
+	*
+	* return null|bool
+    */
+    public function expel($party, $player): null|bool
     {
         return $this->kick($party, $player);
     }
 
-	/**
-     * Transfers ownership of the Party to another Player.
-     * This is an internal server function and should not be callable by Players
-	 *
-	 * @param Player|int $player The Party to transfer ownership of.
-     * @param Player|int $player The Player to transfer ownership to.
-     */
-    public function transferOwnership($party, $player): bool
+    /**
+    * This is an internal server function and should not be callable by Players
+    *
+    * Transfers ownership of the Party to another Player
+    *
+    * @param Party|Player|int    $party    The Party to transfer ownership of
+    * @param Player|int          $player   The Player to transfer ownership to
+    *
+    * @return bool
+    */
+    public function transfer($party_part, $player_part): null|bool
     {
-		if (! $party instanceof Party) {
-            if (! $party = $this->offsetGet($party)) {
-				return false;
-			}
-		}
+		if ($party_part instanceof Party) {
+            $party = $party_part;
+		} elseif ($party_part instanceof Player) {
+			if (! $player->party_id) return null;
+			if (! $party = $this->offsetget($player->party_id)) return null;
+		} elseif (is_numeric($party_part)) {
+			if (! $party = $this->offsetGet($party_part)) return null;
+		} else return null;
 
-		if (! $player instanceof Player) {
-            if (! $player = $this->factory->lorhondel->players->offsetGet($player)) {
-				return false;
-			}
-		}
+		if ($player_part instanceof Player) {
+            $player = $player_part;
+		} elseif (is_numeric($player_part)) {
+			if (! $player = $this->factory->lorhondel->players->offsetGet($player_part)) return false;
+		} else return false;
 		
 		if ($party->player1 == $player->id) $party->leader = 'player1';
 		elseif ($party->player2 == $player->id) $party->leader = 'player2';
@@ -373,23 +403,36 @@ class PartyRepository extends AbstractRepository
     }
 	
 	/*
-	* Alias for transferOwnership
 	* This is an internal server function and should not be callable by Players
+	*
+	* Alias for transfer
+	*
+	* @param Party|int    $party    The Party to transfer ownership of
+    * @param Player|int   $player   The Player to transfer ownership to
+	*
+	* @return null|bool
 	*/
-	public function transfer($party, $target_player): string|bool
+	public function transferOwnership($party, $player): null|bool
 	{
-		if ($this->transferOwnership($party, $target_player)) return false;
-		return 'Player `' . ($target_player->name ?? $target_player->id) . '` is the new leader of `' . ($this->name ?? $this->party) . '`! `';;
+		return $this->transfer($party, $player);
 	}
+	
 	/**
-	 * Disbands the Party if no players remain
-	 * Assign a new Party leader if no leader exists
-     */
-    public function succession($party)
+	* Disbands the Party if no players remain
+	* Assigns a new Party leader if no leader exists
+	*
+	* @param Party|int   $party   The Party to set a leader to
+	*
+	* @return bool
+	*/
+    public function succession($part): null|bool
     {
-		if ($party instanceof Party || $party = $this->offsetGet($party)) {
+		if ($part instanceof Party || $party = $this->offsetGet($party)) {
+			$party = part;
             $party_id = $party->id;
-        } else return false;
+        } elseif (is_numeric($part)) {
+			if (! $party = $this->offsetGet($part)) return null;
+		} else return false;
 		
 		if (! $party->leader) {
 			if ($party->player1 && ($party->player1 != $party->leader))
@@ -408,35 +451,125 @@ class PartyRepository extends AbstractRepository
 		} else return false;
     }
 	
-	public function disband($party): bool
+	/*
+	* This is an internal server function and should not be callable by Players
+	*
+	* Deletes the Party part and unassigns the Party ID from its Players
+	*
+	* @param Player|Party|int   $part   The Party, Player in the Party, or Party ID
+	*
+	* @return null|bool
+	*/
+	public function disband($part): null|bool
 	{
-		//
-		if ($party instanceof Party || $party = $this->offsetGet($party)) {
-            $party_id = $party->id;
-        } else return false;
+		if ($part instanceof Party) {
+            $party = $part;
+		} elseif ($part instanceof Player) {
+			if (! $player->party_id) return null;
+			if (! $party = $this->offsetget($player->party_id)) return null;
+        } elseif (is_numeric($part)) {
+			if (! $party = $this->offsetGet($part)) return null;
+		} else return null;
 		
-		if ($party->player1 && $player = $this->factory->lorhondel->players->offsetGet($party->player1)) {
-			$player->party_id = null;
-			
+		$player_ids = array();
+		if ($party->player1) $player_ids[] = $party->player1;
+		if ($party->player2) $player_ids[] = $party->player2;
+		if ($party->player3) $player_ids[] = $party->player3;
+		if ($party->player4) $player_ids[] = $party->player4;
+		if ($party->player5) $player_ids[] = $party->player5;
+		
+		$players = array();
+		foreach ($player_ids as $id) {
+			if ($player = $lorhondel->players->offsetGet($id)) {
+				$player->party_id = null;
+				$players[] = $player;
+			}
 		}
-		if ($party->player2 && $player = $this->factory->lorhondel->players->offsetGet($party->player2)) {
-			$player->party_id = null;
-			$this->factory->lorhondel->players->save($player);
-		}
-		if ($party->player3 && $player = $this->factory->lorhondel->players->offsetGet($party->player3)) {
-			$player->party_id = null;
-			$this->factory->lorhondel->players->save($player);
-		}
-		if ($party->player4 && $player = $this->factory->lorhondel->players->offsetGet($party->player4)) {
-			$player->party_id = null;
-			$this->factory->lorhondel->players->save($player);
-		}
-		if ($party->player5 && $player = $this->factory->lorhondel->players->offsetGet($party->player5)) {
-			$player->party_id = null;
-			$this->factory->lorhondel->players->save($player);
-		}
-		$this->delete($party);
+		
+		$lorhondel->parties->delete($party)->done(
+			function ($result) use ($lorhondel, $players) {
+				if (count($players) == 0) return;
+				$promise = null;
+				$string = '';
+				$string1 = '$promise = $lorhondel->players->save(array_shift($players))->done(function () use ($lorhondel, $players, $i) {';
+				$string2 = '});';
+				for ($i = 0; $i < count($players); $i++) {
+				  $string .= $string1;
+				}
+				for ($i = 0; $i < count($players); $i++) {
+				  $string .= $string2;
+				}
+				eval($string); //I really hate this language sometimes
+			}
+		);
 		return true;
+	}
+	
+	/*
+	* This is an internal server function and should not be callable by Players
+	*
+	* Toggles whether to allow Players to join the Party without an invite.
+	*
+	* @param Player|Party|int   $part   The Party, Player in the Party, or Party ID
+	*
+	* @return null|bool
+	*/
+	public function looking($part = null): null|bool
+	{
+		if ($part instanceof Party) {
+			$party = $part;
+		} elseif ($part instanceof Player) {
+			if ($part->party_id == null) return null;
+			if (! $party = $this->offsetGet($part->party_id)) return null;
+		} elseif (is_numeric($part)) {
+			if (! $party = $this->offsetGet($part)) return null;
+		} else return null;
+		
+		$full = false;
+		if ($this->isPartyFull($party)) {
+			$return = false;
+			if (! $part->looking) return $return;
+			$full = true;
+		}
+		switch ($party->looking) {
+			case null:
+			case false:
+				$return = true;
+				$party->looking = true;
+				break;
+			case true && $full == false:
+				$return = false;
+			case $full == true:
+				$party->looking = false;
+				break;
+			default:
+				break;
+		}
+		$this->save($party);
+		return $return;
+	}
+	
+	/*
+	* Checks whether a Party is full.
+	* Returns true if Party exists and is not full
+	* Returns null if Party is not found or an invalid parameter was passed
+	* Returns false if Party is full
+	*
+	* @param string|int|Player|Party $part   The Party (or Player in the Party) to check.
+	*
+	* @return null|bool
+	*/
+	function isPartyFull($part = null): null|bool
+	{
+		if ($part instanceof Party) {
+			$party = $part;
+		} elseif ($part instanceof Player) {
+			if (! $id = $player->party_id) return null;
+			if (! $party = $this->factory->lorhondel->parties->offsetGet($id)) return null;
+		} elseif (is_numeric($part)) {
+			if (! $party = $this->factory->lorhondel->parties->offsetGet($part)) return null;
+		} else return null;
+		return $party->isPartyFull();
 	}
 	
 	/*
@@ -448,10 +581,11 @@ class PartyRepository extends AbstractRepository
 	*/
 	function partyEmbed($id)
 	{
-		if (! ($id instanceof Party)) {
-			if (! is_numeric($id)) return "You must include the numeric ID of the Party! You can check `players` if you need a list of your IDs!";
+		if ($id instanceof Party) {
+			$party = $id;
+		} elseif (is_numeric($id)) {
 			if (! $party = $this->offsetGet($id)) return "Unable to locate a Party with ID `$id`!";
-		} else $party = $id;
+		} else return "You must include the numeric ID of the Party! You can check `players` if you need a list of your IDs!";
 		
 		$players = array();
 		$players[] = $player1 = $this->factory->lorhondel->players->offsetGet($party->player1);

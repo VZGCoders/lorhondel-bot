@@ -101,12 +101,20 @@ class Party extends Part
 		return '';
 	}
 	
+	/*
+	* Toggles whether to allow Players to join the Party without an invite.
+	*
+	* @param Lorhondel     Required to save changes to the Party.
+	* @param Player        The Player calling this method.
+	*
+	* @return bool
+	*/
 	public function looking($lorhondel = null, $player = null): string
 	{
 		if ($player instanceof Player) {
 			if (! $this->isLeader($player)) return 'Player `' . ($player->name ?? $player->id) . '` is not the Party leader!';
 		}
-		if (\Lorhondel\isPartyFull($this, null)) $return = 'Party cannot be full!';
+		if ($this->isPartyFull()) $return = 'Party cannot be full!';
 		switch ($this->looking) {
 			case null:
 			case false:
@@ -194,7 +202,7 @@ class Party extends Part
 			$player = $lorhondel->players->offsetGet($id);
 		} else return 'Invalid parameter! Expects Player or Player ID.';
 		if ($player->party_id) return 'Player is already in a Party!';
-		if (\Lorhondel\isPartyFull($this, null) === false) return 'Party is full!';
+		if (! $this->isPartyFull()) return 'Party is full!';
 		
 		if (in_array($id, $this->invites))
 			unset($this->invites[$id]);
@@ -216,7 +224,7 @@ class Party extends Part
 			$this->player5 = $id;
 			$position = 5;
 		}
-		if (! \Lorhondel\isPartyFull($this, null)) $this->looking = false;
+		if (! $this->isPartyFull()) $this->looking = false;
 		$lorhondel->parties->save($this);
 		$player->looking = false;
 		$lorhondel->players->save($player);
@@ -375,5 +383,20 @@ class Party extends Part
 			}
 		);
 		return 'Party `' . ($this->name ?? $this->id) . '` has been disbanded! ';
+	}
+	
+	/*
+	* Checks whether the Party is full.
+	* Returns false if Party is full
+	*
+	* @param string|int|Party|Player $id    The Party (or Player in the Party) to check.
+	*
+	@return bool
+	*/
+	function isPartyFull(): bool
+	{
+		if (! $this->player1 || ! $this->player2 || ! $this->player3 || ! $this->player4 || ! $this->player5)
+			return true;
+		return false;
 	}
 }

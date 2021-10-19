@@ -612,30 +612,6 @@ function getPlayerLocation($lorhondel)
 {
 	//
 }
-/*
-Returns true if Party exists and is not full
-Returns null if Party is not found or an invalid parameter was passed
-Returns false if Party is full
-*/
-function isPartyFull($part, $lorhondel = null): bool
-{
-	if ($part instanceof Party) {
-		$party = $part;
-		$id = $part->id;
-	}
-	elseif ($part instanceof Player)
-		if ($player->party_id !== null)
-			$id = $player->party_id;
-	elseif (is_numeric($part)) $id = $part;
-	//else return null; //Internal function should not allow passing of invalid parameter
-	
-	if ($party = $party ?? $lorhondel->parties->offsetGet($id)) {
-		if (! $party->player1 || ! $party->player2 || ! $party->player3 || ! $party->player4 || ! $party->player5)
-			return true;
-		else return false;
-	}// else return null;  //Internal function should not allow passing of invalid parameter
-	return false;
-}
 
 /*
 Functions will handle what should happen if the wrong data types are passed
