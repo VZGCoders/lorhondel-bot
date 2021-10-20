@@ -225,7 +225,7 @@ class PlayerRepository extends AbstractRepository
 			'species' => $species,
 		])) {
 			if (! $species || ! in_array(trim($species), $part::getFillableSpeciesAttributes())) {
-				$return = 'Please tell us the species you want for your Player in the following format: `' . $this->factory->lorhondel->command_symbol . 'player create {species}` where `{species}` is any of the following:' . PHP_EOL;
+				$return = 'Please tell us the species you want for your Player in the following format: `<@' . $this->factory->lorhondel->discord->id . '> player create {species}` where `{species}` is any of the following:' . PHP_EOL;
 				foreach ($part::getFillableSpeciesAttributes() as $choice) {
 					$return .= "$choice, ";
 				}
@@ -234,7 +234,7 @@ class PlayerRepository extends AbstractRepository
 			}		
 			echo '[CREATE PLAYER WITH PART]'; var_dump($part);
 			$this->save($part);
-			return 'Created player `' . $part->name . ' ` with ID `' . $part->id . '`. You can make this your active Player by using the command `' . $this->factory->lorhondel->command_symbol . 'player activate ' . $part->id . '`.';				
+			return 'Created player `' . $part->name . ' ` with ID `' . $part->id . '`. You can make this your active Player by using the command `<@' . $this->factory->lorhondel->discord->id . '> player activate ' . $part->id . '`.';				
 		} else return 'Error building Player part!';
 	}
 
@@ -250,7 +250,7 @@ class PlayerRepository extends AbstractRepository
     public function activate($author_id = null, $id = null): string
     {
 		if (! ($id instanceof Player)) {
-			if (! is_numeric($id)) return "You must include the numeric ID of the Player you want to activate! You can check `{$this->factory->lorhondel->command_symbol}players` if you need a list of your IDs!";
+			if (! is_numeric($id)) return "You must include the numeric ID of the Player you want to activate! You can check `<@{$this->factory->lorhondel->discord->id}> players` if you need a list of your IDs!";
 			if (! $part = $this->offsetGet($id)) return "Unable to locate a Player with ID `$id`!";
 		} else {
 			$part = $id;

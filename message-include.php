@@ -12,14 +12,12 @@ if (is_null($message) || empty($message)) return; //An invalid message object wa
 if (is_null($message->content)) return; //Don't process messages without content
 if ($message["webhook_id"]) return; //Don't process webhooks
 
-$called = false;
-$message_content = $message->content;
-$message_content_lower = strtolower($message_content);
-$message_content_original = $message_content;
-$message_content_lower_original = $message_content_lower;
+$message_content_original = $message_content = $message->content;
+$message_content_lower_original = $message_content_lower = strtolower($message_content);
 $message_id = $message->id;
 
-if (str_starts_with($message_content_lower,  "<@!".$lorhondel->discord->id."> ")) { //Allow calling commands by <@user_id>
+$called = false;
+if (str_starts_with($message_content_lower,  "<@!".$lorhondel->discord->id."> ")) { //Allow calling commands by <@!user_id>
 	$message_content = trim(substr($message_content, (4+strlen($lorhondel->discord->id))));
 	$message_content_lower = trim(substr($message_content_lower, (4+strlen($lorhondel->discord->id))));
 	$called = true;
@@ -381,7 +379,8 @@ if (str_starts_with($message_content_lower, 'party')) {
 				return $message->channel->sendEmbed($embed);
 			} else return $message->reply("Unable to locate a party for Player with ID `$id`!");
 		} else return $message->reply("Unable to locate a party with ID `$id`!");
-	}/* else { //Search by name (Unreliable, not unique, and conflicts with commands. Best not to use this..)
+	}
+	/* else{ //Search by name (Unreliable, not unique, and conflicts with commands. Best not to use this..)
 		if (count($collection = $lorhondel->parties->filter(fn($p) => $p->name == $name))== 1) {
 			foreach ($collection as $party) 
 			if ($target_party = $lorhondel->parties->offsetGet($id)) {
