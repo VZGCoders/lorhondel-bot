@@ -241,7 +241,7 @@ class PartyRepository extends AbstractRepository
 			}
 		);
 		*/
-		return 'Your Party is currently being created. You can retrieve it with `' . $this->factory->lorhondel->command_symbol . 'party` in a few moments.';
+		return 'Your Party is currently being created. You can retrieve it with `<@' . $this->factory->lorhondel->discord->id . '>party` in a few moments.';
 	}
 
 	/**

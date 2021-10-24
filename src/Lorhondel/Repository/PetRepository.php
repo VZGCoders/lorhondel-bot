@@ -225,7 +225,7 @@ class PetRepository extends AbstractRepository
 			'species' => $species,
 		])) {
 			if (! $species || ! in_array(trim($species), $part::getFillableSpeciesAttributes())) {
-				$return = 'Please tell us the species you want for your Pet in the following format: `<@' . $this->factory->lorhondel->id . '> pet create {species}` where `{species}` is any of the following:' . PHP_EOL;
+				$return = 'Please tell us the species you want for your Pet in the following format: `<@' . $this->factory->lorhondel->discord->id . '> pet create {species}` where `{species}` is any of the following:' . PHP_EOL;
 				foreach ($part::getFillableSpeciesAttributes() as $choice) {
 					$return .= "$choice, ";
 				}
@@ -234,7 +234,7 @@ class PetRepository extends AbstractRepository
 			}		
 			echo '[CREATE PET WITH PART]'; var_dump($part);
 			$this->save($part);
-			return 'Created pet `' . $part->name . ' ` with ID `' . $part->id . '`. You can make this your active Pet by using the command <@' . $this->factory->lorhondel->id . '> pet activate ' . $part->id . '`.';				
+			return 'Created pet `' . $part->name . ' ` with ID `' . $part->id . '`. You can make this your active Pet by using the command <@' . $this->factory->lorhondel->discord->id . '> pet activate ' . $part->id . '`.';				
 		} else return 'Error building Pet part!';
 	}
 
@@ -250,7 +250,7 @@ class PetRepository extends AbstractRepository
     public function activate($author_id = null, $id = null): string
     {
 		if (! ($id instanceof Pet)) {
-			if (! is_numeric($id)) return "You must include the numeric ID of the Pet you want to activate! You can check `<@{$this->factory->lorhondel->id}> pets` if you need a list of your IDs!";
+			if (! is_numeric($id)) return "You must include the numeric ID of the Pet you want to activate! You can check `<@{$this->factory->lorhondel->discord->id}> pets` if you need a list of your IDs!";
 			if (! $part = $this->offsetGet($id)) return "Unable to locate a Pet with ID `$id`!";
 		} else {
 			$part = $id;
