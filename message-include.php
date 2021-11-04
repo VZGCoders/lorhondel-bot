@@ -128,16 +128,18 @@ if ($creator) { //Debug commands
 			return $message->reply(json_encode($lorhondel->parties));
 			break;
 		case 'getcurrentplayer':
-			$player = getCurrentPlayer($lorhondel, $author_id);
-			if ($player) {
-				$embed = $lorhondel->players->playerEmbed(getCurrentPlayer($lorhondel, $author_id));
-				if (is_string($embed)) return $message->channel->sendMessage($embed);
-				return $message->channel->sendEmbed($embed);
-			}
-			else return $message->reply('No Players found!');
+			if ($account = $lorhondel->accounts->get('discord_id', $author_id)) {				
+				if ($player = getCurrentPlayer($lorhondel, $account->id)) {
+					$embed = $lorhondel->players->playerEmbed($player);
+					if (is_string($embed)) return $message->channel->sendMessage($embed);
+					return $message->channel->sendEmbed($embed);
+				} else return $message->reply('No Players found!');
+			} else return $message->reply('No Account found!');
 			break;
 		case 'getcurrentparty':
-			if (! $player = getCurrentPlayer($lorhondel, $author_id))
+			if (! $account = $lorhondel->accounts->get('discord_id', $author_id))
+				return $message->reply('No Account found!');
+			if (! $player = getCurrentPlayer($lorhondel, $account->id))
 				return $message->reply('No Players found!');
 			if (! $party = getCurrentParty($lorhondel, $player->id))
 				return $message->reply('No Party found!');
@@ -289,8 +291,10 @@ if ($creator) { //Debug commands
 }
 
 echo '[LORHONDEL MESSAGE] ' . $author_id . PHP_EOL;
-if ($player = getCurrentPlayer($lorhondel, $author_id))
-	$party = getCurrentParty($lorhondel, $player->id);
+
+if ($account = $lorhondel->accounts->get('discord_id', $author_id))
+	if ($player = getCurrentPlayer($lorhondel, $account->id))
+		$party = getCurrentParty($lorhondel, $player->id);
 
 if (str_starts_with($message_content_lower, 'help'))
 	$documentation = '';

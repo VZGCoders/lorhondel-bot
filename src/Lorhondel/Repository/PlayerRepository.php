@@ -215,12 +215,17 @@ class PlayerRepository extends AbstractRepository
      *
      * @return string
      */
-    public function new($author_id = null, $species = null, $name = null, $class = null): string
+    public function new($discord_id = null, $species = null, $name = null, $class = null): string
     {
 		$snowflake = \Lorhondel\generateSnowflake($this->factory->lorhondel);
+		if (! $account = $lorhondel->accounts->get('discord_id', $discord_id)) {
+			//
+			return $message->reply("I wasn't able to locate your account! Please register using `account register` before using Lorhondel-related commands.");
+		}
+			
 		if ($part = $this->factory->lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
 			'id' => $snowflake,
-			'discord_id' => $author_id,
+			'account_id' => $account->id,
 			'name' => $name,
 			'species' => $species,
 		])) {
@@ -247,7 +252,7 @@ class PlayerRepository extends AbstractRepository
      *
      * @return string
      */
-    public function activate($author_id = null, $id = null): string
+    public function activate($discord_id = null, $id = null): string
     {
 		if (! ($id instanceof Player)) {
 			if (! is_numeric($id)) return "You must include the numeric ID of the Player you want to activate! You can check `<@{$this->factory->lorhondel->discord->id}> players` if you need a list of your IDs!";
@@ -257,8 +262,11 @@ class PlayerRepository extends AbstractRepository
 			$id = $id->id;
 		}
 		
-		if (! $author_id) return $part->activate($this->factory->lorhondel);
-		if ($part->discord_id == $author_id) return $part->activate($this->factory->lorhondel);
+		if (! $discord_id) return $part->activate($this->factory->lorhondel);
+		if ($part->account_id) {
+			if ($account = $this->factory->lorhondel->accounts->offsetGet($part->account_id))
+				if ($account->discord_id == $discord_id) return $part->activate($this->factory->lorhondel);
+		}
 		return 'You can only activate a Player that you own!';
 	}
 	
@@ -295,9 +303,11 @@ class PlayerRepository extends AbstractRepository
 			->addFieldValues('Defense', $player->defense, true)
 			->addFieldValues('Speed', $player->speed, true)
 			->addFieldValues('Skill Points', $player->skillpoints, true);
-		if ($user = $this->factory->lorhondel->discord->users->offsetGet($player->discord_id)) {
-			$embed->setAuthor("{$user->username} ({$user->id})", $user->avatar); // Set an author with icon
-			$embed->setThumbnail("{$user->avatar}"); // Set a thumbnail (the image in the top right corner)
+		if ($account = $this->factory->lorhondel->accounts->offsetGet($player->account_id)) {
+			if ($user = $this->factory->lorhondel->discord->users->offsetGet($account->discord_id)) {
+				$embed->setAuthor("{$user->username} ({$user->id})", $user->avatar); // Set an author with icon
+				$embed->setThumbnail("{$user->avatar}"); // Set a thumbnail (the image in the top right corner)
+			}
 		}
 		return $embed;
 	}

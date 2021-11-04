@@ -560,9 +560,9 @@ function partPusher($lorhondel, $repository, $part_name, $array)
 	}
 	return $part;
 }
-function getCurrentPlayer($lorhondel, $discord_id)
+function getCurrentPlayer($lorhondel, $account_id)
 {
-	if (count($collection = $lorhondel->players->filter(fn($p) => $p->discord_id == $discord_id && $p->active == 1 )) > 0) {
+	if (count($collection = $lorhondel->players->filter(fn($p) => $p->account_id == $account_id && $p->active == 1 )) > 0) {
 		//echo '[FOUND ACTIVE CACHED PLAYER]'; //var_dump($collection);
 		foreach ($collection as $player) //There should only be one
 			return $player;
@@ -570,11 +570,11 @@ function getCurrentPlayer($lorhondel, $discord_id)
 	
 	//No active Player part was found, so check SQL to make sure
 	include 'connect.php';
-	$sql = "SELECT * FROM players WHERE discord_id = ? AND active = 1";
+	$sql = "SELECT * FROM players WHERE account_id = ? AND active = 1";
 	$get = array();
 	$part = null;
 	if ($stmt = $PDO->prepare($sql))
-		if ($stmt->execute([$discord_id]))
+		if ($stmt->execute([$account_id]))
 			if ($result = $stmt->fetchAll())
 				$get = $result;
 	echo '[getCurrentPlayer]'; var_dump($get);
