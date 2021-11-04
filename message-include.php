@@ -17,11 +17,11 @@ $message_content_lower_original = $message_content_lower = strtolower($message_c
 $message_id = $message->id;
 
 $called = false;
-if (str_starts_with($message_content_lower,  "<@!".$lorhondel->discord->id."> ")) { //Allow calling commands by <@!discord_id>
+if (str_starts_with($message_content_lower,  "<@!{$lorhondel->discord->id}> ")) { //Allow calling commands by <@!discord_id>
 	$message_content = trim(substr($message_content, (4+strlen($lorhondel->discord->id))));
 	$message_content_lower = trim(substr($message_content_lower, (4+strlen($lorhondel->discord->id))));
 	$called = true;
-} elseif (str_starts_with($message_content_lower,  "<@".$lorhondel->discord->id."> ")) { //Allow calling commands by <@discord_id>
+} elseif (str_starts_with($message_content_lower,  "<@{$lorhondel->discord->id}> ")) { //Allow calling commands by <@discord_id>
 	$message_content = trim(substr($message_content, (3+strlen($lorhondel->discord->id))));
 	$message_content_lower = trim(substr($message_content_lower, (3+strlen($lorhondel->discord->id))));
 	$called = true;
