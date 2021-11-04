@@ -220,7 +220,7 @@ class PetRepository extends AbstractRepository
 		$snowflake = \Lorhondel\generateSnowflake($this->factory->lorhondel);
 		if ($part = $this->factory->lorhondel->factory(\Lorhondel\Parts\Pet\Pet::class, [
 			'id' => $snowflake,
-			'user_id' => $author_id,
+			'discord_id' => $author_id,
 			'name' => $name,
 			'species' => $species,
 		])) {
@@ -258,7 +258,7 @@ class PetRepository extends AbstractRepository
 		}
 		
 		if (! $author_id) return $part->activate($this->factory->lorhondel);
-		if ($part->user_id == $author_id) return $part->activate($this->factory->lorhondel);
+		if ($part->discord_id == $author_id) return $part->activate($this->factory->lorhondel);
 		return 'You can only activate a Pet that you own!';
 	}
 }

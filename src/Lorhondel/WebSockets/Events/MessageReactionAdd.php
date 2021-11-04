@@ -33,7 +33,7 @@ class MessageReactionAdd extends Event
                     if ($react->id == $reaction->reaction_id) {
                         ++$react->count;
 
-                        if ($reaction->user_id == $this->lorhondel->id) {
+                        if ($reaction->discord_id == $this->lorhondel->id) {
                             $react->me = true;
                         }
 
@@ -46,7 +46,7 @@ class MessageReactionAdd extends Event
                 if (! $addedReaction) {
                     $message->reactions->push($message->reactions->create([
                         'count' => 1,
-                        'me' => $reaction->user_id == $this->lorhondel->id,
+                        'me' => $reaction->discord_id == $this->lorhondel->id,
                         'emoji' => $reaction->emoji->getRawAttributes(),
                     ], true));
                 }

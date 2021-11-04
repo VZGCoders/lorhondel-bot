@@ -18,7 +18,7 @@ use Lorhondel\Parts\Part;
  *
 
  * @property int    $id            The unique identifier of the Pet.
- * @property int    $user_id       Owner's Discord user id.
+ * @property int    $discord_id       Owner's Discord user id.
  *
  * @property string $name          The name of the Pet.
  * @property string $species       The species of the Pet.
@@ -31,7 +31,7 @@ class Pet extends Part
     /**
      * @inheritdoc
      */
-    protected static $fillable = ['id', 'user_id', 'name', 'species', 'variant', 'affection'];
+    protected static $fillable = ['id', 'discord_id', 'name', 'species', 'variant', 'affection'];
 
 	protected static $species_list = ['']; //TODO
 
@@ -72,9 +72,9 @@ class Pet extends Part
      */
     public function getCreatableAttributes(): array
     {
-        return [ //'id', 'user_id', 'name', 'species', 'variant', 'affection'];
+        return [ //'id', 'discord_id', 'name', 'species', 'variant', 'affection'];
             'id' => $this->id,
-            'user_id' => $this->user_id,
+            'discord_id' => $this->discord_id,
 			'name' => $this->name,
             'species' => $this->species,
             'variant' => $this->variant,
@@ -128,6 +128,6 @@ class Pet extends Part
      */
     public function __toString()
     {
-        return "<@{$this->user_id}>";
+        return "<@{$this->discord_id}>";
     }
 }

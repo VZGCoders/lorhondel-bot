@@ -220,7 +220,7 @@ class PlayerRepository extends AbstractRepository
 		$snowflake = \Lorhondel\generateSnowflake($this->factory->lorhondel);
 		if ($part = $this->factory->lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
 			'id' => $snowflake,
-			'user_id' => $author_id,
+			'discord_id' => $author_id,
 			'name' => $name,
 			'species' => $species,
 		])) {
@@ -258,7 +258,7 @@ class PlayerRepository extends AbstractRepository
 		}
 		
 		if (! $author_id) return $part->activate($this->factory->lorhondel);
-		if ($part->user_id == $author_id) return $part->activate($this->factory->lorhondel);
+		if ($part->discord_id == $author_id) return $part->activate($this->factory->lorhondel);
 		return 'You can only activate a Player that you own!';
 	}
 	
@@ -295,7 +295,7 @@ class PlayerRepository extends AbstractRepository
 			->addFieldValues('Defense', $player->defense, true)
 			->addFieldValues('Speed', $player->speed, true)
 			->addFieldValues('Skill Points', $player->skillpoints, true);
-		if ($user = $this->factory->lorhondel->discord->users->offsetGet($player->user_id)) {
+		if ($user = $this->factory->lorhondel->discord->users->offsetGet($player->discord_id)) {
 			$embed->setAuthor("{$user->username} ({$user->id})", $user->avatar); // Set an author with icon
 			$embed->setThumbnail("{$user->avatar}"); // Set a thumbnail (the image in the top right corner)
 		}

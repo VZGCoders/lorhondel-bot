@@ -30,7 +30,7 @@ class MessageReactionRemove extends Event
                     if ($react->id == $reaction->reaction_id) {
                         --$react->count;
 
-                        if ($reaction->user_id == $this->lorhondel->id) {
+                        if ($reaction->discord_id == $this->lorhondel->id) {
                             $react->me = false;
                         }
                     }

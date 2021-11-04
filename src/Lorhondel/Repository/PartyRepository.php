@@ -604,7 +604,7 @@ class PartyRepository extends AbstractRepository
 		if ($party->name) $embed->addFieldValues('Name', $party->name, true);
 		$embed->addFieldValues('ID', $party->id, true);
 		foreach ($players as $player) {
-			if ($player && $user = $this->factory->lorhondel->discord->users->offsetGet($player->user_id)) {
+			if ($player && $user = $this->factory->lorhondel->discord->users->offsetGet($player->discord_id)) {
 				$embed->setAuthor("{$user->username} ({$user->id})", $user->avatar); // Set an author with icon
 				if ($player->id == $party->{$party->leader}) {
 				if ($player->name) $leader_string = "{$player->name} ({$player->id})";

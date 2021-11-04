@@ -16,7 +16,7 @@ use Lorhondel\Parts\Part;
  *
 
  * @property int    $id            The unique identifier of the Player.
- * @property int    $user_id       Discord user id.
+ * @property int    $discord_id       Discord user id.
  * @property int    $party_id      Current Party id.
  * @property bool   $active        Whether the Player is active.
  * @property bool   $looking       Whether the Player is looking for a Party.
@@ -37,7 +37,7 @@ class Player extends Part
     /**
      * @inheritdoc
      */
-    protected static $fillable = ['id', 'user_id', 'party_id', 'active', 'looking', 'name', 'species', 'health', 'attack', 'defense', 'speed', 'skillpoints'];
+    protected static $fillable = ['id', 'discord_id', 'party_id', 'active', 'looking', 'name', 'species', 'health', 'attack', 'defense', 'speed', 'skillpoints'];
 	
 	protected static $species_list = ['Elarian', 'Jedoa', 'Manthean', 'Noldarus', 'Veias'];
 
@@ -80,7 +80,7 @@ class Player extends Part
     {
         return [
             'id' => $this->id,
-            'user_id' => $this->user_id,
+            'discord_id' => $this->discord_id,
 			'party_id' => $this->party_id,
 			'active' => $this->active,
 			'name' => $this->name,
@@ -121,7 +121,7 @@ class Player extends Part
 	
 	public function activate($lorhondel): string
 	{
-		$collection = $lorhondel->players->filter(fn($p) => $p->user_id == $this->user_id && $p->active == 1);
+		$collection = $lorhondel->players->filter(fn($p) => $p->discord_id == $this->discord_id && $p->active == 1);
 		
 		$players = [];
 		foreach ($collection as $player) {
@@ -151,7 +151,7 @@ class Player extends Part
 
 	public function deactivate($lorhondel): string
 	{
-		$collection = $lorhondel->players->filter(fn($p) => $p->user_id == $this->user_id && $p->active == 1 && $p->id != $this->id);
+		$collection = $lorhondel->players->filter(fn($p) => $p->discord_id == $this->discord_id && $p->active == 1 && $p->id != $this->id);
 		
 		$players = [];
 		foreach ($collection as $player) {
@@ -220,6 +220,6 @@ class Player extends Part
      */
     public function __toString()
     {
-        return "<@{$this->user_id}>";
+        return "<@{$this->discord_id}>";
     }
 }

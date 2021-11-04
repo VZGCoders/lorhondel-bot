@@ -75,7 +75,7 @@ class Endpoint
     // GET
     public const THREAD_MEMBERS = self::THREAD.'/thread-members';
     // PUT, DELETE
-    public const THREAD_MEMBER = self::THREAD_MEMBERS.'/:user_id';
+    public const THREAD_MEMBER = self::THREAD_MEMBERS.'/:discord_id';
     // PUT, DELETE
     public const THREAD_MEMBER_ME = self::THREAD_MEMBERS.'/@me';
 
@@ -86,7 +86,7 @@ class Endpoint
     // PUT, DELETE
     public const OWN_MESSAGE_REACTION = self::CHANNEL.'/messages/:message_id/reactions/:emoji/@me';
     // DELETE
-    public const USER_MESSAGE_REACTION = self::CHANNEL.'/messages/:message_id/reactions/:emoji/:user_id';
+    public const USER_MESSAGE_REACTION = self::CHANNEL.'/messages/:message_id/reactions/:emoji/:discord_id';
 
     // GET, POST
     public const CHANNEL_WEBHOOKS = self::CHANNEL.'/webhooks';
@@ -101,16 +101,16 @@ class Endpoint
     // GET
     public const GUILD_MEMBERS = self::GUILD.'/members';
     // GET, PATCH, PUT, DELETE
-    public const GUILD_MEMBER = self::GUILD.'/members/:user_id';
+    public const GUILD_MEMBER = self::GUILD.'/members/:discord_id';
     // PATCH
     public const GUILD_MEMBER_SELF_NICK = self::GUILD.'/members/@me/nick';
     // PUT, DELETE
-    public const GUILD_MEMBER_ROLE = self::GUILD.'/members/:user_id/roles/:role_id';
+    public const GUILD_MEMBER_ROLE = self::GUILD.'/members/:discord_id/roles/:role_id';
 
     // GET
     public const GUILD_BANS = self::GUILD.'/bans';
     // GET, PUT, DELETE
-    public const GUILD_BAN = self::GUILD.'/bans/:user_id';
+    public const GUILD_BAN = self::GUILD.'/bans/:discord_id';
 
     // GET, PATCH
     public const GUILD_ROLES = self::GUILD.'/roles';
@@ -157,7 +157,7 @@ class Endpoint
     // GET, PATCH
     public const USER_CURRENT = 'users/@me';
     // GET
-    public const USER = 'users/:user_id';
+    public const USER = 'users/:discord_id';
     // GET
     public const USER_CURRENT_GUILDS = self::USER_CURRENT.'/guilds';
     // DELETE
@@ -168,6 +168,19 @@ class Endpoint
     public const USER_CURRENT_CONNECTIONS = self::USER_CURRENT.'/connections';
     // GET
     public const APPLICATION_CURRENT = 'oauth2/applications/@me';
+	
+	// GET, PATCH
+    public const ACCOUNT_CURRENT = 'accounts/:account_id';
+    // GET
+    public const ACCOUNT = 'accounts/get/:account_id';
+	// PUT
+    //public const ACCOUNT_PUT = 'accounts/put/:account_id';
+	// POST
+    public const ACCOUNT_POST = 'accounts/post/:account_id';
+	// PATCH
+	public const ACCOUNT_PATCH = 'accounts/patch/:account_id';
+	// DELETE
+	public const ACCOUNT_DELETE = 'accounts/delete/:account_id';
 	
 	// GET, PATCH
     public const PLAYER_CURRENT = 'players/:player_id';

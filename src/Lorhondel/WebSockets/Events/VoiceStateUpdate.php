@@ -34,14 +34,14 @@ class VoiceStateUpdate extends Event
                 }
 
                 // Remove old member states
-                if ($channel->members->has($state->user_id)) {
-                    $old_state = $channel->members->offsetGet($state->user_id);
-                    $channel->members->offsetUnset($state->user_id);
+                if ($channel->members->has($state->discord_id)) {
+                    $old_state = $channel->members->offsetGet($state->discord_id);
+                    $channel->members->offsetUnset($state->discord_id);
                 }
 
                 // Add member state to new channel
                 if ($channel->id == $state->channel_id) {
-                    $channel->members->offsetSet($state->user_id, $state);
+                    $channel->members->offsetSet($state->discord_id, $state);
                 }
 
                 $guild->channels->offsetSet($channel->id, $channel);

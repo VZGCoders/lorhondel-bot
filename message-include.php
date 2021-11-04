@@ -17,11 +17,11 @@ $message_content_lower_original = $message_content_lower = strtolower($message_c
 $message_id = $message->id;
 
 $called = false;
-if (str_starts_with($message_content_lower,  "<@!".$lorhondel->discord->id."> ")) { //Allow calling commands by <@!user_id>
+if (str_starts_with($message_content_lower,  "<@!".$lorhondel->discord->id."> ")) { //Allow calling commands by <@!discord_id>
 	$message_content = trim(substr($message_content, (4+strlen($lorhondel->discord->id))));
 	$message_content_lower = trim(substr($message_content_lower, (4+strlen($lorhondel->discord->id))));
 	$called = true;
-} elseif (str_starts_with($message_content_lower,  "<@".$lorhondel->discord->id."> ")) { //Allow calling commands by <@user_id>
+} elseif (str_starts_with($message_content_lower,  "<@".$lorhondel->discord->id."> ")) { //Allow calling commands by <@discord_id>
 	$message_content = trim(substr($message_content, (3+strlen($lorhondel->discord->id))));
 	$message_content_lower = trim(substr($message_content_lower, (3+strlen($lorhondel->discord->id))));
 	$called = true;
@@ -97,7 +97,7 @@ if ($creator) { //Debug commands
 			$snowflake = \Lorhondel\generateSnowflake($lorhondel, time(), 0, 0, count($lorhondel->players));
 			$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
 				'id' => $snowflake,
-				'user_id' => 116927250145869826,
+				'discord_id' => 116927250145869826,
 				'species' => 'Elarian', //Elarian, Manthean, Noldarus, Veias, Jedoa
 				'health' => 0,
 				'attack' => 1,
@@ -108,7 +108,7 @@ if ($creator) { //Debug commands
 			$message->reply($part);
 			break;
 		case 'characters':
-			$characters = $lorhondel->players->filter(fn($p) => $p->user_id == $message->author->user->id);
+			$characters = $lorhondel->players->filter(fn($p) => $p->discord_id == $message->author->user->id);
 			return $message->reply(json_encode($characters));
 			break;
 		case 'players':
@@ -147,7 +147,7 @@ if ($creator) { //Debug commands
 		case 'part':
 			$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
 				'id' => 116927250145869826,
-				'user_id' => 116927250145869826,
+				'discord_id' => 116927250145869826,
 				'species' => 'Elarian', //Elarian, Manthean, Noldarus, Veias, Jedoa
 				'health' => 888,
 				'attack' => 888,
@@ -178,7 +178,7 @@ if ($creator) { //Debug commands
 		case 'patch':
 			$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
 				'id' => 116927250145869826,
-				'user_id' => 116927250145869826,
+				'discord_id' => 116927250145869826,
 				'species' => 'Elarian', //Elarian, Manthean, Noldarus, Veias, Jedoa
 				'health' => 888,
 				'attack' => 888,
@@ -194,7 +194,7 @@ if ($creator) { //Debug commands
 			$snowflake = \Lorhondel\generateSnowflake($lorhondel, time(), 0, 0, count($lorhondel->players));
 			$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
 				'id' => $snowflake,
-				'user_id' => 116927250145869826,
+				'discord_id' => 116927250145869826,
 				'party_id' => null,
 				'active' => false,
 				'species' => 'Elarian', //Elarian, Manthean, Noldarus, Veias, Jedoa
@@ -210,7 +210,7 @@ if ($creator) { //Debug commands
 			echo '[SAVE]' . PHP_EOL;
 			$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
 				'id' => 116927250145869826,
-				'user_id' => 116927250145869826,
+				'discord_id' => 116927250145869826,
 				'species' => 'Elarian', //Elarian, Manthean, Noldarus, Veias, Jedoa
 				'health' => 0,
 				'attack' => 1,
@@ -224,7 +224,7 @@ if ($creator) { //Debug commands
 			echo '[delete]' . PHP_EOL;
 			$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
 				'id' => 116927250145869826,
-				'user_id' => 116927250145869826,
+				'discord_id' => 116927250145869826,
 				'species' => 'Elarian', //Elarian, Manthean, Noldarus, Veias, Jedoa
 				'health' => 0,
 				'attack' => 1,
@@ -242,7 +242,7 @@ if ($creator) { //Debug commands
 			return $message->reply(get_class($lorhondel->discord));
 			break;
 		case '__create party':
-			if (count($collection = $lorhondel->players->filter(fn($p) => $p->user_id == $author_id && $p->active == 1 ))>0) {
+			if (count($collection = $lorhondel->players->filter(fn($p) => $p->discord_id == $author_id && $p->active == 1 ))>0) {
 				echo '[COLLECTION PARTY]'; var_dump($collection);
 				foreach ($collection as $player) {
 					if (property_exists($player, 'timer')) return $message->reply('Please wait for the previous task to finish!');

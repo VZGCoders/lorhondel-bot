@@ -82,7 +82,7 @@ class GuildCreate extends Event
 
                 $stateUpdate = $this->factory->create(VoiceStateUpdatePart::class, $state, true);
 
-                $channel->members->offsetSet($stateUpdate->user_id, $stateUpdate);
+                $channel->members->offsetSet($stateUpdate->discord_id, $stateUpdate);
                 $guildPart->channels->offsetSet($channel->id, $channel);
             }
         }
@@ -96,7 +96,7 @@ class GuildCreate extends Event
             if ($rawThread->member ?? null) {
                 $member = (array) $rawThread->member;
                 $member['id'] = $thread->id;
-                $member['user_id'] = $this->lorhondel->id;
+                $member['discord_id'] = $this->lorhondel->id;
 
                 $selfMember = $this->factory->create(ThreadMember::class, $member, true);
                 $thread->members->push($selfMember);

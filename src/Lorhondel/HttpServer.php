@@ -195,12 +195,12 @@ class HttpServer
 						if (! $id || !webapiSnow($id) || ! $guild = $lorhondel->discord->guilds->offsetGet($id))
 							return webapiFail('guild_id', $id);
 						if (! $id2 || !webapiSnow($id2) || ! $return = $guild->members->offsetGet($id2))
-							return webapiFail('user_id', $id2);
+							return webapiFail('discord_id', $id2);
 						break;
 
 					case 'user':
 						if (! $id || !webapiSnow($id) || ! $return = $lorhondel->discord->users->offsetGet($id)) {
-							return webapiFail('user_id', $id);
+							return webapiFail('discord_id', $id);
 						}
 						break;
 
@@ -226,7 +226,7 @@ class HttpServer
 							return new \GuzzleHttp\Psr7\Response(501, ['Content-Type' => 'text/plain'], 'Reject'.PHP_EOL);
 						}
 						if (! $id || !webapiSnow($id) || ! $return = $lorhondel->discord->user->fetch($id))
-							return webapiFail('user_id', $id);
+							return webapiFail('discord_id', $id);
 						break;
 
 					case 'owner':
@@ -235,7 +235,7 @@ class HttpServer
 							return new \GuzzleHttp\Psr7\Response(501, ['Content-Type' => 'text/plain'], 'Reject'.PHP_EOL);
 						}
 						if (! $id || !webapiSnow($id))
-							return webapiFail('user_id', $id);
+							return webapiFail('discord_id', $id);
 						$return = false;
 						if ($user = $lorhondel->discord->users->offsetGet($id)) { //Search all guilds the bot is in and check if the user id exists as a guild owner
 							foreach ($lorhondel->discord->guilds as $guild) {
@@ -249,7 +249,7 @@ class HttpServer
 						
 					case 'avatar':
 						if (! $id || !webapiSnow($id)) {
-							return webapiFail('user_id', $id);
+							return webapiFail('discord_id', $id);
 						}
 						if (! $user = $lorhondel->discord->users->offsetGet($id)) {
 							$lorhondel->discord->users->fetch($id)->done(
@@ -257,7 +257,7 @@ class HttpServer
 									$return = $user->avatar;
 									return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'text/json'], json_encode($return));
 								}, function ($error) {
-									return webapiFail('user_id', $id);
+									return webapiFail('discord_id', $id);
 								}
 							);
 							$return = 'https://cdn.discordapp.com/embed/avatars/'.rand(0,4).'.png';
