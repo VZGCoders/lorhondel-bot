@@ -78,16 +78,23 @@ $author_member_roles = $author_member->roles;
 /*
 *********************
 *********************
-Process Lorhondel-related messages
+Determine if messages should be processed
 *********************
 *********************
 */
 if ($author_guild_id != '887118559833112638') return;
+if (! $lorhondel->server) return;
+
+/*
+*********************
+*********************
+Process Lorhondel-related messages
+*********************
+*********************
+*/
 
 $creator = false;
 if ($author_id == 116927250145869826) $creator = true;
-
-if(! $lorhondel->server) return;
 if ($creator) { //Debug commands
 	switch($message_content_lower) {
 		case 'ping':
@@ -110,6 +117,9 @@ if ($creator) { //Debug commands
 		case 'characters':
 			$characters = $lorhondel->players->filter(fn($p) => $p->discord_id == $message->author->user->id);
 			return $message->reply(json_encode($characters));
+			break;
+		case 'accounts':
+			return $message->reply(json_encode($lorhondel->accounts));
 			break;
 		case 'players':
 			return $message->reply(json_encode($lorhondel->players));
@@ -282,10 +292,40 @@ echo '[LORHONDEL MESSAGE] ' . $author_id . PHP_EOL;
 if ($player = getCurrentPlayer($lorhondel, $author_id))
 	$party = getCurrentParty($lorhondel, $player->id);
 
-if (str_starts_with($message_content_lower, 'help')) {
+if (str_starts_with($message_content_lower, 'help'))
 	$documentation = '';
+
+if (str_starts_with($message_content_lower, 'account')) {
+	$message_content = trim(substr($message_content, 7));
+	$message_content_lower = trim(substr($message_content_lower, 7));
+	foreach (['<@', '!', '>'] as $filter) {
+		$message_content_clean = $name = $message_content = str_replace($filter, '', $message_content);
+		$id = $message_content_lower = str_replace($filter, '', $message_content_lower);
+	}
+	/*
+	*********************
+	*********************
+	Account Repository commands
+	These commands take an Account ID to check for Player permissions.
+	NOTE: Permission is assumed to be allowed if the relevant data is not passed!
+	*********************
+	*********************
+	*/
+	$account_repository_commands = ['register'];
+	foreach($account_repository_commands as $command) {
+		if (str_starts_with($message_content_lower, $command)) {
+			$message_content_clean = trim(substr($message_content_clean, strlen($command)));
+			$string = reflectionMachine($lorhondel->accounts, [$author_id], $message_content_clean, $command);
+			if (is_string($string)) return $message->reply($string);
+			return;
+		}
+	}
 }
 
+if (! $account = $lorhondel->accounts->get('discord_id', $author_id)) {
+	//
+	return $message->reply("I wasn't able to locate your account! Please register using `account register` before using Lorhondel-related commands.");
+}
 
 if (str_starts_with($message_content_lower, 'player')) {
 	$message_content = trim(substr($message_content, 6));
@@ -302,7 +342,7 @@ if (str_starts_with($message_content_lower, 'player')) {
 	NOTE: Permission is assumed to be allowed if the relevant data is not passed!
 	*********************
 	*********************
-	*/	
+	*/
 	$player_repository_commands = ['new', 'activate'];
 	foreach($player_repository_commands as $command) {
 		if (str_starts_with($message_content_lower, $command)) {

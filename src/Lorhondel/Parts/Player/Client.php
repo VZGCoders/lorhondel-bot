@@ -12,6 +12,7 @@ use Lorhondel\Exceptions\FileNotFoundException;
 use Lorhondel\Endpoint;
 use Lorhondel\Parts\OAuth\Application;
 use Lorhondel\Parts\Part;
+use Lorhondel\Repository\AccountRepository;
 use Lorhondel\Repository\PlayerRepository;
 use Lorhondel\Repository\PetRepository;
 use Lorhondel\Repository\PartyRepository;
@@ -39,11 +40,13 @@ class Client extends Part
      * @inheritdoc
      */
     protected $repositories = [
-        'players' => PlayerRepository::class,
-		'pets' => PetRepository::class,
-		'npcs' => NPCRepository::class,
+		'accounts' => AccountRepository::class,
+        'battles' => BattleRepository::class,
+		//'enemies' => EnemyRepository::class,
+		//'npcs' => NPCRepository::class,
 		'parties' => PartyRepository::class,
-		'battles' => BattleRepository::class,
+		'pets' => PetRepository::class,
+		'players' => PlayerRepository::class,
 		'votes' => VoteRepository::class,
     ];
 

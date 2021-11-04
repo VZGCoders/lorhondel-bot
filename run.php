@@ -75,10 +75,15 @@ try {
 		echo "[READY]" . PHP_EOL;
 		include 'ready-include.php'; //All modular event handlers
 		include 'connect.php';
-		$lorhondel->players->freshen();	//Import existing parts from SQL
-		$lorhondel->parties->freshen();	//Import existing parts from SQL
-		$lorhondel->battles->freshen();	//Import existing parts from SQL
-		$lorhondel->votes->freshen();	//Import existing parts from SQL
+		//Import existing parts from SQL
+		$lorhondel->accounts->freshen();
+		$lorhondel->battles->freshen();
+		//$lorhondel->enemies->freshen();
+		//$lorhondel->npcs->freshen();
+		$lorhondel->parties->freshen();
+		$lorhondel->pets->freshen();
+		$lorhondel->players->freshen();
+		$lorhondel->votes->freshen();
 	 });
 	$lorhondel->discord->run();
 }catch (Throwable $e) { //Restart the bot
