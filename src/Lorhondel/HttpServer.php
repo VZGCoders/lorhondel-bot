@@ -46,8 +46,8 @@ class HttpServer
 				}
 				*/
 				
-				$lorhondelBattleground = $lorhondel->discord->getChannel(887118621065768970);
-				$lorhondelBotSpam = $lorhondel->discord->getChannel(887118679697940481);
+				$lorhondelBattleground = $lorhondel->discord->getChannel("887118621065768970");
+				$lorhondelBotSpam = $lorhondel->discord->getChannel("887118679697940481");
 				
 				$_5xx = array();
 				$_5xx['message'] = '5xx: Server Error'; //Something went wrong (Code is broken)

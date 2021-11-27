@@ -481,7 +481,7 @@ function sqlCreate(string $table, $data)
 	} else echo mysqli_stmt_error($stmt);
 	return false;
 }
-function sqlUpdate(array $columns = [], array $values = [], string $table, string $wherecolumn = '', $target = '')
+function sqlUpdate(?array $columns, ?array $values, string $table, string $wherecolumn = '', $target = '')
 {
 	echo '[UPDATE COLUMNS]'; var_dump($columns);
 	echo '[UPDATE VALUES]'; var_dump($values);
