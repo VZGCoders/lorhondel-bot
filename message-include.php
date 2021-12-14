@@ -296,8 +296,10 @@ if ($account = $lorhondel->accounts->get('discord_id', $author_id))
 	if ($player = getCurrentPlayer($lorhondel, $account->id))
 		$party = getCurrentParty($lorhondel, $player->id);
 
-if (str_starts_with($message_content_lower, 'help'))
-	$documentation = '';
+if (str_starts_with($message_content_lower, 'help')) {
+	$documentation = 'NYI';
+	return $message->reply($documentation);
+}
 
 if (str_starts_with($message_content_lower, 'account')) {
 	$message_content = trim(substr($message_content, 7));
