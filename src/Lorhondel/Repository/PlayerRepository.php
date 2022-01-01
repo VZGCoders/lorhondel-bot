@@ -52,7 +52,7 @@ class PlayerRepository extends AbstractRepository
      * @throws \Exception
      */
 
-    public function save(Part $part)
+    public function save(Part $part): ExtendedPromiseInterface
     {
 		if ($this->offsetGet($part->id)) $method = 'patch';
 		else $method = 'post';

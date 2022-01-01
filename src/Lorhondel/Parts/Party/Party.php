@@ -241,7 +241,7 @@ class Party extends Part
 			$id = $player->id;
 		elseif (is_numeric($player)) {
 			$id = $player;
-			$player = $lorhondel->players->offsetGet($id);
+			if (! $player = $lorhondel->players->offsetGet($id)) return 'ID `$id` did not resolve to a Player!';
 		} else return 'Invalid parameter! Expects Player or Player ID.';
 		if ($player->party_id != $this->id) return 'Player `' . ($player->name ?? $player->id) . '` is not a member of Party `' . ($this->name ?? $this->id) . '`! '; //$message->reply('Player is not a member of this Party!');
 		
@@ -269,12 +269,11 @@ class Party extends Part
 			if ($succession = $this->succession($lorhondel))
 				$return .= $succession;
 		}
-		$lorhondel->parties->save($this)->done(
-			function ($result) use ($player, $lorhondel) {
-				$player->party_id = null;
-				$lorhondel->players->save($player);
-			}
-		);
+		
+		if (! str_ends_with($return, 'disbanded! '))
+			$lorhondel->parties->save($this);
+		$player->party_id = null;
+		$lorhondel->players->save($player);
 		return $return;
 	}
 	
@@ -369,17 +368,14 @@ class Party extends Part
 		$lorhondel->parties->delete($this)->done(
 			function ($result) use ($lorhondel, $players) {
 				if (count($players) == 0) return;
-				$promise = null;
-				$string = '';
-				$string1 = '$promise = $lorhondel->players->save(array_shift($players))->done(function () use ($lorhondel, $players, $i) {';
-				$string2 = '});';
-				for ($i = 0; $i < count($players); $i++) {
-				  $string .= $string1;
-				}
-				for ($i = 0; $i < count($players); $i++) {
-				  $string .= $string2;
-				}
-				eval($string); //I really hate this language sometimes
+				$save = function ($players, $lorhondel) use (&$save) {
+					if (count($players) != 0) {
+						$lorhondel->players->save(array_shift($players))->done(function () use ($save, $players, $lorhondel) {
+							$save($players, $lorhondel);
+						});
+					}
+				};
+				$save($players, $lorhondel);
 			}
 		);
 		return 'Party `' . ($this->name ?? $this->id) . '` has been disbanded! ';

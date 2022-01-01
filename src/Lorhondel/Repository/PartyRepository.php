@@ -57,7 +57,7 @@ class PartyRepository extends AbstractRepository
 
     public function save(Part $part): ExtendedPromiseInterface
     {
-		if ($this->factory->lorhondel->parties->offsetGet($part->id)) $method = 'patch';
+		if ($this->offsetGet($part->id)) $method = 'patch';
 		else $method = 'post';
 		$url = Http::BASE_URL . "/parties/$method/{$part->id}/";
 		return $this->factory->lorhondel->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
@@ -223,8 +223,28 @@ class PartyRepository extends AbstractRepository
 	{
 		if (! $player) return 'Please create a Player or activate one first!';
 		if ($party) return 'Please leave your current Party before creating a new one!';
-		if ($name) $this->save($this->factory->lorhondel->factory(\Lorhondel\Parts\Party\Party::class, ['player1' => $player->id, 'name' => $name]));
-		else $this->save($this->factory->lorhondel->factory(\Lorhondel\Parts\Party\Party::class, ['player1' => $player->id]));
+		if ($name) $promise = $this->save($this->factory->create(\Lorhondel\Parts\Party\Party::class, ['player1' => $player->id, 'name' => $name]));
+		else $promise = $this->save($this->factory->create(\Lorhondel\Parts\Party\Party::class, ['player1' => $player->id]));
+		
+		$promise->done(
+			function ($result) use ($player) {
+				if (count($collection = $this->filter(fn($p) => $p->player1 == $player->id))>0) {
+					foreach ($collection as $party) { //There should only be one
+						$player->party_id = $party->id;
+						$this->save($player)->done(
+							function ($result) use ($party) { //This code block either never happens or swallows responses
+								echo 'Created Party `'. ($party->name ?? $party->id) . '`!'; //Swallowed by promise
+								return 'Created Party `'. ($party->name ?? $party->id) . '`!'; //Swallowed by promise
+							}
+						);
+					}
+				}
+			},
+			function ($error) {
+				echo '[NEW ERROR]' . PHP_EOL;
+				var_dump($error);
+			}
+		);
 		/*
 		return $this->freshen()->done(
 			function($result) use ($lorhondel, $message, $player) {
@@ -241,7 +261,7 @@ class PartyRepository extends AbstractRepository
 			}
 		);
 		*/
-		return 'Your Party is currently being created. You can retrieve it with `<@' . $this->factory->lorhondel->discord->id . '>party` in a few moments.';
+		return 'Your Party is currently being created. You can retrieve it with `<@' . $this->factory->lorhondel->discord->id . '> party` in a few moments.';
 	}
 
 	/**
