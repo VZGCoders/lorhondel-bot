@@ -243,7 +243,7 @@ class Party extends Part
 			$id = $player;
 			if (! $player = $lorhondel->players->offsetGet($id)) return 'ID `$id` did not resolve to a Player!';
 		} else return 'Invalid parameter! Expects Player or Player ID.';
-		if ($player->party_id != $this->id) return 'Player `' . ($player->name ?? $player->id) . '` is not a member of Party `' . ($this->name ?? $this->id) . '`! '; //$message->reply('Player is not a member of this Party!');
+		if ($player->party_id != $this->id) return 'Player `' . ($player->name ?? $player->id) . '` is not a member of Party `' . ($this->name ?? $this->id) . '`! ';
 		
 		if ($this->player1 == $id) {
 			$position = 1;
