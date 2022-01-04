@@ -562,7 +562,7 @@ function partPusher($lorhondel, $repository, $part_name, $array)
 }
 function getCurrentPlayer($lorhondel, $account_id)
 {
-	if (count($collection = $lorhondel->players->filter(fn($p) => $p->account_id == $account_id && $p->active == 1 )) > 0) {
+	if (count($collection = $lorhondel->players->filter(fn($p) => $p->account_id == $account_id && $p->active == 1 ))) {
 		//echo '[FOUND ACTIVE CACHED PLAYER]'; //var_dump($collection);
 		foreach ($collection as $player) //There should only be one
 			return $player;
@@ -586,7 +586,7 @@ function getCurrentPlayer($lorhondel, $account_id)
 }
 function getCurrentParty($lorhondel, $id)
 {
-	if (count($collection = $lorhondel->parties->filter(fn($p) => $p->player1 == $id || $p->player2 == $id || $p->player3 == $id || $p->player4 == $id || $p->player5 == $id))>0) {
+	if (count($collection = $lorhondel->parties->filter(fn($p) => $p->player1 == $id || $p->player2 == $id || $p->player3 == $id || $p->player4 == $id || $p->player5 == $id))) {
 		foreach ($collection as $party) { //There should only be one
 			if ($player = $lorhondel->players->offsetGet($id)) {
 				if ($player->party_id === null) {
@@ -623,7 +623,7 @@ function reflectionMachine($part = null, ?array $array_merge = [], ?string $mess
 	$num = $method->getNumberOfParameters();
 	$tokens = array_slice($tokens, 0, $num);
 	if ($part instanceof Part && count($tokens) < $num) { //Too few parameters passed to function
-		echo "num: $num" . PHP_EOL; echo 'token count: ' . count($tokens) . PHP_EOL;
+		//echo "num: $num" . PHP_EOL; echo 'token count: ' . count($tokens) . PHP_EOL;
 		$parameters = [];
 		for ($x=0;$x<$num;$x++) {
 			$parameters[] = new ReflectionParameter([$part, $command], $x);

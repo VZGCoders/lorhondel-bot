@@ -396,7 +396,7 @@ class Endpoint
             $endpoint = str_replace(":{$var}", $this->args[$var], $endpoint);
         }
 
-        if (! $onlyMajorParameters && count($this->query) > 0) {
+        if (! $onlyMajorParameters && count($this->query) !== 0) {
             $endpoint .= '?'.http_build_query($this->query);
         }
 

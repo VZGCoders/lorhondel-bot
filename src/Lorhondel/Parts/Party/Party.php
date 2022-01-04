@@ -333,7 +333,7 @@ class Party extends Part
 			if ($this->player3 && $this->leader != 'player3') $positions[] = 'player3';
 			if ($this->player4 && $this->leader != 'player4') $positions[] = 'player4';
 			if ($this->player5 && $this->leader != 'player5') $positions[] = 'player5';
-			if (count($positions) == 0) return $this->disband($lorhondel);
+			if (empty($positions)) return $this->disband($lorhondel);
 			$this->leader = $positions['0'];
 			$lorhondel->parties->save($this);
 			
@@ -367,9 +367,9 @@ class Party extends Part
 		
 		$lorhondel->parties->delete($this)->done(
 			function ($result) use ($lorhondel, $players) {
-				if (count($players) == 0) return;
+				if (count($players) === 0) return;
 				$save = function ($players, $lorhondel) use (&$save) {
-					if (count($players) != 0) {
+					if (count($players) !== 0) {
 						$lorhondel->players->save(array_shift($players))->done(function () use ($save, $players, $lorhondel) {
 							$save($players, $lorhondel);
 						});
