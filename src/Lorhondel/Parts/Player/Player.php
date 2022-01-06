@@ -132,18 +132,15 @@ class Player extends Part
 		$this->active = 1;
 		$lorhondel->players->save($this)->done(
 			function ($result) use ($lorhondel, $players) {
-				if (count($players) == 0) return;
-				$promise = null;
-				$string = '';
-				$string1 = '$promise = $lorhondel->players->save(array_shift($players))->done(function () use ($lorhondel, $players, $i) {';
-				$string2 = '});';
-				for ($i = 0; $i < count($players); $i++) {
-				  $string .= $string1;
-				}
-				for ($i = 0; $i < count($players); $i++) {
-				  $string .= $string2;
-				}
-				eval($string); //I really hate this language sometimes
+				if (count($players) === 0) return;
+				$add = function ($players, $lorhondel) use (&$add) {
+					if (count($players) !== 0) {
+						$lorhondel->players->save(array_shift($players))->done(function () use ($add, $players, $lorhondel) {
+							$add($players, $lorhondel);
+						});
+					}
+				};
+				return $add($players, $lorhondel);
 			}
 		);
 		return 'Player `' . ($this->name ?? $this->id) . '` is now your active Player! ';
@@ -162,17 +159,15 @@ class Player extends Part
 		$this->active = 0;
 		$lorhondel->players->save($this)->done(
 			function ($result) use ($lorhondel, $players) {
-				$promise = null;
-				$string = '';
-				$string1 = '$promise = $lorhondel->players->save(array_shift($players))->done(function () use ($lorhondel, $players, $i) {';
-				$string2 = '});';
-				for ($i = 0; $i < count($players); $i++) {
-				  $string .= $string1;
-				}
-				for ($i = 0; $i < count($players); $i++) {
-				  $string .= $string2;
-				}
-				eval($string); //I really hate this language sometimes
+				if (count($players) === 0) return;
+				$add = function ($players, $lorhondel) use (&$add) {
+					if (count($players) !== 0) {
+						$lorhondel->players->save(array_shift($players))->done(function () use ($add, $players, $lorhondel) {
+							$add($players, $lorhondel);
+						});
+					}
+				};
+				return $add($players);
 			}
 		);
 		return 'Player `' . ($this->name ?? $this->id) . '` is no longer your active Player! ';
