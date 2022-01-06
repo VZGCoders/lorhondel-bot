@@ -547,6 +547,7 @@ class PartyRepository extends AbstractRepository
 			$return = false;
 			if (! $part->looking) return $return;
 			$full = true;
+			$party->looking = false;
 		}
 		switch ($party->looking) {
 			case null:
@@ -554,10 +555,8 @@ class PartyRepository extends AbstractRepository
 				$return = true;
 				$party->looking = true;
 				break;
-			case true && $full == false:
+			case true && $full === false:
 				$return = false;
-			case $full == true:
-				$party->looking = false;
 				break;
 			default:
 				break;
