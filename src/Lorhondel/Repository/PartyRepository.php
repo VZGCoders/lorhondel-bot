@@ -228,16 +228,14 @@ class PartyRepository extends AbstractRepository
 		
 		$promise->done(
 			function ($result) use ($player) {
-				if (count($collection = $this->filter(fn($p) => $p->player1 == $player->id))>0) {
-					foreach ($collection as $party) { //There should only be one
-						$player->party_id = $party->id;
-						$this->save($player)->done(
-							function ($result) use ($party) { //This code block either never happens or swallows responses
-								echo 'Created Party `'. ($party->name ?? $party->id) . '`!'; //Swallowed by promise
-								return 'Created Party `'. ($party->name ?? $party->id) . '`!'; //Swallowed by promise
-							}
-						);
-					}
+				if ($party = $this->find(fn($p) => $p->player1 == $player->id)) {
+					$player->party_id = $party->id;
+					$this->save($player)->done(
+						function ($result) use ($party) { //This code block either never happens or swallows responses
+							echo 'Created Party `'. ($party->name ?? $party->id) . '`!'; //Swallowed by promise
+							return 'Created Party `'. ($party->name ?? $party->id) . '`!'; //Swallowed by promise
+						}
+					);
 				}
 			},
 			function ($error) {
@@ -248,15 +246,13 @@ class PartyRepository extends AbstractRepository
 		/*
 		return $this->freshen()->done(
 			function($result) use ($lorhondel, $message, $player) {
-				if (count($collection = $this->filter(fn($p) => $p->player1 == $player->id))>0) {
-					foreach ($collection as $party) { //There should only be one
-						$player->party_id = $party->id;
-						$lorhondel->players->save($player)->done(
-							function ($result) use ($message, $party) {
-								return $message->reply('Created Party `'. ($party->name ?? $party->id) . '`!');
-							}
-						);
-					}
+				if ($party = $this->filter(fn($p) => $p->player1 == $player->id)) {
+					$player->party_id = $party->id;
+					$lorhondel->players->save($player)->done(
+						function ($result) use ($message, $party) {
+							return $message->reply('Created Party `'. ($party->name ?? $party->id) . '`!');
+						}
+					);
 				}
 			}
 		);

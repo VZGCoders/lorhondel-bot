@@ -213,8 +213,7 @@ class AccountRepository extends AbstractRepository
 	*/
 	public function register($discord_id): string
 	{
-		$collection = $this->filter(fn($p) => $p->discord_id == $discord_id);
-		foreach ($collection as $account)
+		if ($account = $this->find(fn($p) => $p->discord_id == $discord_id));
 			return 'An account with ID `' . $account->id . '` already exists for Discord ID `' . $discord_id . '`!';
 		return $this->new($discord_id);
 	}
