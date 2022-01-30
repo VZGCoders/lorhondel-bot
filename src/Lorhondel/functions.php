@@ -488,7 +488,7 @@ function sqlUpdate(?array $columns, ?array $values, string $table, string $where
 	
 	if (empty($columns)) return false;
 	if (! $table) return false;
-	if (count($columns) != count($values)) return false;
+	if (count($columns) !== count($values)) return false;
 	include 'connect.php';
 	
 	$sql = "UPDATE $table SET ";
@@ -562,10 +562,9 @@ function partPusher($lorhondel, $repository, $part_name, $array)
 }
 function getCurrentPlayer($lorhondel, $account_id)
 {
-	if (count($collection = $lorhondel->players->filter(fn($p) => $p->account_id == $account_id && $p->active == 1 ))) {
+	if ($player = $lorhondel->players->find(fn($p) => $p->account_id == $account_id && $p->active == 1 )) {
 		//echo '[FOUND ACTIVE CACHED PLAYER]'; //var_dump($collection);
-		foreach ($collection as $player) //There should only be one
-			return $player;
+		return $player;
 	}
 	
 	//No active Player part was found, so check SQL to make sure
@@ -586,16 +585,14 @@ function getCurrentPlayer($lorhondel, $account_id)
 }
 function getCurrentParty($lorhondel, $id)
 {
-	if (count($collection = $lorhondel->parties->filter(fn($p) => $p->player1 == $id || $p->player2 == $id || $p->player3 == $id || $p->player4 == $id || $p->player5 == $id))) {
-		foreach ($collection as $party) { //There should only be one
-			if ($player = $lorhondel->players->offsetGet($id)) {
-				if ($player->party_id === null) {
-					$player->party_id = $party->id;
-					$lorhondel->players->save($player);
-				}
+	if ($party = $lorhondel->parties->find(fn($p) => $p->player1 == $id || $p->player2 == $id || $p->player3 == $id || $p->player4 == $id || $p->player5 == $id)) {
+		if ($player = $lorhondel->players->offsetGet($id)) {
+			if ($player->party_id === null) {
+				$player->party_id = $party->id;
+				$lorhondel->players->save($player);
 			}
-			return $party;
 		}
+		return $party;
 	}
 	
 	//No Party part for the Player was found, so check SQL to make sure
