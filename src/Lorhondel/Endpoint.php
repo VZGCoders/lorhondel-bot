@@ -168,99 +168,99 @@ class Endpoint
     public const USER_CURRENT_CONNECTIONS = self::USER_CURRENT.'/connections';
     // GET
     public const APPLICATION_CURRENT = 'oauth2/applications/@me';
-	
-	// GET, PATCH
+    
+    // GET, PATCH
     public const ACCOUNT_CURRENT = 'accounts/:account_id';
     // GET
     public const ACCOUNT = 'accounts/get/:account_id';
-	// PUT
+    // PUT
     //public const ACCOUNT_PUT = 'accounts/put/:account_id';
-	// POST
+    // POST
     public const ACCOUNT_POST = 'accounts/post/:account_id';
-	// PATCH
-	public const ACCOUNT_PATCH = 'accounts/patch/:account_id';
-	// DELETE
-	public const ACCOUNT_DELETE = 'accounts/delete/:account_id';
-	
-	// GET, PATCH
+    // PATCH
+    public const ACCOUNT_PATCH = 'accounts/patch/:account_id';
+    // DELETE
+    public const ACCOUNT_DELETE = 'accounts/delete/:account_id';
+    
+    // GET, PATCH
     public const PLAYER_CURRENT = 'players/:player_id';
     // GET
     public const PLAYER = 'players/get/:player_id';
-	// PUT
+    // PUT
     //public const PLAYER_PUT = 'players/put/:player_id';
-	// POST
+    // POST
     public const PLAYER_POST = 'players/post/:player_id';
-	// PATCH
-	public const PLAYER_PATCH = 'players/patch/:player_id';
-	// DELETE
-	public const PLAYER_DELETE = 'players/delete/:player_id';
+    // PATCH
+    public const PLAYER_PATCH = 'players/patch/:player_id';
+    // DELETE
+    public const PLAYER_DELETE = 'players/delete/:player_id';
     // GET (NYI)
     //public const PLAYER_CURRENT_CONNECTIONS = self::PLAYER_CURRENT.'/connections';
-	
-	// GET, PATCH
+    
+    // GET, PATCH
     public const PET_CURRENT = 'pets/:pet_id';
     // GET
     public const PET = 'pets/get/:pet_id';
-	// PUT
+    // PUT
     //public const PET_PUT = 'pets/put/:pet_id';
-	// POST
+    // POST
     public const PET_POST = 'pets/post/:pet_id';
-	// PATCH
-	public const PET_PATCH = 'pets/patch/:pet_id';
-	// DELETE
-	public const PET_DELETE = 'pets/delete/:pet_id';
-	
-	// GET, PATCH
+    // PATCH
+    public const PET_PATCH = 'pets/patch/:pet_id';
+    // DELETE
+    public const PET_DELETE = 'pets/delete/:pet_id';
+    
+    // GET, PATCH
     public const NPC_CURRENT = 'npcs/:npc_id';
     // GET
     public const NPC = 'npcs/get/:npc_id';
-	// PUT
+    // PUT
     //public const NPC_PUT = 'npcs/put/:npc_id';
-	// POST
+    // POST
     public const NPC_POST = 'npcs/post/:npc_id';
-	// PATCH
-	public const NPC_PATCH = 'npcs/patch/:npc_id';
-	// DELETE
-	public const NPC_DELETE = 'npcs/delete/:npc_id';
-	
-	// 
+    // PATCH
+    public const NPC_PATCH = 'npcs/patch/:npc_id';
+    // DELETE
+    public const NPC_DELETE = 'npcs/delete/:npc_id';
+    
+    // 
     public const PLAYER_CURRENT_PARTY = self::PLAYER_CURRENT.'/parties/:party_id';
-	 // GET
+     // GET
     public const PARTY = 'parties/get/:party_id';
-	// PUT
+    // PUT
     //public const PARTY_PUT = 'parties/put/:party_id';
-	// POST
+    // POST
     public const PARTY_POST = 'parties/post/:party_id';
-	// PATCH
-	public const PARTY_PATCH = 'parties/patch/:party_id';
-	// DELETE
-	public const PARTY_DELETE = 'parties/delete/:party_id';
+    // PATCH
+    public const PARTY_PATCH = 'parties/patch/:party_id';
+    // DELETE
+    public const PARTY_DELETE = 'parties/delete/:party_id';
 
-	// 
+    // 
     public const PLAYER_CURRENT_BATTLE = self::PLAYER_CURRENT.'/battles/:battle_id';
-	 // GET
+     // GET
     public const BATTLE = 'battles/get/:battle_id';
-	// PUT
+    // PUT
     //public const BATTLE_PUT = 'battles/put/:battle_id';
-	// POST
+    // POST
     public const BATTLE_POST = 'battles/post/:battle_id';
-	// PATCH
-	public const BATTLE_PATCH = 'battles/patch/:battle_id';
-	// DELETE
-	public const BATTLE_DELETE = 'battles/delete/:battle_id';
+    // PATCH
+    public const BATTLE_PATCH = 'battles/patch/:battle_id';
+    // DELETE
+    public const BATTLE_DELETE = 'battles/delete/:battle_id';
 
 // 
     public const PLAYER_CURRENT_VOTE = self::PLAYER_CURRENT.'/votes/:vote_id';
-	 // GET
+     // GET
     public const VOTE = 'votes/get/:vote_id';
-	// PUT
+    // PUT
     //public const VOTE_PUT = 'votes/put/:vote_id';
-	// POST
+    // POST
     public const VOTE_POST = 'votes/post/:vote_id';
-	// PATCH
-	public const VOTE_PATCH = 'votes/patch/:vote_id';
-	// DELETE
-	public const VOTE_DELETE = 'votes/delete/:vote_id';
+    // PATCH
+    public const VOTE_PATCH = 'votes/patch/:vote_id';
+    // DELETE
+    public const VOTE_DELETE = 'votes/delete/:vote_id';
 
 
 

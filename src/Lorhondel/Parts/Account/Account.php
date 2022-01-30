@@ -27,23 +27,7 @@ class Account extends Part
      */
     protected static $fillable = ['id', 'discord_id'];
 
-	/**
-     * Returns the fillable attributes.
-     *
-     * @return array
-     */
-    public static function getFillableAttributes($context = '')
-	{
-		$fillable = array();
-		foreach (self::$fillable as $attr) {
-			if (! $context || in_array($context, self::$fillable)) {
-				$fillable[] = $attr;
-			}
-		}
-		return $fillable;
-	}
-
-	/**
+    /**
      * @inheritdoc
      */
     public function getCreatableAttributes(): array
@@ -63,7 +47,7 @@ class Account extends Part
     {
         return \Lorhondel\getSnowflakeTimestamp($this->id);
     }
-	
+    
 
     /**
      * @inheritdoc
@@ -74,17 +58,17 @@ class Account extends Part
             'account_id' => $this->id,
         ];
     }
-	
-	/*
-	* Help documentation.
-	*
-	* @return string
-	*/
-	public function help(): string
-	{
-		return '';
-	}
-	
+    
+    /*
+    * Help documentation.
+    *
+    * @return string
+    */
+    public function help(): string
+    {
+        return '';
+    }
+    
     /**
      * Returns a formatted mention.
      *

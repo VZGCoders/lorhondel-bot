@@ -24,7 +24,7 @@ class Factory
      * @var lorhondel Client.
      */
     public $lorhondel;
-	
+    
     /**
      * The HTTP client.
      *
@@ -36,12 +36,12 @@ class Factory
      * Constructs a factory.
      *
      * @param Lorhondel $lorhondel The Lorhondel client.
-	 * @param Http    $http    The HTTP client.
+     * @param Http    $http    The HTTP client.
      */
     public function __construct(Lorhondel $lorhondel, Http $http)
     {
         $this->lorhondel = $lorhondel;
-		$this->http = $http;
+        $this->http = $http;
     }
 
     /**
@@ -95,8 +95,8 @@ class Factory
      */
     public function repository(string $class, array $data = [], $browser = null): AbstractRepository
     {
-		if ($class == 'Player')
-			return new $class($this->http, $this, $data, $browser);
+        if ($class == 'Player')
+            return new $class($this->http, $this, $data, $browser);
         return new $class($this->http, $this, $data);
     }
 }

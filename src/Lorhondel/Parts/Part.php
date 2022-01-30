@@ -29,7 +29,7 @@ abstract class Part implements ArrayAccess, JsonSerializable
      * @var Http Client.
      */
     protected $http;
-	
+    
     /**
      * The factory.
      *
@@ -126,7 +126,7 @@ abstract class Part implements ArrayAccess, JsonSerializable
     {
         $this->lorhondel = $lorhondel;
         $this->factory = $lorhondel->getFactory();
-		$this->http = $lorhondel->getHttpClient();
+        $this->http = $lorhondel->getHttpClient();
 
         $this->created = $created;
         $this->fill($attributes);
@@ -198,22 +198,22 @@ abstract class Part implements ArrayAccess, JsonSerializable
 
         return false;
     }
-	
-	/**
+    
+    /**
      * Returns the fillable attributes.
      *
      * @return array
      */
     public static function getFillableAttributes($context = '')
-	{
-		$fillable = array();
-		foreach ($this::$fillable as $attr) {
-			if (! $context || in_array($context, $attrContexts)) {
-				$fillable[] = $attr;
-			}
-		}
-		return $fillable;
-	}
+    {
+        $fillable = array();
+        foreach ($this::$fillable as $attr) {
+            if (! $context || in_array($context, $attrContexts)) {
+                $fillable[] = $attr;
+            }
+        }
+        return $fillable;
+    }
 
     /**
      * Gets an attribute on the part.

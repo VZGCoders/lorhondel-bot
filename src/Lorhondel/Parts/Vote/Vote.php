@@ -34,34 +34,18 @@ class Vote extends Part
      */
     protected static $fillable = ['id', 'active', 'duration', 'result'];
 
-	/**
-     * Returns the fillable attributes.
-     *
-     * @return array
-     */
-    public static function getFillableAttributes($context = '')
-	{
-		$fillable = array();
-		foreach (self::$fillable as $attr) {
-			if (! $context || in_array($context, self::$fillable)) {
-				$fillable[] = $attr;
-			}
-		}
-		return $fillable;
-	}
-
-	/**
+    /**
      * @inheritdoc
      */
     public function getCreatableAttributes(): array
     {
         return [
             'id',
-			'active',
-			'duration',
-			'result'
+            'active',
+            'duration',
+            'result'
         ];
-    }	
+    }
 
     /**
      * @inheritdoc

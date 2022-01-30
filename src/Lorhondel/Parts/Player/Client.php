@@ -40,31 +40,15 @@ class Client extends Part
      * @inheritdoc
      */
     protected $repositories = [
-		'accounts' => AccountRepository::class,
+        'accounts' => AccountRepository::class,
         'battles' => BattleRepository::class,
-		//'enemies' => EnemyRepository::class,
-		//'npcs' => NPCRepository::class,
-		'parties' => PartyRepository::class,
-		'pets' => PetRepository::class,
-		'players' => PlayerRepository::class,
-		'votes' => VoteRepository::class,
+        //'enemies' => EnemyRepository::class,
+        //'npcs' => NPCRepository::class,
+        'parties' => PartyRepository::class,
+        'pets' => PetRepository::class,
+        'players' => PlayerRepository::class,
+        'votes' => VoteRepository::class,
     ];
-
-	/**
-     * Returns the fillable attributes.
-     *
-     * @return array
-     */
-    public static function getFillableAttributes($context = '')
-	{
-		$fillable = array();
-		foreach (self::$fillable as $attr) {
-			if (! $context || in_array($context, self::$fillable)) {
-				$fillable[] = $attr;
-			}
-		}
-		return $fillable;
-	}
 
     /**
      * Runs any extra construction tasks.
@@ -87,7 +71,7 @@ class Client extends Part
     {
         return $this->factory->create(Player::class, $this->attributes, true);
     }
-	
+    
     /**
      * Saves the client instance.
      *
@@ -103,9 +87,9 @@ class Client extends Part
      */
     public function getUpdatableAttributes($discord = null): array
     {
-		if (isset($this->attributes['discord_id'])) {
-			$attributes['discord_id'] = $this->discord->users->offsetGet($attributes['discord_id']);
-		}
+        if (isset($this->attributes['discord_id'])) {
+            $attributes['discord_id'] = $this->discord->users->offsetGet($attributes['discord_id']);
+        }
 
         return $attributes;
     }

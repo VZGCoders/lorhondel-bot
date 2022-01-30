@@ -33,41 +33,25 @@ class Pet extends Part
      */
     protected static $fillable = ['id', 'discord_id', 'name', 'species', 'variant', 'affection'];
 
-	protected static $species_list = ['']; //TODO
+    protected static $species_list = ['']; //TODO
 
-	/**
-     * Returns the fillable attributes.
-     *
-     * @return array
-     */
-    public static function getFillableAttributes($context = '')
-	{
-		$fillable = array();
-		foreach (self::$fillable as $attr) {
-			if (! $context || in_array($context, self::$fillable)) {
-				$fillable[] = $attr;
-			}
-		}
-		return $fillable;
-	}
-
-	/**
+    /**
      * Returns the fillable species attributes.
      *
      * @return array
      */
     public static function getFillableSpeciesAttributes($context = '')
-	{
-		$species_list = array();
-		foreach (self::$species_list as $attr) {
-			if (! $context || in_array($context, self::$species_list)) {
-				$species_list[] = $attr;
-			}
-		}
-		return $species_list;
-	}
+    {
+        $species_list = array();
+        foreach (self::$species_list as $attr) {
+            if (! $context || in_array($context, self::$species_list)) {
+                $species_list[] = $attr;
+            }
+        }
+        return $species_list;
+    }
 
-	/**
+    /**
      * @inheritdoc
      */
     public function getCreatableAttributes(): array
@@ -75,10 +59,10 @@ class Pet extends Part
         return [ //'id', 'discord_id', 'name', 'species', 'variant', 'affection'];
             'id' => $this->id,
             'discord_id' => $this->discord_id,
-			'name' => $this->name,
+            'name' => $this->name,
             'species' => $this->species,
             'variant' => $this->variant,
-			'affection' => $this->affection',
+            'affection' => $this->affection',
         ];
     }
 
@@ -102,24 +86,24 @@ class Pet extends Part
         ];
     }
 
-	public function help(): string
-	{
-		return '';
-	}
+    public function help(): string
+    {
+        return '';
+    }
 
-	public function rename($lorhondel, $name): string
-	{
-		if ($name) {
-			if (strlen($name) > 64) return 'Pet name cannot exceed 64 characters!';
-			$return = 'Changed name of Pet `' . ($this->name ?? $this->id) . "` to `$name`!";
-			$this->name = $name;
-		} else {
-			$return = 'Pet `' . ($this->name ?? $this->id) . '` has had its name removed! It is now known as Pet `' . ($this->id) . '`!';
-			$this->name = null;
-		}
-		if ($lorhondel) $lorhondel->pets->save($this);
-		return $return;
-	}
+    public function rename($lorhondel, $name): string
+    {
+        if ($name) {
+            if (strlen($name) > 64) return 'Pet name cannot exceed 64 characters!';
+            $return = 'Changed name of Pet `' . ($this->name ?? $this->id) . "` to `$name`!";
+            $this->name = $name;
+        } else {
+            $return = 'Pet `' . ($this->name ?? $this->id) . '` has had its name removed! It is now known as Pet `' . ($this->id) . '`!';
+            $this->name = null;
+        }
+        if ($lorhondel) $lorhondel->pets->save($this);
+        return $return;
+    }
 
     /**
      * Returns a formatted mention.

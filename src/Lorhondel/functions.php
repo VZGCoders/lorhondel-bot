@@ -93,8 +93,8 @@ function mentioned($part, Message $message): bool
     if ($part instanceof User || $part instanceof Member) {
         return $message->mentions->has($part->id);
     } elseif ($part instanceof Player) {
-		return ($message->mentions->has($part->user->id) || strpos($message->content, "<@${$part->id}>") !== false);
-	} elseif ($part instanceof Role) {
+        return ($message->mentions->has($part->user->id) || strpos($message->content, "<@${$part->id}>") !== false);
+    } elseif ($part instanceof Role) {
         return $message->mention_roles->has($part->id);
     } elseif ($part instanceof Channel) {
         return strpos($message->content, "<#{$part->id}>") !== false;
@@ -250,14 +250,14 @@ function getSnowflakeTimestamp(string $snowflake)
  */
 function generateSnowflake(Lorhondel $lorhondel, $time = null, $workerID = null, $processID = null, $increment = null)
 {
-	$processID = $processID ?? $lorhondel->processID;
-	$workerID = $workerID ?? $lorhondel->workerID;
-	$increment = $increment ?? $lorhondel->increment;
-	$lorhondel->increment++;
-	if (! $time) $timeSinceEpoch = (time() . '000') - EPOCH;
-	else $timeSinceEpoch = ($time . '000') - EPOCH;
-	$snowflake = ($timeSinceEpoch << 22) | (($workerID & 0x1F) << 17) | (($processID & 0x1F) << 12) | ($increment & 0xFFF);
-	return (int) $snowflake;
+    $processID = $processID ?? $lorhondel->processID;
+    $workerID = $workerID ?? $lorhondel->workerID;
+    $increment = $increment ?? $lorhondel->increment;
+    $lorhondel->increment++;
+    if (! $time) $timeSinceEpoch = (time() . '000') - EPOCH;
+    else $timeSinceEpoch = ($time . '000') - EPOCH;
+    $snowflake = ($timeSinceEpoch << 22) | (($workerID & 0x1F) << 17) | (($processID & 0x1F) << 12) | ($increment & 0xFFF);
+    return (int) $snowflake;
 }
 
 /**
@@ -328,10 +328,10 @@ SQL
 
 function json_validate($data)
 {
-	if (is_array($data) || is_object($data))
-		$data = json_encode($data);
+    if (is_array($data) || is_object($data))
+        $data = json_encode($data);
     // decode the JSON data
-		
+        
     $result = json_decode($data);
 
     // switch and check possible JSON errors
@@ -375,169 +375,169 @@ function json_validate($data)
         echo '[JSON ERROR] '. $error . PHP_EOL;
     }
     // everything is OK
-	//echo '[JSON OKAY]' . PHP_EOL; //var_dump ($result);
+    //echo '[JSON OKAY]' . PHP_EOL; //var_dump ($result);
     return $result;
 }
 function sqlGet(array $columns = [], string $table = '', string $wherecolumn = '', array $values = [], string $order = '', $limit = ''): array
 {
-	//sqlGet(['*'], $repository, '', [], '', 500); //get all
-	if (empty($columns)) return [];
-	if (! $table) return [];
-	include 'connect.php'; //$mysqli and $pdo
-	$array = array();
-	
-	$sql = "SELECT ";
-	for($x=0;$x<count($columns);$x++)
-		if ($x<count($columns)-1) $sql .= $columns[$x] . ', ';
-		else $sql .= $columns[$x] . ' ';
-	$sql .= "FROM $table";
-	if ($wherecolumn && !empty($values)) {
-		$sql .= " WHERE $wherecolumn = ?";
-	}
-	if ($order) $sql .= " ORDER BY $order";
-	if ($limit) $sql .= " LIMIT $limit";
-	echo '[SQL] ' . $sql . PHP_EOL;
-	$value_string = '(';
-	foreach ($values as $value) {
-		//if ($value !== null) {
-			//if ($value == false) $value = '0';
-			$value_string .= "$value, ";
-		//}
-	}
-	$value_string = substr($value_string, 0, strlen($value_string)-2) . ')';
-	echo $value_string . PHP_EOL;
-	
-	if (! $wherecolumn) {
-		$stmt = mysqli_prepare($mysqli, $sql); //Select all values in the column
-		$stmt->execute();
-		if ($result = $stmt->get_result()) {
-			while ($rows = $result->fetch_all(MYSQLI_ASSOC)) {
-				foreach ($rows as $row) {
-					foreach ($row as $r => $v) {
-						$array[$row['id']][$r] = $v;
-					}
-				}
-			}
-			
-		} else {
-			var_dump (mysqli_stmt_error($stmt));
-			return [];
-		}
-	}
-	elseif ($wherecolumn && !empty($values)) {
-		if ($stmt = mysqli_prepare($mysqli, $sql)) {
-			$stmt->bind_param("s", $value);
-			foreach ($values as $value) {
-				$stmt->execute();
-				if ($result = $stmt->get_result()) {
-					while ($rows = $result->fetch_all(MYSQLI_ASSOC)) {
-						foreach ($rows as $row) {
-							foreach ($row as $r => $v) {
-								$array[$row['id']][$r] = $v;
-							}
-						}
-					}
-				} else {
-					var_dump(mysqli_stmt_error($stmt));
-					return [];
-				}
-			}
-		} 
-	}
-	echo '[GET ARRAY]'; var_dump($array);
-	return $array;
+    //sqlGet(['*'], $repository, '', [], '', 500); //get all
+    if (empty($columns)) return [];
+    if (! $table) return [];
+    include 'connect.php'; //$mysqli and $pdo
+    $array = array();
+    
+    $sql = "SELECT ";
+    for($x=0;$x<count($columns);$x++)
+        if ($x<count($columns)-1) $sql .= $columns[$x] . ', ';
+        else $sql .= $columns[$x] . ' ';
+    $sql .= "FROM $table";
+    if ($wherecolumn && !empty($values)) {
+        $sql .= " WHERE $wherecolumn = ?";
+    }
+    if ($order) $sql .= " ORDER BY $order";
+    if ($limit) $sql .= " LIMIT $limit";
+    echo '[SQL] ' . $sql . PHP_EOL;
+    $value_string = '(';
+    foreach ($values as $value) {
+        //if ($value !== null) {
+            //if ($value == false) $value = '0';
+            $value_string .= "$value, ";
+        //}
+    }
+    $value_string = substr($value_string, 0, strlen($value_string)-2) . ')';
+    echo $value_string . PHP_EOL;
+    
+    if (! $wherecolumn) {
+        $stmt = mysqli_prepare($mysqli, $sql); //Select all values in the column
+        $stmt->execute();
+        if ($result = $stmt->get_result()) {
+            while ($rows = $result->fetch_all(MYSQLI_ASSOC)) {
+                foreach ($rows as $row) {
+                    foreach ($row as $r => $v) {
+                        $array[$row['id']][$r] = $v;
+                    }
+                }
+            }
+            
+        } else {
+            var_dump (mysqli_stmt_error($stmt));
+            return [];
+        }
+    }
+    elseif ($wherecolumn && !empty($values)) {
+        if ($stmt = mysqli_prepare($mysqli, $sql)) {
+            $stmt->bind_param("s", $value);
+            foreach ($values as $value) {
+                $stmt->execute();
+                if ($result = $stmt->get_result()) {
+                    while ($rows = $result->fetch_all(MYSQLI_ASSOC)) {
+                        foreach ($rows as $row) {
+                            foreach ($row as $r => $v) {
+                                $array[$row['id']][$r] = $v;
+                            }
+                        }
+                    }
+                } else {
+                    var_dump(mysqli_stmt_error($stmt));
+                    return [];
+                }
+            }
+        } 
+    }
+    echo '[GET ARRAY]'; var_dump($array);
+    return $array;
 }
 function sqlCreate(string $table, $data)
 {
-	include 'connect.php';
-	if (is_object($data))
-		$string = json_encode($data);
-	echo '[DATA]' . PHP_EOL;
-	var_dump ($data);
-	//$data = json_decode(json_encode($data), true); //var_dump($data);
-	$types = '';
-	$values_clean = array();
-	if (!empty($data)) {
-		$sql = "INSERT INTO $table (";
-		foreach ($data as $key => $value) {
-			$sql .= $key . ', ';
-		}
-		$sql = substr($sql, 0, strlen($sql)-2) . ') VALUES (';
-		foreach ($data as $key => $value) {
-			$sql .= '?, ';
-			//$types .= 's';
-			$value = $value; //Remove any _ from variable names
-			$values_clean[] = $value;
-			//$sql .= "$value, ";
-		}
-		$sql = substr($sql, 0, strlen($sql)-2) . ')';
-	} else return false;
-	echo '[SQL] ' . $sql . PHP_EOL;
-	echo '[VALUES_CLEAN] '; var_dump($values_clean);
-	
-	if ($stmt = $PDO->prepare($sql)) {
-		if ($stmt->execute($values_clean)) return true;
-		else echo mysqli_stmt_error($stmt);
-	} else echo mysqli_stmt_error($stmt);
-	return false;
+    include 'connect.php';
+    if (is_object($data))
+        $string = json_encode($data);
+    echo '[DATA]' . PHP_EOL;
+    var_dump ($data);
+    //$data = json_decode(json_encode($data), true); //var_dump($data);
+    $types = '';
+    $values_clean = array();
+    if (!empty($data)) {
+        $sql = "INSERT INTO $table (";
+        foreach ($data as $key => $value) {
+            $sql .= $key . ', ';
+        }
+        $sql = substr($sql, 0, strlen($sql)-2) . ') VALUES (';
+        foreach ($data as $key => $value) {
+            $sql .= '?, ';
+            //$types .= 's';
+            $value = $value; //Remove any _ from variable names
+            $values_clean[] = $value;
+            //$sql .= "$value, ";
+        }
+        $sql = substr($sql, 0, strlen($sql)-2) . ')';
+    } else return false;
+    echo '[SQL] ' . $sql . PHP_EOL;
+    echo '[VALUES_CLEAN] '; var_dump($values_clean);
+    
+    if ($stmt = $PDO->prepare($sql)) {
+        if ($stmt->execute($values_clean)) return true;
+        else echo mysqli_stmt_error($stmt);
+    } else echo mysqli_stmt_error($stmt);
+    return false;
 }
 function sqlUpdate(?array $columns, ?array $values, string $table, string $wherecolumn = '', $target = '')
 {
-	echo '[UPDATE COLUMNS]'; var_dump($columns);
-	echo '[UPDATE VALUES]'; var_dump($values);
-	
-	if (empty($columns)) return false;
-	if (! $table) return false;
-	if (count($columns) !== count($values)) return false;
-	include 'connect.php';
-	
-	$sql = "UPDATE $table SET ";
-	for($x=0;$x<count($columns);$x++)
-	{
-		if ($x<count($columns)-1) $sql .= "{$columns[$x]} = ?, "; // {$values[$x]}
-		else $sql .= "{$columns[$x]} = ?"; //{$values[$x]}
-	}
-	if ($wherecolumn && $target) {
-		$sql .= " WHERE $wherecolumn = '$target'";
-	}
-	echo '[SQL] ' . $sql . PHP_EOL;
-	$value_string = '(';
-	foreach ($values as $value) {
-		$value_string .= "$value, ";
-	}
-	$value_string = substr($value_string, 0, strlen($value_string)-2) . ')';
-	echo $value_string . PHP_EOL;
+    echo '[UPDATE COLUMNS]'; var_dump($columns);
+    echo '[UPDATE VALUES]'; var_dump($values);
+    
+    if (empty($columns)) return false;
+    if (! $table) return false;
+    if (count($columns) !== count($values)) return false;
+    include 'connect.php';
+    
+    $sql = "UPDATE $table SET ";
+    for($x=0;$x<count($columns);$x++)
+    {
+        if ($x<count($columns)-1) $sql .= "{$columns[$x]} = ?, "; // {$values[$x]}
+        else $sql .= "{$columns[$x]} = ?"; //{$values[$x]}
+    }
+    if ($wherecolumn && $target) {
+        $sql .= " WHERE $wherecolumn = '$target'";
+    }
+    echo '[SQL] ' . $sql . PHP_EOL;
+    $value_string = '(';
+    foreach ($values as $value) {
+        $value_string .= "$value, ";
+    }
+    $value_string = substr($value_string, 0, strlen($value_string)-2) . ')';
+    echo $value_string . PHP_EOL;
 
-	if ($stmt = $PDO->prepare($sql)) {
-		if ($stmt->execute($values)) return true;
-		else echo mysqli_stmt_error($stmt);
-	} else echo mysqli_stmt_error($stmt);
-	return false;
+    if ($stmt = $PDO->prepare($sql)) {
+        if ($stmt->execute($values)) return true;
+        else echo mysqli_stmt_error($stmt);
+    } else echo mysqli_stmt_error($stmt);
+    return false;
 }
 function sqlDelete(string $table, string $wherecolumn = '', array $values = [], string $order = '', int|string $limit = '')
 {
-	include 'connect.php';
-	$array = array();
-	
-	$sql = "DELETE FROM $table";
-	if ($wherecolumn && !empty($values)) {
-		$sql .= " WHERE $wherecolumn = ?";
-	}
-	if ($order) $sql .= " ORDER BY $order";
-	if ($limit) $sql .= " LIMIT $limit";
-	echo '[SQL] ' . $sql . PHP_EOL;
-	$value_string = '(';
-	foreach ($values as $value) {
-		$value_string .= "$value, ";
-	}
-	$value_string = substr($value_string, 0, strlen($value_string)-2) . ')';
-	echo $value_string . PHP_EOL;
-	
-	if ($stmt = $PDO->prepare($sql)) {
-		if ($stmt->execute($values))	 return true;
-		else echo mysqli_stmt_error($stmt);
-	} else echo mysqli_stmt_error($stmt);
-	return false;
+    include 'connect.php';
+    $array = array();
+    
+    $sql = "DELETE FROM $table";
+    if ($wherecolumn && !empty($values)) {
+        $sql .= " WHERE $wherecolumn = ?";
+    }
+    if ($order) $sql .= " ORDER BY $order";
+    if ($limit) $sql .= " LIMIT $limit";
+    echo '[SQL] ' . $sql . PHP_EOL;
+    $value_string = '(';
+    foreach ($values as $value) {
+        $value_string .= "$value, ";
+    }
+    $value_string = substr($value_string, 0, strlen($value_string)-2) . ')';
+    echo $value_string . PHP_EOL;
+    
+    if ($stmt = $PDO->prepare($sql)) {
+        if ($stmt->execute($values))     return true;
+        else echo mysqli_stmt_error($stmt);
+    } else echo mysqli_stmt_error($stmt);
+    return false;
 }
 
 /**
@@ -548,66 +548,66 @@ function sqlDelete(string $table, string $wherecolumn = '', array $values = [], 
  */
 function partPusher($lorhondel, $repository, $part_name, $array)
 {
-	$part = null;
-	foreach ($array as $data) { //Create all into parts and push
-		if ($attributes = json_decode(json_encode(json_validate($data)), true)) {
-			if ($part = $lorhondel->factory($part_name, $attributes)) {
-				if ($lorhondel->$repository->offsetGet($part->id))
-					$lorhondel->$repository->pull($part->id);
-				$lorhondel->$repository->push($part);
-			}
-		}
-	}
-	return $part;
+    $part = null;
+    foreach ($array as $data) { //Create all into parts and push
+        if ($attributes = json_decode(json_encode(json_validate($data)), true)) {
+            if ($part = $lorhondel->factory($part_name, $attributes)) {
+                if ($lorhondel->$repository->offsetGet($part->id))
+                    $lorhondel->$repository->pull($part->id);
+                $lorhondel->$repository->push($part);
+            }
+        }
+    }
+    return $part;
 }
 function getCurrentPlayer($lorhondel, $account_id)
 {
-	if ($player = $lorhondel->players->find(fn($p) => $p->account_id == $account_id && $p->active == 1 )) {
-		//echo '[FOUND ACTIVE CACHED PLAYER]'; //var_dump($collection);
-		return $player;
-	}
-	
-	//No active Player part was found, so check SQL to make sure
-	include 'connect.php';
-	$sql = "SELECT * FROM players WHERE account_id = ? AND active = 1";
-	$get = array();
-	$part = null;
-	if ($stmt = $PDO->prepare($sql))
-		if ($stmt->execute([$account_id]))
-			if ($result = $stmt->fetchAll())
-				$get = $result;
-	echo '[getCurrentPlayer]'; var_dump($get);
-	if (! empty($get)) {
-		$part = partPusher($lorhondel, 'players', '\Lorhondel\Parts\Player\Player', $get);
-		echo '[getCurrentPlayer2]'; var_dump($part);
-		return $part;
-	} else return null;
+    if ($player = $lorhondel->players->find(fn($p) => $p->account_id == $account_id && $p->active == 1 )) {
+        //echo '[FOUND ACTIVE CACHED PLAYER]'; //var_dump($collection);
+        return $player;
+    }
+    
+    //No active Player part was found, so check SQL to make sure
+    include 'connect.php';
+    $sql = "SELECT * FROM players WHERE account_id = ? AND active = 1";
+    $get = array();
+    $part = null;
+    if ($stmt = $PDO->prepare($sql))
+        if ($stmt->execute([$account_id]))
+            if ($result = $stmt->fetchAll())
+                $get = $result;
+    echo '[getCurrentPlayer]'; var_dump($get);
+    if (! empty($get)) {
+        $part = partPusher($lorhondel, 'players', '\Lorhondel\Parts\Player\Player', $get);
+        echo '[getCurrentPlayer2]'; var_dump($part);
+        return $part;
+    } else return null;
 }
 function getCurrentParty($lorhondel, $id)
 {
-	if ($party = $lorhondel->parties->find(fn($p) => $p->player1 == $id || $p->player2 == $id || $p->player3 == $id || $p->player4 == $id || $p->player5 == $id)) {
-		if ($player = $lorhondel->players->offsetGet($id)) {
-			if ($player->party_id === null) {
-				$player->party_id = $party->id;
-				$lorhondel->players->save($player);
-			}
-		}
-		return $party;
-	}
-	
-	//No Party part for the Player was found, so check SQL to make sure
-	include 'connect.php';
-	$part = null;
-	$sql = "SELECT * FROM parties WHERE ? in (player1, player2, player3, player4, player5)";
-	if ($stmt = $PDO->prepare($sql))
-		if ($stmt->execute([$id]))
-			if ($result = $stmt->fetchAll())
-				$part = partPusher($lorhondel, 'parties', '\Lorhondel\Parts\Party\Party', $result);
-	return $part ?? false;
+    if ($party = $lorhondel->parties->find(fn($p) => $p->player1 == $id || $p->player2 == $id || $p->player3 == $id || $p->player4 == $id || $p->player5 == $id)) {
+        if ($player = $lorhondel->players->offsetGet($id)) {
+            if ($player->party_id === null) {
+                $player->party_id = $party->id;
+                $lorhondel->players->save($player);
+            }
+        }
+        return $party;
+    }
+    
+    //No Party part for the Player was found, so check SQL to make sure
+    include 'connect.php';
+    $part = null;
+    $sql = "SELECT * FROM parties WHERE ? in (player1, player2, player3, player4, player5)";
+    if ($stmt = $PDO->prepare($sql))
+        if ($stmt->execute([$id]))
+            if ($result = $stmt->fetchAll())
+                $part = partPusher($lorhondel, 'parties', '\Lorhondel\Parts\Party\Party', $result);
+    return $part ?? false;
 }
 function getPlayerLocation($lorhondel)
 {
-	//
+    //
 }
 
 /*
@@ -615,24 +615,24 @@ Functions will handle what should happen if the wrong data types are passed
 */
 function reflectionMachine($part = null, ?array $array_merge = [], ?string $message = '', ?string $command = '')//: string
 {
-	$tokens = array_merge($array_merge, explode(' ', $message));
-	$method = new \ReflectionMethod('\\'.get_class($part), $command);
-	$num = $method->getNumberOfParameters();
-	$tokens = array_slice($tokens, 0, $num);
-	if ($part instanceof Part && count($tokens) < $num) { //Too few parameters passed to function
-		//echo "num: $num" . PHP_EOL; echo 'token count: ' . count($tokens) . PHP_EOL;
-		$parameters = [];
-		for ($x=0;$x<$num;$x++) {
-			$parameters[] = new ReflectionParameter([$part, $command], $x);
-		}
-		$return = "The `$command` command requires `$num` parameters: ";
-		foreach ($parameters as $parameter) {
-			$return .= "`{$parameter->getName()}`, ";
-		}
-		$return = substr($return, 0, strlen($return)-2) . '.';
-		return $return;
-	}
-	return call_user_func_array(array($part, $command), $tokens);
+    $tokens = array_merge($array_merge, explode(' ', $message));
+    $method = new \ReflectionMethod('\\'.get_class($part), $command);
+    $num = $method->getNumberOfParameters();
+    $tokens = array_slice($tokens, 0, $num);
+    if ($part instanceof Part && count($tokens) < $num) { //Too few parameters passed to function
+        //echo "num: $num" . PHP_EOL; echo 'token count: ' . count($tokens) . PHP_EOL;
+        $parameters = [];
+        for ($x=0;$x<$num;$x++) {
+            $parameters[] = new ReflectionParameter([$part, $command], $x);
+        }
+        $return = "The `$command` command requires `$num` parameters: ";
+        foreach ($parameters as $parameter) {
+            $return .= "`{$parameter->getName()}`, ";
+        }
+        $return = substr($return, 0, strlen($return)-2) . '.';
+        return $return;
+    }
+    return call_user_func_array(array($part, $command), $tokens);
 }
 
 
@@ -692,8 +692,8 @@ function CheckFile($foldername, $filename)
     $path = __DIR__ . "/" .$foldername.$folder_symbol.$filename;
     //Create folder if it doesn't already exist
     if (file_exists($path))
-		return true;
-	return false;
+        return true;
+    return false;
 }
 
 //Saves a variable to a file
@@ -770,23 +770,23 @@ function TimeCompare($foldername, $filename)
     //check if file exists
     if ($then) {
         $sincetime = date_diff($now, $then);
-        $timecompare['y'] = $sinceYear 		= $sincetime->y;
-        $timecompare['m'] = $sinceMonth 	= $sincetime->m;
-        $timecompare['d'] = $sinceDay 		= $sincetime->d;
-        $timecompare['h'] = $sinceHour 		= $sincetime->h;
-        $timecompare['i'] = $sinceMinute 	= $sincetime->i;
-        $timecompare['s'] = $sinceSecond 	= $sincetime->s;
+        $timecompare['y'] = $sinceYear         = $sincetime->y;
+        $timecompare['m'] = $sinceMonth     = $sincetime->m;
+        $timecompare['d'] = $sinceDay         = $sincetime->d;
+        $timecompare['h'] = $sinceHour         = $sincetime->h;
+        $timecompare['i'] = $sinceMinute     = $sincetime->i;
+        $timecompare['s'] = $sinceSecond     = $sincetime->s;
         echo 'Timer found to compare!' . PHP_EOL;
         return $timecompare;
     } else {
         //File not found, so return 0's
         $sincetime = date_diff($now, $now);
-        $timecompare['y'] = $sinceYear 		= ($sincetime->y)+1; //Assume one year has passed, enough time to avoid any cooldown
-        $timecompare['m'] = $sinceMonth 	= $sincetime->m;
-        $timecompare['d'] = $sinceDay 		= $sincetime->d;
-        $timecompare['h'] = $sinceHour 		= $sincetime->h;
-        $timecompare['i'] = $sinceMinute 	= $sincetime->i;
-        $timecompare['s'] = $sinceSecond 	= $sincetime->s;
+        $timecompare['y'] = $sinceYear         = ($sincetime->y)+1; //Assume one year has passed, enough time to avoid any cooldown
+        $timecompare['m'] = $sinceMonth     = $sincetime->m;
+        $timecompare['d'] = $sinceDay         = $sincetime->d;
+        $timecompare['h'] = $sinceHour         = $sincetime->h;
+        $timecompare['i'] = $sinceMinute     = $sincetime->i;
+        $timecompare['s'] = $sinceSecond     = $sincetime->s;
         echo 'Timer not found to compare!' . PHP_EOL;
         //echo "timecompare: " . PHP_EOL; var_dump($timecompare) . PHP_EOL;
         return $timecompare;
@@ -804,23 +804,23 @@ function TimeCompareMem($author_id, $variable)
     //check if file exists
     if ($then) {
         $sincetime = date_diff($now, $then);
-        $timecompare['y'] = $sinceYear 		= $sincetime->y;
-        $timecompare['m'] = $sinceMonth 	= $sincetime->m;
-        $timecompare['d'] = $sinceDay 		= $sincetime->d;
-        $timecompare['h'] = $sinceHour 		= $sincetime->h;
-        $timecompare['i'] = $sinceMinute 	= $sincetime->i;
-        $timecompare['s'] = $sinceSecond 	= $sincetime->s;
+        $timecompare['y'] = $sinceYear         = $sincetime->y;
+        $timecompare['m'] = $sinceMonth     = $sincetime->m;
+        $timecompare['d'] = $sinceDay         = $sincetime->d;
+        $timecompare['h'] = $sinceHour         = $sincetime->h;
+        $timecompare['i'] = $sinceMinute     = $sincetime->i;
+        $timecompare['s'] = $sinceSecond     = $sincetime->s;
         echo 'Timer found to compare!' . PHP_EOL;
         return $timecompare;
     } else {
         //File not found, so return 0's
         $sincetime = date_diff($now, $now);
-        $timecompare['y'] = $sinceYear 		= ($sincetime->y)+1; //Assume one year has passed, enough time to avoid any cooldown
-        $timecompare['m'] = $sinceMonth 	= $sincetime->m;
-        $timecompare['d'] = $sinceDay 		= $sincetime->d;
-        $timecompare['h'] = $sinceHour 		= $sincetime->h;
-        $timecompare['i'] = $sinceMinute 	= $sincetime->i;
-        $timecompare['s'] = $sinceSecond 	= $sincetime->s;
+        $timecompare['y'] = $sinceYear         = ($sincetime->y)+1; //Assume one year has passed, enough time to avoid any cooldown
+        $timecompare['m'] = $sinceMonth     = $sincetime->m;
+        $timecompare['d'] = $sinceDay         = $sincetime->d;
+        $timecompare['h'] = $sinceHour         = $sincetime->h;
+        $timecompare['i'] = $sinceMinute     = $sincetime->i;
+        $timecompare['s'] = $sinceSecond     = $sincetime->s;
         echo 'Timer not found to compare!' . PHP_EOL;
         //echo "timecompare: " . PHP_EOL; var_dump($timecompare) . PHP_EOL;
         return $timecompare;
@@ -1029,7 +1029,7 @@ Miscellaneous
 //Returns a random result from an array
 function GetRandomArrayIndex(array $array)
 {
-	return rand(0, count($array)-1);
+    return rand(0, count($array)-1);
 }
 
 //Removes a value from an array
@@ -1070,11 +1070,11 @@ function appendImages($array)
     clearstatcache();
         
     /* Save the file */
-	try {
-		$combined->writeImage($path);
-	}catch(Exception $e) {
-		return null;
-	}
+    try {
+        $combined->writeImage($path);
+    }catch(Exception $e) {
+        return null;
+    }
     //imagepng($combined, $path); //Only works for resources, but imagick is an object
     
     /* Return the URL where the image can be accessed by Discord */

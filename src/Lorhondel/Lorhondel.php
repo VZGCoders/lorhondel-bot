@@ -38,7 +38,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class Lorhondel
 {
-	use EventEmitterTrait;
+    use EventEmitterTrait;
 
     /**
      * The gateway version the client uses.
@@ -53,36 +53,36 @@ class Lorhondel
      * @var string Version.
      */
     public const VERSION = 'v1.0.0';
-	
-	/**
+    
+    /**
      * The logger.
      *
      * @var LoggerInterface Logger.
      */
     protected $logger;
-	
-	/**
+    
+    /**
      * An array of options passed to the client.
      *
      * @var array Options.
      */
     protected $options;
-	
-	/**
+    
+    /**
      * The authentication token.
      *
      * @var string Token.
      */
     protected $token;
-	
-	/**
+    
+    /**
      * The ReactPHP event loop.
      *
      * @var LoopInterface Event loop.
      */
     public $loop;
-	
-	/**
+    
+    /**
      * The WebSocket client factory.
      *
      * @var Connector Factory.
@@ -137,8 +137,8 @@ class Lorhondel
      * @var string Session ID.
      */
     protected $sessionId;
-	
-	/**
+    
+    /**
      * An array of large guilds that need to be requested for
      * members.
      *
@@ -238,100 +238,100 @@ class Lorhondel
      * @var Http Client.
      */
     protected $http;
-	
-	/**
+    
+    /**
      * The HTTP server.
      *
      * @var Http Server.
      */
-	protected $httpserver;
-	
-	/**
+    protected $httpserver;
+    
+    /**
      * The part/repository factory.
      *
      * @var Factory Part factory.
      */
     protected $factory;
-	
+    
     /**
      * The Client class.
      *
      * @var Client Lorhondel client.
      */
     protected $client;
-	
-	public $discord;
-	public $browser;
-	
-	public $server;
-	
-	public $command_symbol;
-	
-	protected $verbose = true;
-	
-	public $workerID = 0;
-	public $processID = 0;
-	public $increment = 0;
-	
-	public $locations = [
-		'start' => [
-			'world1' => [
-				'tundra' => [
-					'building1a',
-					'building1b',
-				],
-				'place2' => [
-					'building2a',
-					'building2b' => [
-						'room2b1',
-					],
-				],
-			],
-			'world2' => [
-				'place3' => [
-					'building3a',
-					'building3b',
-				],
-				'place4' => [
-					'building4a',
-					'building4b',
-				],
-			],
-		],
-	];
-	
+    
+    public $discord;
+    public $browser;
+    
+    public $server;
+    
+    public $command_symbol;
+    
+    protected $verbose = true;
+    
+    public $workerID = 0;
+    public $processID = 0;
+    public $increment = 0;
+    
+    public $locations = [
+        'start' => [
+            'world1' => [
+                'tundra' => [
+                    'building1a',
+                    'building1b',
+                ],
+                'place2' => [
+                    'building2a',
+                    'building2b' => [
+                        'room2b1',
+                    ],
+                ],
+            ],
+            'world2' => [
+                'place3' => [
+                    'building3a',
+                    'building3b',
+                ],
+                'place4' => [
+                    'building4a',
+                    'building4b',
+                ],
+            ],
+        ],
+    ];
+    
     /**
      * Creates a Lorhondel client instance.
      *
      * @param  array           $options Array of options.
      * @throws IntentException
      */
-	public function __construct(array $options = [])
+    public function __construct(array $options = [])
     {
-		if (php_sapi_name() !== 'cli') {
+        if (php_sapi_name() !== 'cli') {
             trigger_error('Lorhondel will not run on a webserver. Please use PHP CLI to run a Lorhondel bot.', E_USER_ERROR);
         }
-		
-		$options = $this->resolveOptions($options);
-		
-		$this->options = $options;
-		$this->token = $options['token'];
-		$this->loop = $options['loop'];
-		$this->browser = $options['browser'];
-		if ($options['discord'] || $options['discord_options']) {
-			if ($options['discord']) $this->discord = $options['discord'];
-			elseif ($options['discord_options']) $this->discord = new \Discord\Discord($options['discord_options']);
-		} else echo '[LORHONDEL-WARNING] No discord set!' . PHP_EOL;
-		
-		$connector = new SocketConnector($this->loop, $options['socket_options']);
+        
+        $options = $this->resolveOptions($options);
+        
+        $this->options = $options;
+        $this->token = $options['token'];
+        $this->loop = $options['loop'];
+        $this->browser = $options['browser'];
+        if ($options['discord'] || $options['discord_options']) {
+            if ($options['discord']) $this->discord = $options['discord'];
+            elseif ($options['discord_options']) $this->discord = new \Discord\Discord($options['discord_options']);
+        } else echo '[LORHONDEL-WARNING] No discord set!' . PHP_EOL;
+        
+        $connector = new SocketConnector($this->loop, $options['socket_options']);
         $this->wsFactory = new Connector($this->loop, $connector);
-		$this->handlers = new Handlers();
-		
-		 foreach ($options['disabledEvents'] as $event) {
+        $this->handlers = new Handlers();
+        
+         foreach ($options['disabledEvents'] as $event) {
             $this->handlers->removeHandler($event);
         }
-		
-		$function = function () use (&$function) {
+        
+        $function = function () use (&$function) {
             $this->emittedReady = true;
             $this->removeListener('ready', $function);
         };
@@ -344,27 +344,27 @@ class Lorhondel
             $this->options['logger'],
             new React($this->loop, $options['socket_options'])
         );
-		
-		if ($options['server']) {
-			if ($options['socket']) $this->httpServer = new HttpServer($this, $options['socket']);
-			else {
-				$socket = new \React\Socket\Server(sprintf('%s:%s', '0.0.0.0', '27759'), $loop);
-				if ($options['socket']) $this->httpServer = new HttpServer($this, $socket);
-			}
-		}
-		
-		$this->server = $options['server'];
-		$this->command_symbol = $options['command_symbol'];
+        
+        if ($options['server']) {
+            if ($options['socket']) $this->httpServer = new HttpServer($this, $options['socket']);
+            else {
+                $socket = new \React\Socket\Server(sprintf('%s:%s', '0.0.0.0', '27759'), $loop);
+                if ($options['socket']) $this->httpServer = new HttpServer($this, $socket);
+            }
+        }
+        
+        $this->server = $options['server'];
+        $this->command_symbol = $options['command_symbol'];
 
         $this->factory = new Factory($this, $this->http);
-		$this->client = $this->factory->create(Client::class, [], true);
+        $this->client = $this->factory->create(Client::class, [], true);
 
         $this->connectWs();
-		
-		$this->processID = (int) getmypid();
-	}
-	
-	/**
+        
+        $this->processID = (int) getmypid();
+    }
+    
+    /**
      * Handles `RESUME` packets.
      *
      * @param object $data Packet data.
@@ -374,7 +374,7 @@ class Lorhondel
         $this->logger->info('websocket reconnected to lorhondel');
         $this->emit('reconnected', [$this]);
     }
-	
+    
     /**
      * Handles `READY` packets.
      *
@@ -471,7 +471,7 @@ class Lorhondel
 
         $this->on(Event::GUILD_CREATE, $function);
     }
-	
+    
     /**
      * Handles `GUILD_MEMBERS_CHUNK` packets.
      *
@@ -521,8 +521,8 @@ class Lorhondel
             $this->ready();
         }
     }
-	
-	    /**
+    
+        /**
      * Handles WebSocket connections received by the client.
      *
      * @param WebSocket $ws WebSocket client.
@@ -545,7 +545,7 @@ class Lorhondel
         $ws->on('close', [$this, 'handleWsClose']);
         $ws->on('error', [$this, 'handleWsError']);
     }
-	
+    
     /**
      * Handles WebSocket messages received by the client.
      *
@@ -579,8 +579,8 @@ class Lorhondel
             $this->{$op[$data->op]}($data);
         }
     }
-	
-	    /**
+    
+        /**
      * Handles WebSocket closes received by the client.
      *
      * @param int    $op     The close code.
@@ -624,8 +624,8 @@ class Lorhondel
             });
         }
     }
-	
-	    /**
+    
+        /**
      * Handles WebSocket errors received by the client.
      *
      * @param \Exception $e The error.
@@ -641,8 +641,8 @@ class Lorhondel
         $this->emit('error', [$e, $this]);
         $this->ws->close(Op::CLOSE_ABNORMAL, $e->getMessage());
     }
-	
-	
+    
+    
     /**
      * Handles cases when the WebSocket cannot be connected to.
      *
@@ -1082,8 +1082,8 @@ class Lorhondel
 
         $this->send($payload);
     }
-	
-	    /**
+    
+        /**
      * Retrieves and sets the gateway URL for the client.
      *
      * @param string|null $gateway Gateway URL to set.
@@ -1134,21 +1134,21 @@ class Lorhondel
         return $deferred->promise();
     }
 
-	/*
-	* Attempt to catch errors with the user-provided $options early
-	*/
-	protected function resolveOptions(array $options = []): array
-	{
-		if ($this->verbose) $this->emit('[LORHONDEL] [RESOLVE OPTIONS]');
-		$options['loop'] = $options['loop'] ?? Factory::create();
-		$options['browser'] = $options['browser'] ?? new \React\Http\Browser($options['loop']);
-		$options['server'] = $options['server'] ?? false;
-		$options['command_symbol'] = $options['command_symbol'] ?? ';';
-		//Discord must be Discord or null
-		//Twitch must be Twitch or null
-		
-		$resolver = new OptionsResolver();
-		$resolver
+    /*
+    * Attempt to catch errors with the user-provided $options early
+    */
+    protected function resolveOptions(array $options = []): array
+    {
+        if ($this->verbose) $this->emit('[LORHONDEL] [RESOLVE OPTIONS]');
+        $options['loop'] = $options['loop'] ?? Factory::create();
+        $options['browser'] = $options['browser'] ?? new \React\Http\Browser($options['loop']);
+        $options['server'] = $options['server'] ?? false;
+        $options['command_symbol'] = $options['command_symbol'] ?? ';';
+        //Discord must be Discord or null
+        //Twitch must be Twitch or null
+        
+        $resolver = new OptionsResolver();
+        $resolver
             ->setRequired('token')
             ->setAllowedTypes('token', 'string')
             ->setDefined([
@@ -1164,11 +1164,11 @@ class Lorhondel
                 'retrieveBans',
                 'intents',
                 'socket_options',
-				'browser',
-				'discord',
-				'server',
-				'socket',
-				'command_symbol',
+                'browser',
+                'discord',
+                'server',
+                'socket',
+                'command_symbol',
             ])
             ->setDefaults([
                 'loop' => LoopFactory::create(),
@@ -1179,9 +1179,9 @@ class Lorhondel
                 'storeMessages' => false,
                 'retrieveBans' => false,
                 'intents' => Intents::getDefaultIntents(),
-				'server' => false,
+                'server' => false,
                 'socket_options' => [],
-				'command_symbol' => ';',
+                'command_symbol' => ';',
             ])
             ->setAllowedTypes('token', 'string')
             ->setAllowedTypes('logger', ['null', LoggerInterface::class])
@@ -1192,16 +1192,16 @@ class Lorhondel
             ->setAllowedTypes('storeMessages', 'bool')
             ->setAllowedTypes('retrieveBans', 'bool')
             ->setAllowedTypes('intents', ['array', 'int'])
-			->setAllowedTypes('server', 'bool')
+            ->setAllowedTypes('server', 'bool')
             ->setAllowedTypes('socket_options', 'array')
-			->setAllowedTypes('command_symbol', 'string');
+            ->setAllowedTypes('command_symbol', 'string');
 
         $options = $resolver->resolve($options);
-		
-		return $options;
-	}
-	
-	/**
+        
+        return $options;
+    }
+    
+    /**
      * Adds a large guild to the large guild array.
      *
      * @param Guild $guild The guild.
@@ -1210,15 +1210,15 @@ class Lorhondel
     {
         $this->largeGuilds[] = $guild->id;
     }
-	
-	public function run(): void
-	{
-		if ($this->verbose) $this->emit('[LORHONDEL] [RUN]');
-		if (!(isset($this->discord))) $this->emit('[WARNING] Discord not set!');
-		else $this->discord->run();
-	}
-	
-	/**
+    
+    public function run(): void
+    {
+        if ($this->verbose) $this->emit('[LORHONDEL] [RUN]');
+        if (!(isset($this->discord))) $this->emit('[WARNING] Discord not set!');
+        else $this->discord->run();
+    }
+    
+    /**
      * Closes the Lorhondel client.
      *
      * @param bool $closeLoop Whether to close the loop as well. Default true.

@@ -40,36 +40,21 @@ class Battle extends Part
      */
     protected static $fillable = ['id', 'party_id', 'active', 'status', 'turn'];
 
-	/**
-     * Returns the fillable attributes.
-     *
-     * @return array
-     */
-    public static function getFillableAttributes($context = '')
-	{
-		$fillable = array();
-		foreach (self::$fillable as $attr) {
-			if (! $context || in_array($context, self::$fillable)) {
-				$fillable[] = $attr;
-			}
-		}
-		return $fillable;
-	}
 
-	/**
+    /**
      * @inheritdoc
      */
     public function getCreatableAttributes(): array
     {
         return [
             'id' => $this->id,
-			'party_id' => $this->party_id,
-			'active' => $this->active,
-			'status' => $this->status,
-			'turn' => $this->turn,
+            'party_id' => $this->party_id,
+            'active' => $this->active,
+            'status' => $this->status,
+            'turn' => $this->turn,
         ];
     }
-	
+    
 
     /**
      * @inheritdoc

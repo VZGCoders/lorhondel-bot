@@ -38,8 +38,8 @@ use React\Promise\ExtendedPromiseInterface;
      * @var Http Client.
      */
     protected $http;
-	
-	/**
+    
+    /**
      * The Browser client.
      *
      * @var Browser Client.
@@ -79,7 +79,7 @@ use React\Promise\ExtendedPromiseInterface;
         $this->http = $http;
         $this->factory = $factory;
         $this->vars = $vars;
-		$this->browser = $factory->lorhondel->browser;
+        $this->browser = $factory->lorhondel->browser;
 
         parent::__construct([], $this->discrim, $this->class);
     }
