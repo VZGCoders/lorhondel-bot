@@ -108,7 +108,7 @@ class HttpServer
                 if ($ver != 'v' . $lorhondel::GATEWAY_VERSION) {
                     $_400['message'] = '400: Bad Request. Invalid API version provided'; //Improper format or bad data
                     $_400['code'] = 50001;
-                    return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400));
+                    return new \React\Http\Message\Response(400, ['Content-Type' => 'application/json'], json_encode($_400));
                 }
                 
                 switch ($repository) { //gateway
@@ -116,7 +116,7 @@ class HttpServer
                         //if ($method != 'bot') break;
                         //if ($id2 != '@me') break;
                         $return = array();
-                        return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
+                        return new \React\Http\Message\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
                         break;
                     case 'gateway':
                         if ($method != 'bot') break;
@@ -129,7 +129,7 @@ class HttpServer
                         "reset_after" => 14400000, // The number of milliseconds after which the limit resets
                         "max_concurrency" => 1 // The number of identify requests allowed per 5 seconds
                         ];
-                        return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
+                        return new \React\Http\Message\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
                         break;
                 }
                 switch ($sub) {
@@ -212,7 +212,7 @@ class HttpServer
                     case 'restart':
                         if (substr($request->getServerParams()['REMOTE_ADDR'], 0, 6) != '10.0.0') {
                             echo '[REJECT]' . $request->getServerParams()['REMOTE_ADDR'] . PHP_EOL;
-                            return new \GuzzleHttp\Psr7\Response(501, ['Content-Type' => 'text/plain'], 'Reject'.PHP_EOL);
+                            return new \React\Http\Message\Response(501, ['Content-Type' => 'text/plain'], 'Reject'.PHP_EOL);
                         }
                         $return = 'restarting';
                         //execInBackground('cmd /c "'. __DIR__  . '\run.bat"');
@@ -220,10 +220,10 @@ class HttpServer
                         break;
 
                     case 'lookup':
-                        return new \GuzzleHttp\Psr7\Response(501, ['Content-Type' => 'text/plain'], 'Reject'.PHP_EOL); //Restcord is deprecated
+                        return new \React\Http\Message\Response(501, ['Content-Type' => 'text/plain'], 'Reject'.PHP_EOL); //Restcord is deprecated
                         if (substr($request->getServerParams()['REMOTE_ADDR'], 0, 6) != '10.0.0') { //This can be abused to cause 429's with Restcord and should only be used by the website. All other cases should use 'user'
                             echo '[REJECT]' . $request->getServerParams()['REMOTE_ADDR'] . PHP_EOL;
-                            return new \GuzzleHttp\Psr7\Response(501, ['Content-Type' => 'text/plain'], 'Reject'.PHP_EOL);
+                            return new \React\Http\Message\Response(501, ['Content-Type' => 'text/plain'], 'Reject'.PHP_EOL);
                         }
                         if (! $id || !webapiSnow($id) || ! $return = $lorhondel->discord->user->fetch($id))
                             return webapiFail('discord_id', $id);
@@ -232,7 +232,7 @@ class HttpServer
                     case 'owner':
                         if (substr($request->getServerParams()['REMOTE_ADDR'], 0, 6) != '10.0.0') {
                             echo '[REJECT]' . $request->getServerParams()['REMOTE_ADDR'] . PHP_EOL;
-                            return new \GuzzleHttp\Psr7\Response(501, ['Content-Type' => 'text/plain'], 'Reject'.PHP_EOL);
+                            return new \React\Http\Message\Response(501, ['Content-Type' => 'text/plain'], 'Reject'.PHP_EOL);
                         }
                         if (! $id || !webapiSnow($id))
                             return webapiFail('discord_id', $id);
@@ -255,7 +255,7 @@ class HttpServer
                             $lorhondel->discord->users->fetch($id)->done(
                                 function ($user) {
                                     $return = $user->avatar;
-                                    return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'text/json'], json_encode($return));
+                                    return new \React\Http\Message\Response(200, ['Content-Type' => 'text/json'], json_encode($return));
                                 }, function ($error) {
                                     return webapiFail('discord_id', $id);
                                 }
@@ -264,7 +264,7 @@ class HttpServer
                         } else {
                             $return = $user->avatar;
                         }
-                        //if (! $return) return new \GuzzleHttp\Psr7\Response(($id ? 404 : 400), ['Content-Type' => 'text/plain'], ('').PHP_EOL);
+                        //if (! $return) return new \React\Http\Message\Response(($id ? 404 : 400), ['Content-Type' => 'text/plain'], ('').PHP_EOL);
                         break;
                         
                     case 'avatars':
@@ -283,10 +283,10 @@ class HttpServer
                         }
 
                         $promise->done(function () use ($return) {
-                          return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
+                          return new \React\Http\Message\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
                         }, function () use ($return) {
                           // return with error ?
-                          return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
+                          return new \React\Http\Message\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
                         });
                         break;
                     default:
@@ -396,12 +396,12 @@ class HttpServer
                                     echo "[ALLOWED METHOD/ENDPOINT] $method/$id2" . PHP_EOL; 
                                     $target_method = $method;
                                     $target_id2 = $id2;
-                                } else return new \GuzzleHttp\Psr7\Response(403, ['Content-Type' => 'application/json'], json_encode($_403));
+                                } else return new \React\Http\Message\Response(403, ['Content-Type' => 'application/json'], json_encode($_403));
                             }
                         }
                     }
                 }
-                if (! $target_method) return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400));
+                if (! $target_method) return new \React\Http\Message\Response(400, ['Content-Type' => 'application/json'], json_encode($_400));
                 
                 $requires_part = ['put', 'patch', 'post'];
                 $has_part = false;
@@ -423,10 +423,10 @@ class HttpServer
                     if ($attributes = json_decode(json_encode($data), true)) {
                         echo '[ATTRIBUTES]'; var_dump($attributes);
                         if ($part = $lorhondel->factory($part_name, $attributes)) $has_part = true;
-                        else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($part));
+                        else return new \React\Http\Message\Response(400, ['Content-Type' => 'application/json'], json_encode($part));
                     } else {
                         echo '[ATTRIBUTES FAIL]' . PHP_EOL;
-                        return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400));
+                        return new \React\Http\Message\Response(400, ['Content-Type' => 'application/json'], json_encode($_400));
                     }
                 }
                 
@@ -456,7 +456,7 @@ class HttpServer
                     
                     if ($target_method == 'patch') {
                         if (empty($get = sqlGet(['*'], $repository, 'id', [$id2], '', 1)))
-                            return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($part)); //Data does not exist to update
+                            return new \React\Http\Message\Response(400, ['Content-Type' => 'application/json'], json_encode($part)); //Data does not exist to update
                         elseif ($update = sqlUpdate($fillable_attributes, array_values($attributes), $repository, 'id', $id2)) {
                             $get = sqlGet(['*'], $repository, 'id', [$id2], '', 1);
                             foreach ($get as $array) {
@@ -467,13 +467,13 @@ class HttpServer
                                     $lorhondel->$repository->push($part);
                                 }
                             }
-                            return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($get));
-                        } else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400)); //The data provided is either missing or didn't get passed to the SQL method
+                            return new \React\Http\Message\Response(200, ['Content-Type' => 'application/json'], json_encode($get));
+                        } else return new \React\Http\Message\Response(400, ['Content-Type' => 'application/json'], json_encode($_400)); //The data provided is either missing or didn't get passed to the SQL method
                     }
                     elseif ($target_method == 'post' || $target_method == 'put') { //Put works here because we should never be creating duplicates of objects or reusing the same id for multiple objects
                         if ($id2 && is_numeric(($id2))) {
                             if (!empty($return = sqlGet(['*'], $repository, 'id', [$id2], '', 1)))
-                                return new \GuzzleHttp\Psr7\Response(204, ['Content-Type' => 'application/json'], json_encode($part));
+                                return new \React\Http\Message\Response(204, ['Content-Type' => 'application/json'], json_encode($part));
                             else {
                                 if (sqlCreate($repository, $data)) {
                                     $get = sqlGet(['*'], $repository, 'id', [$id2], '', 1);
@@ -485,13 +485,13 @@ class HttpServer
                                             else echo '[EXISTS] ' . $data->id . PHP_EOL;
                                         }
                                     }
-                                    return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($get));
-                                } else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400)); //The data provided is either missing or didn't get passed to the SQL method
+                                    return new \React\Http\Message\Response(200, ['Content-Type' => 'application/json'], json_encode($get));
+                                } else return new \React\Http\Message\Response(400, ['Content-Type' => 'application/json'], json_encode($_400)); //The data provided is either missing or didn't get passed to the SQL method
                             }
                         } else {
                             if (sqlCreate($repository, $data)) //Create a new part without using an ID
                                 echo '[CREATED PART WITHOUT ID]' . PHP_EOL; //$lorhondel->$repository->freshen(); //attempt to retrieve the new part by freshening the repository
-                            return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($data));
+                            return new \React\Http\Message\Response(200, ['Content-Type' => 'application/json'], json_encode($data));
                         }
                     }
                 }
@@ -499,10 +499,10 @@ class HttpServer
                     if ($id2 && is_numeric(($id2))) {
                         if (in_array($partial, $allowed_properties)) {
                             if (empty($return = sqlGet([$partial], $repository, 'id', [$id2], '', 1)))
-                                return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($_404));
+                                return new \React\Http\Message\Response(404, ['Content-Type' => 'application/json'], json_encode($_404));
                             else {
                                 //NYI
-                                return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($return ?? $_200));
+                                return new \React\Http\Message\Response(200, ['Content-Type' => 'application/json'], json_encode($return ?? $_200));
                             }
                         } elseif (! $partial) {
                             if (!empty($array = sqlGet(['*'], $repository, 'id', [$id2], '', 1))) {
@@ -514,9 +514,9 @@ class HttpServer
                                         $lorhondel->$repository->push($part);
                                     }
                                 }
-                                return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($part ?? $_200));
-                            } else return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($_404));
-                        }else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400));
+                                return new \React\Http\Message\Response(200, ['Content-Type' => 'application/json'], json_encode($part ?? $_200));
+                            } else return new \React\Http\Message\Response(404, ['Content-Type' => 'application/json'], json_encode($_404));
+                        }else return new \React\Http\Message\Response(400, ['Content-Type' => 'application/json'], json_encode($_400));
                     } else { //all
                         $array = json_validate(sqlGet(['*'], $repository, '', [], '', '')); //array
                         foreach ($array as $data) //Create all into parts and push
@@ -527,17 +527,17 @@ class HttpServer
                                     $lorhondel->$repository->push($part);
                                 }
                             }
-                        return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($array)); //return isn't being received?
+                        return new \React\Http\Message\Response(200, ['Content-Type' => 'application/json'], json_encode($array)); //return isn't being received?
                     }
                 }
                 elseif ($target_method == 'delete') { echo '[DELETE RESPONSE]' . PHP_EOL;
                     if (empty($return = sqlGet(['*'], $repository, 'id', [$id2], '', 1)))
-                        return new \GuzzleHttp\Psr7\Response(204, ['Content-Type' => 'application/json'], json_encode($_204)); //Data does not exist to delete
+                        return new \React\Http\Message\Response(204, ['Content-Type' => 'application/json'], json_encode($_204)); //Data does not exist to delete
                     elseif (sqlDelete($repository, 'id', [$id2], '', 1)) {
                         if ($lorhondel->$repository->offsetGet($id2))
                             $lorhondel->$repository->pull($id2);
-                        return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($part ?? $lorhondel->$repository->pull($id2) ?? $id2));
-                    } else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400)); //The data provided is either missing or didn't get passed to the SQL method
+                        return new \React\Http\Message\Response(200, ['Content-Type' => 'application/json'], json_encode($part ?? $lorhondel->$repository->pull($id2) ?? $id2));
+                    } else return new \React\Http\Message\Response(400, ['Content-Type' => 'application/json'], json_encode($_400)); //The data provided is either missing or didn't get passed to the SQL method
                 }
                 elseif ($target_method == 'fresh') {
                     if ($id2 && is_numeric(($id2))) {
@@ -548,20 +548,20 @@ class HttpServer
                                     if ($lorhondel->$repository->offsetGet($id2))
                                         $lorhondel->$repository->pull($id2);
                                     $lorhondel->$repository->push($part);
-                                    return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($part));
-                                } else return new \GuzzleHttp\Psr7\Response(500, ['Content-Type' => 'application/json'], json_encode($_5xx)); //Nothing from SQL should be throwing an error, so this is a problem!
-                        else return new \GuzzleHttp\Psr7\Response(204, ['Content-Type' => 'application/json'], json_encode($part));
-                    } else return new \GuzzleHttp\Psr7\Response(400, ['Content-Type' => 'application/json'], json_encode($_400));
+                                    return new \React\Http\Message\Response(200, ['Content-Type' => 'application/json'], json_encode($part));
+                                } else return new \React\Http\Message\Response(500, ['Content-Type' => 'application/json'], json_encode($_5xx)); //Nothing from SQL should be throwing an error, so this is a problem!
+                        else return new \React\Http\Message\Response(204, ['Content-Type' => 'application/json'], json_encode($part));
+                    } else return new \React\Http\Message\Response(400, ['Content-Type' => 'application/json'], json_encode($_400));
                 }
 
                 $return = $_404;
-                return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($return));
-                /*if ($return)*/ return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
+                return new \React\Http\Message\Response(404, ['Content-Type' => 'application/json'], json_encode($return));
+                /*if ($return)*/ return new \React\Http\Message\Response(200, ['Content-Type' => 'application/json'], json_encode($return));
             }
             catch (Exception $e) {
                 echo '[ERROR]' . PHP_EOL; var_dump($e);
                 $return = $_5xx;
-                return new \GuzzleHttp\Psr7\Response(500, ['Content-Type' => 'application/json'], json_encode($return));
+                return new \React\Http\Message\Response(500, ['Content-Type' => 'application/json'], json_encode($return));
             }
         });
         $this->webapi->on('error', function ($e) {
@@ -580,11 +580,11 @@ class HttpServer
     private function webapiFail($part, $id)
     {
         //logInfo('[webapi] Failed', ['part' => $part, 'id' => $id]);
-        //return new \GuzzleHttp\Psr7\Response(($id ? 404 : 400), ['Content-Type' => 'text/plain'], ($id ? 'Invalid' : 'Missing').' '.$part.PHP_EOL);
+        //return new \React\Http\Message\Response(($id ? 404 : 400), ['Content-Type' => 'text/plain'], ($id ? 'Invalid' : 'Missing').' '.$part.PHP_EOL);
         $return = array();
         $return['message'] = '404: Not Found';
         $return['code'] = 0;
-        return new \GuzzleHttp\Psr7\Response(404, ['Content-Type' => 'application/json'], json_encode($return));
+        return new \React\Http\Message\Response(404, ['Content-Type' => 'application/json'], json_encode($return));
     }
 
     private function webapiSnow($string)
