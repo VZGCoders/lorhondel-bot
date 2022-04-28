@@ -383,7 +383,7 @@ function sqlGet(array $columns = [], string $table = '', string $wherecolumn = '
     //sqlGet(['*'], $repository, '', [], '', 500); //get all
     if (empty($columns)) return [];
     if (! $table) return [];
-    include 'connect.php'; //$mysqli and $pdo
+    require getcwd() . '\connect.php'; //$mysqli and $pdo
     $array = array();
     
     $sql = "SELECT ";
