@@ -207,9 +207,17 @@ abstract class Part implements ArrayAccess, JsonSerializable
     public static function getFillableAttributes($context = '')
     {
         $fillable = array();
-        foreach ($this::$fillable as $attr) {
-            if (! $context || in_array($context, $attrContexts)) {
-                $fillable[] = $attr;
+        if (isset($this)) {
+            foreach ($this::$fillable as $attr) {
+                if (! $context || in_array($context, $attrContexts)) {
+                    $fillable[] = $attr;
+                }
+            }
+        } else {
+            foreach (Part::$fillable as $attr) {
+                if (! $context || in_array($context, $attrContexts)) {
+                    $fillable[] = $attr;
+                }
             }
         }
         return $fillable;
