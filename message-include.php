@@ -40,22 +40,15 @@ Load author data from message
 *********************
 */
 
-$author	= $message->author; //Member OR User object
-if (get_class($author) == "Discord\Parts\User\Member") {
-	$author_user = $author->user;
-	$author_member = $author;
-} else {
-	$author_user = $author;
-	$author_member = null;
-	return; //Probably a bot or webhook without a member object
-}
+$author = $author_user = $message->author; //This will need to be updated in a future release of DiscordPHP
+if ($author_member = $message->member) $author_perms = $author_member->getPermissions($message->channel); //Populate permissions granted by roles
 
 $user_createdTimestamp										= $author_user->createdTimestamp();
 $author_channel 											= $message->channel;
 $author_channel_id											= $author_channel->id;
 $author_channel_class										= get_class($author_channel);
 $is_dm = false;
-if (is_null($message->channel->guild_id)) {
+if ($message->channel->type == 1 || (is_null($message->guild_id) && is_null($author_member))) { //True if direct message
 	return; //We shouldn't be processing direct messages right now
 	$is_dm = true;
 }
@@ -94,7 +87,7 @@ Process Lorhondel-related messages
 */
 
 $creator = false;
-if ($author_id == 116927250145869826) $creator = true;
+if ($author_id == '116927250145869826') $creator = true;
 if ($creator) { //Debug commands
 	switch($message_content_lower) {
 		case 'ping':
@@ -104,7 +97,7 @@ if ($creator) { //Debug commands
 			$snowflake = \Lorhondel\generateSnowflake($lorhondel, time(), 0, 0, count($lorhondel->players));
 			$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
 				'id' => $snowflake,
-				'discord_id' => 116927250145869826,
+				'discord_id' => '116927250145869826',
 				'species' => 'Elarian', //Elarian, Manthean, Noldarus, Veias, Jedoa
 				'health' => 0,
 				'attack' => 1,
@@ -158,8 +151,8 @@ if ($creator) { //Debug commands
 			break;
 		case 'part':
 			$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
-				'id' => 116927250145869826,
-				'discord_id' => 116927250145869826,
+				'id' => '116927250145869826',
+				'discord_id' => '116927250145869826',
 				'species' => 'Elarian', //Elarian, Manthean, Noldarus, Veias, Jedoa
 				'health' => 888,
 				'attack' => 888,
@@ -189,8 +182,8 @@ if ($creator) { //Debug commands
 			break;
 		case 'patch':
 			$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
-				'id' => 116927250145869826,
-				'discord_id' => 116927250145869826,
+				'id' => '116927250145869826',
+				'discord_id' => '116927250145869826',
 				'species' => 'Elarian', //Elarian, Manthean, Noldarus, Veias, Jedoa
 				'health' => 888,
 				'attack' => 888,
@@ -206,7 +199,7 @@ if ($creator) { //Debug commands
 			$snowflake = \Lorhondel\generateSnowflake($lorhondel, time(), 0, 0, count($lorhondel->players));
 			$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
 				'id' => $snowflake,
-				'discord_id' => 116927250145869826,
+				'discord_id' => '116927250145869826',
 				'party_id' => null,
 				'active' => false,
 				'species' => 'Elarian', //Elarian, Manthean, Noldarus, Veias, Jedoa
@@ -221,8 +214,8 @@ if ($creator) { //Debug commands
 		case 'save':
 			echo '[SAVE]' . PHP_EOL;
 			$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
-				'id' => 116927250145869826,
-				'discord_id' => 116927250145869826,
+				'id' => '116927250145869826',
+				'discord_id' => '116927250145869826',
 				'species' => 'Elarian', //Elarian, Manthean, Noldarus, Veias, Jedoa
 				'health' => 0,
 				'attack' => 1,
@@ -235,8 +228,8 @@ if ($creator) { //Debug commands
 		case 'delete':
 			echo '[delete]' . PHP_EOL;
 			$part = $lorhondel->factory(\Lorhondel\Parts\Player\Player::class, [
-				'id' => 116927250145869826,
-				'discord_id' => 116927250145869826,
+				'id' => '116927250145869826',
+				'discord_id' => '116927250145869826',
 				'species' => 'Elarian', //Elarian, Manthean, Noldarus, Veias, Jedoa
 				'health' => 0,
 				'attack' => 1,
