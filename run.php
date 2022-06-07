@@ -15,7 +15,7 @@ include 'src/Lorhondel/Lorhondel.php';
 ini_set('memory_limit', '-1'); 	//Unlimited memory usage
 
 function execInBackground($cmd) { 
-    if (substr(php_uname(), 0, 7) == "Windows") {
+    if (PHP_OS_FAMILY == "Windows") {
 		pclose(popen("start ". $cmd, "r")); //pclose(popen("start /B ". $cmd, "r"));
     } else exec($cmd . " > /dev/null &");
 }
