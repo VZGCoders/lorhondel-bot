@@ -57,7 +57,7 @@ class BattleRepository extends AbstractRepository
         if ($this->factory->lorhondel->battles->offsetGet($part->id)) $method = 'patch';
         else $method = 'post';
         $url = Http::BASE_URL . "/battles/$method/{$part->id}/";
-        return $this->factory->lorhondel->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
+        return $this->factory->lorhondel->browser->post($url, ['Content-Type' => 'application/x-www-form-urlencoded'], http_build_query($part))->then( //Make this a function
             function ($response) use ($part) {
                 echo '[SAVE RESPONSE] '; //var_dump($lorhondel->battles->offsetGet($part->id)); 
                 //var_dump($lorhondel->battles);
@@ -84,7 +84,7 @@ class BattleRepository extends AbstractRepository
         }
         
         $url = Http::BASE_URL . "/battles/delete/{$part->id}/";
-        return $this->factory->lorhondel->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
+        return $this->factory->lorhondel->browser->post($url, ['Content-Type' => 'application/x-www-form-urlencoded'], http_build_query($part))->then( //Make this a function
             function ($response) use ($part) {
                 echo '[DELETE RESPONSE] '; //var_dump($lorhondel->battles->offsetUnset($part->id)); 
                 //var_dump($lorhondel->battles);
@@ -115,7 +115,7 @@ class BattleRepository extends AbstractRepository
         }
 
         $url = Http::BASE_URL . "/battles/fresh/{$part->id}/";
-        return $this->factory->lorhondel->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
+        return $this->factory->lorhondel->browser->post($url, ['Content-Type' => 'application/x-www-form-urlencoded'], http_build_query($part))->then( //Make this a function
             function ($response) use ($lorhondel, $message, $part) {
                 echo '[FETCH RESPONSE] '; //var_dump($lorhondel->battles->offsetUnset($part->id)); 
                 //var_dump($lorhondel->battles);
@@ -148,7 +148,7 @@ class BattleRepository extends AbstractRepository
 
         $part = $this->factory->create($this->class, [$this->discrim => $id]);
         $url = Http::BASE_URL . "/battles/fetch/{$part->id}/";
-        return $this->factory->lorhondel->browser->post($url, ['Content-Type' => 'application/json'], json_encode($part))->then( //Make this a function
+        return $this->factory->lorhondel->browser->post($url, ['Content-Type' => 'application/x-www-form-urlencoded'], http_build_query($part))->then( //Make this a function
             function ($response) use ($lorhondel, $message, $part) {
                 echo '[FETCH RESPONSE] '; //var_dump($lorhondel->battles->offsetUnset($part->id)); 
                 //var_dump($lorhondel->battles);
