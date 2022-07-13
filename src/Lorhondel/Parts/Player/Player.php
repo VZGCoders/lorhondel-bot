@@ -83,6 +83,7 @@ class Player extends Part
             'account_id' => $this->account_id,
             'party_id' => $this->party_id,
             'active' => $this->active,
+            'looking' => $this->looking,
             'name' => $this->name,
             'species' => $this->species,
             'health' => $this->health,
