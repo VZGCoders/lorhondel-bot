@@ -39,7 +39,7 @@ class Player extends Part
      */
     protected static $fillable = ['id', 'account_id', 'party_id', 'active', 'looking', 'name', 'species', 'health', 'attack', 'defense', 'speed', 'skillpoints'];
     
-    protected static $species_list = ['Elarian', 'Jedoa', 'Manthean', 'Noldarus', 'Veias'];
+    protected static $species_list = ['Elarian', 'Jedoa', 'Manthean', 'Noldaru', 'Veias'];
 
     /**
      * Returns the fillable attributes.
