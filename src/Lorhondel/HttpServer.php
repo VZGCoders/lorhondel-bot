@@ -99,7 +99,8 @@ class HttpServer
                 
                 $whitelisted = false;
                 if (
-                    substr($request->getServerParams()['REMOTE_ADDR'], 0, 6) == '11.0.0' ||
+                    substr($request->getServerParams()['REMOTE_ADDR'], 0, 6) == '10.0.0' ||
+                    substr($request->getServerParams()['REMOTE_ADDR'], 0, 8) == '192.168.' ||
                     substr($request->getServerParams()['REMOTE_ADDR'], 0, 7) == '127.0.0'
                 ) $whitelisted = true;
                 else echo "[REMOTE_ADDR]" . $request->getServerParams()['REMOTE_ADDR'].PHP_EOL;
@@ -210,7 +211,11 @@ class HttpServer
                         break;
 
                     case 'restart':
-                        if (substr($request->getServerParams()['REMOTE_ADDR'], 0, 6) != '11.0.0') {
+                        if (
+                            substr($request->getServerParams()['REMOTE_ADDR'], 0, 6) == '10.0.0' ||
+                            substr($request->getServerParams()['REMOTE_ADDR'], 0, 8) == '192.168.' ||
+                            substr($request->getServerParams()['REMOTE_ADDR'], 0, 7) == '127.0.0'
+                        ){
                             echo '[REJECT]' . $request->getServerParams()['REMOTE_ADDR'] . PHP_EOL;
                             return new \React\Http\Message\Response(501, ['Content-Type' => 'text/plain'], 'Reject'.PHP_EOL);
                         }
@@ -221,7 +226,11 @@ class HttpServer
 
                     case 'lookup':
                         return new \React\Http\Message\Response(501, ['Content-Type' => 'text/plain'], 'Reject'.PHP_EOL); //Restcord is deprecated
-                        if (substr($request->getServerParams()['REMOTE_ADDR'], 0, 6) != '11.0.0') { //This can be abused to cause 429's with Restcord and should only be used by the website. All other cases should use 'user'
+                        if (
+                            substr($request->getServerParams()['REMOTE_ADDR'], 0, 6) == '10.0.0' ||
+                            substr($request->getServerParams()['REMOTE_ADDR'], 0, 8) == '192.168.' ||
+                            substr($request->getServerParams()['REMOTE_ADDR'], 0, 7) == '127.0.0'
+                        ){ //This can be abused to cause 429's with Restcord and should only be used by the website. All other cases should use 'user'
                             echo '[REJECT]' . $request->getServerParams()['REMOTE_ADDR'] . PHP_EOL;
                             return new \React\Http\Message\Response(501, ['Content-Type' => 'text/plain'], 'Reject'.PHP_EOL);
                         }
@@ -230,7 +239,11 @@ class HttpServer
                         break;
 
                     case 'owner':
-                        if (substr($request->getServerParams()['REMOTE_ADDR'], 0, 6) != '11.0.0') {
+                        if (
+                            substr($request->getServerParams()['REMOTE_ADDR'], 0, 6) == '10.0.0' ||
+                            substr($request->getServerParams()['REMOTE_ADDR'], 0, 8) == '192.168.' ||
+                            substr($request->getServerParams()['REMOTE_ADDR'], 0, 7) == '127.0.0'
+                        ) {
                             echo '[REJECT]' . $request->getServerParams()['REMOTE_ADDR'] . PHP_EOL;
                             return new \React\Http\Message\Response(501, ['Content-Type' => 'text/plain'], 'Reject'.PHP_EOL);
                         }
